@@ -1,0 +1,198 @@
+# Snakefile
+
+import os
+import glob
+
+CURRENT_PATH = os.getcwd()
+
+# Extract sample names from files with "_R1" in the raw data directory
+raw_data_dir = config["rawdatadir"]
+R1_files = glob.glob(os.path.join(raw_data_dir, '*_R1*'))
+SAMPLES = [os.path.basename(f).split('_R1')[0] for f in R1_files]
+
+rule all:
+    input:
+        os.path.join(CURRENT_PATH, config["outputprepare"] + ".fasta"),
+        expand(os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES),
+        expand(os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES),
+        os.path.join(CURRENT_PATH, config["outputprepare"] + "_withSingleton.fasta")
+
+rule prepare_directories:
+    input:
+        full_path_raw = config["rawdatadir"]
+    output:
+        expand(os.path.join(CURRENT_PATH, "prepare_output", "R1/{sample}_R1.fastq"), sample=SAMPLES),
+        expand(os.path.join(CURRENT_PATH, "prepare_output", "R2/{sample}_R2.fastq"), sample=SAMPLES)
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/prepare_output/R1 {CURRENT_PATH}/prepare_output/R2
+        cp {input.full_path_raw}/*_R1* {CURRENT_PATH}/prepare_output/R1/
+        cp {input.full_path_raw}/*_R2* {CURRENT_PATH}/prepare_output/R2/
+        """
+
+rule run_adapter_removal:
+    input:
+        r1 = os.path.join(CURRENT_PATH, "prepare_output", "R1/{sample}_R1.fastq"),
+        r2 = os.path.join(CURRENT_PATH, "prepare_output", "R2/{sample}_R2.fastq")
+    output:
+        os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.discarded"),
+        os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.pair1.truncated"),
+        os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.pair2.truncated"),
+        os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.settings"),
+        os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.singleton.truncated")
+    params:
+        adapters = config["adapters"],
+        num_threads = config["num_threads"],
+        min_phred = config["minphred"],
+        min_length = config["minlength"]
+    log:
+        os.path.join(CURRENT_PATH, "logs", "adapter_removal", "{sample}.log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/logs/adapter_removal
+        cd {CURRENT_PATH}/prepare_output/
+        AdapterRemoval --file1 {input.r1} --file2 {input.r2} --threads {params.num_threads} --mate-separator " " --adapter-list {params.adapters} \
+        --trimwindows 10 --minquality {params.min_phred} --minlength {params.min_length} --qualitymax 64 --basename {wildcards.sample}_good --mm 5 \
+        > {log} 2>&1
+        rm {input.r1} {input.r2}
+        """
+
+rule run_pear:
+    input:
+        pair1 = os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.pair1.truncated"),
+        pair2 = os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.pair2.truncated"),
+    output:
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.assembled.fastq"),
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.discarded.fastq"),
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.unassembled.forward.fastq"),
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.unassembled.reverse.fastq")
+    params:
+        num_threads = config["num_threads"]
+    log:
+        os.path.join(CURRENT_PATH, "logs", "pear", "{sample}.log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_pear:v0.9.10"
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/logs/pear
+        mkdir -p {CURRENT_PATH}/assemblies/pear/{wildcards.sample}
+        pear -j {params.num_threads} -f {input.pair1} -r {input.pair2} -o {CURRENT_PATH}/assemblies/pear/{wildcards.sample}/{wildcards.sample} \
+        > {log} 2>&1
+        for i in {CURRENT_PATH}/assemblies/pear/{wildcards.sample}/*.assembled.fastq; do sed -i "s/ /_/g" $i; done
+        """
+
+rule run_prinseq:
+    input:
+        assembled = os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.assembled.fastq")
+    output:
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}.assembled.fasta"),
+    log:
+        os.path.join(CURRENT_PATH, "logs", "prinseq", "{sample}.log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/logs/prinseq
+        export LANG=C
+        export LC_ALL=C
+        prinseq-lite.pl -fastq {input.assembled} -out_format 1 -seq_id Seq -out_good {CURRENT_PATH}/assemblies/pear/{wildcards.sample}.assembled \
+        > {log} 2>&1
+        """
+
+rule run_qiimepipe:
+    input:
+        assembled_fasta = os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}.assembled.fasta")
+    output:
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}_relabel_notSingleton.fasta")
+    log:
+        os.path.join(CURRENT_PATH, "logs", "qiimepipe", "{sample}.log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/logs/qiimepipe
+        cd {CURRENT_PATH}/assemblies/pear/
+        python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.fasta . \
+        > {log} 2>&1
+        mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_notSingleton.fasta
+        """
+
+rule concatenate_and_rename:
+    input:
+        expand(os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES)
+    output:
+        os.path.join(CURRENT_PATH, config["outputprepare"] + ".fasta")
+    params:
+        outputname = config["outputprepare"]
+    shell:
+        """
+        cd {CURRENT_PATH}/assemblies/pear/
+        cat *relabel_notSingleton.fasta > {params.outputname}.fasta
+        mv {params.outputname}.fasta {CURRENT_PATH}/
+        """
+
+rule concatenate_singletons:
+    input:
+        assembled_fastq = os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.assembled.fastq"),
+        unassembled_forward = os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.unassembled.forward.fastq"),
+        unassembled_reverse = os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}.unassembled.reverse.fastq"),
+        singleton_truncated = os.path.join(CURRENT_PATH, "prepare_output", "{sample}_good.singleton.truncated")
+    output:
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}_withSingleton.fastq")
+    shell:
+        """
+        cat {input.assembled_fastq} {input.unassembled_forward} {input.unassembled_reverse} {input.singleton_truncated} > {output}
+        sed -i 's/ /_/g' {output}
+        """
+
+rule run_prinseq_singleton:
+    input:
+        assembled_singleton = os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}", "{sample}_withSingleton.fastq")
+    output:
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}.assembled.withSingleton.fasta"),
+    log:
+        os.path.join(CURRENT_PATH, "logs", "prinseq_singleton", "{sample}.log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/logs/prinseq_singleton
+        export LANG=C
+        export LC_ALL=C
+        prinseq-lite.pl -fastq {input.assembled_singleton} -out_format 1 -seq_id Seq -out_good {CURRENT_PATH}/assemblies/pear/{wildcards.sample}.assembled.withSingleton \
+        > {log} 2>&1
+        """
+
+rule run_qiimepipe_singleton:
+    input:
+        assembled_fasta_singleton = expand(os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}.assembled.withSingleton.fasta"), sample=SAMPLES)
+    output:
+        os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}_relabel_withSingleton.fasta")
+    log:
+        os.path.join(CURRENT_PATH, "logs", "qiimepipe_singleton", "{sample}.log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+    shell:
+        """
+        mkdir -p {CURRENT_PATH}/logs/qiimepipe_singleton
+        cd {CURRENT_PATH}/assemblies/pear/
+        python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.withSingleton.fasta . \
+        > {log} 2>&1
+        mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_withSingleton.fasta
+        """
+
+rule concatenate_and_rename_singletons:
+    input:
+        expand(os.path.join(CURRENT_PATH, "assemblies", "pear", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES)
+    output:
+        os.path.join(CURRENT_PATH, config["outputprepare"] + "_withSingleton.fasta")
+    params:
+        outputname = config["outputprepare"]
+    shell:
+        """
+        cd {CURRENT_PATH}/assemblies/pear/
+        cat *_relabel_withSingleton.fasta > {params.outputname}_withSingleton.fasta
+        mv {params.outputname}_withSingleton.fasta {CURRENT_PATH}/
+        """
