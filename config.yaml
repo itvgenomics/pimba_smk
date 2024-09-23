@@ -1,0 +1,47 @@
+# config.yaml
+
+# pimba prepare paired
+sequencer: 'illumina'
+rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdataITS/'
+output_prepare_paired: 'AllSamples'
+num_threads: 8
+adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba/adapters.txt'
+minlength: 100
+minphred: 20
+
+# pimba prepare single end and dual index
+raw_fastq: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
+barcodes_3end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
+barcodes_3end_rev: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_reverse_Rtags_revcom.txt'
+barcodes_3end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
+barcodes_5end_dir: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcode_for_to_each_R/'
+forward_adapter: 'TCCACTAATCACAAAGANATNGGNAC'
+reverse_adapter: 'AGAAAATCATAATNAANGCNTGNGC'
+output_prepare_dual: 'AllSamples.fastq'
+
+
+# pimba run
+outputrun: 'AllSamples_97clust90assign'
+strategy: 'otu'
+otu_similarity: 0.97
+assign_similarity: 0.9
+mincoverage: 0.9
+otu_length: 200
+hits_per_subject: 1
+marker_gene: 'ITS-PLANTS-NCBI'
+e_value: 0.001
+lulu: 'no'
+ITS: 'no'
+taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
+
+# database files
+SILVA_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/Silva_132_release/SILVA_132_QIIME_release/'
+COI_BOLD_DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/COI_BOLD/'
+GG_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/gg_13_8_otus/'
+RDP_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/RDP/'
+NCBI_DB_EXP: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
+ITS_UNITE_DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
+
+# pimba plot
+metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba/mapping_file.csv'
+group_by: 'FALSE'
