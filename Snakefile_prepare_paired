@@ -12,10 +12,10 @@ SAMPLES = [os.path.basename(f).split('_R1')[0] for f in R1_files]
 
 rule all:
     input:
-        os.path.join(current_path, config["output_prepare_paired"] + ".fasta"),
+        os.path.join(current_path, config["outputprepare"] + ".fasta"),
         expand(os.path.join(current_path, "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES),
         expand(os.path.join(current_path, "assemblies", "pear", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES),
-        os.path.join(current_path, config["output_prepare_paired"] + "_withSingleton.fasta")
+        os.path.join(current_path, config["outputprepare"] + "_withSingleton.fasta")
 
 rule prepare_directories:
     input:
@@ -123,9 +123,9 @@ rule concatenate_and_rename:
     input:
         expand(os.path.join(current_path, "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES)
     output:
-        os.path.join(current_path, config["output_prepare_paired"] + ".fasta")
+        os.path.join(current_path, config["outputprepare"] + ".fasta")
     params:
-        outputname = config["output_prepare_paired"]
+        outputname = config["outputprepare"]
     shell:
         """
         cd {current_path}/assemblies/pear/
@@ -187,9 +187,9 @@ rule concatenate_and_rename_singletons:
     input:
         expand(os.path.join(current_path, "assemblies", "pear", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES)
     output:
-        os.path.join(current_path, config["output_prepare_paired"] + "_withSingleton.fasta")
+        os.path.join(current_path, config["outputprepare"] + "_withSingleton.fasta")
     params:
-        outputname = config["output_prepare_paired"]
+        outputname = config["outputprepare"]
     shell:
         """
         cd {current_path}/assemblies/pear/
