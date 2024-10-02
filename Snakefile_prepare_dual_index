@@ -16,13 +16,6 @@ SAMPLES = read_sample_names(barcodes_3end_txt)
 
 rule all:
     input:
-        expand(os.path.join(current_path, "prepare_output", "indexforbol_{sample}.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "prepare_output", "indexreveol_{sample}.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "prepare_output", "indexcreveol_{sample}.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "prepare_output", "index_{sample}.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "prepare_output", "{sample}_clipped.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "prepare_output", "{sample}_min50.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "prepare_output", "{sample}_revclipped.fastq"), sample=SAMPLES),
         expand(os.path.join(current_path, "prepare_output", "samples_{sample}.fastq"), sample=SAMPLES),
         os.path.join(current_path, "prepare_output", config["outputprepare"] + ".fastq"),
         os.path.join(current_path, "prepare_output", "{output_name}_good.truncated").format(output_name=config["outputprepare"]),
@@ -87,7 +80,7 @@ rule concatenate_barcodes:
         rm {input.forbol_file} {input.creveol_file}
         """
 
-rule run_qiimepipe_prepare:
+rule run_qiimepipe_strip:
     input:
         index_file = os.path.join(current_path, "prepare_output", "index_{sample}.fastq")
     output:
@@ -136,7 +129,7 @@ rule run_fastx_reverse_complement_filtered:
         rm {input.filtered_file} {current_path}/prepare_output/{wildcards.sample}_clipped_prinseq_bad_*.fastq
         """
 
-rule run_qiimepipe_prepare_revclipped:
+rule run_qiimepipe_strip_revclipped:
     input:
         revclipped_file = os.path.join(current_path, "prepare_output", "{sample}_revclipped.fastq")
     output:
