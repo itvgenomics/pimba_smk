@@ -76,8 +76,8 @@ rule run_adapter_removal:
     shell:
         """
         echo "Creating and running an AdapterRemoval Container: "
-        AdapterRemoval --file1 {input.fastq_file} --threads {params.num_threads} --trimwindows 10 \
-        --minquality {params.minphred} --minlength {params.minlength} --qualitymax 64 --basename {current_path}/prepare_output/{params.output_name}_min > {log} 2>&1
+        AdapterRemoval --file1 {input.fastq_file} --threads {params.num_threads} \
+        --minlength {params.minlength} --qualitymax 64 --basename {current_path}/prepare_output/{params.output_name}_min > {log} 2>&1
         """
 
 rule run_qiimepipe_strip:
@@ -93,7 +93,7 @@ rule run_qiimepipe_strip:
     shell:
         """
         echo "Running the QiimePipe Container: "
-        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.truncated_file} {params.adapter} {params.barcodes_5end_fasta} Ex > {output.clipped_file}
+        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.truncated_file} {params.adapter} {params.barcodes_5end_fasta} Seq > {output.clipped_file}
         """
 
 rule run_adapter_removal_clipped:
