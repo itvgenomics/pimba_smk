@@ -27,6 +27,13 @@ files_for_all_rule = [
     os.path.join(output_dir, file_name_raw + '_biom_table')
 ]
 
+# Conditionally include outputs if marker gene is 16S SILVA
+if marker_gene == "16S-SILVA":
+    files_for_all_rule.append(os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta'))
+    files_for_all_rule.append(os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta'))
+    files_for_all_rule.append(os.path.join(output_dir, 'rep_set.tre'))
+    files_for_all_rule.append(os.path.join(output_dir, 'diversity_by_sample'))
+
 # Conditionally include outputs if marker gene is 16S GREENGENES
 if marker_gene == "16S-GREENGENES":
     files_for_all_rule.append(os.path.join(output_dir, 'rep_set.tre'))
@@ -419,32 +426,59 @@ if lulu == "lulu":
             blastn -db {output_dir}/lulu_output/{file_name_raw}_otus.fasta -outfmt "6 qseqid sseqid pident" \
             -out {output_dir}/lulu_output/match_list.txt -num_threads {params.threads} \
             -qcov_hsp_perc 80 -perc_identity 84 -query {input.fasta_file} >> {log} 2>&1
-            """            
-    rule run_lulu:
-        input:
-            table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
-            match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
-        output:
-            lulu_table = os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'),
-        params:
-            old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
-        log:
-            os.path.join(current_path, "logs", "lulu", file_name_raw + ".log")
-        singularity:
-            "docker://itvdsbioinfo/pimba_r:latest"
-        shell:
             """
-            mkdir -p {current_path}/logs/lulu
-            echo "Running the R Container - lulu: "
-            Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
+    if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
+        rule run_lulu:
+            input:
+                table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt'),
+                match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
+            output:
+                lulu_table = os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'),
+            params:
+                old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
+            log:
+                os.path.join(current_path, "logs", "lulu", file_name_raw + ".log")
+            singularity:
+                "docker://itvdsbioinfo/pimba_r:latest"
+            shell:
+                """
+                mkdir -p {current_path}/logs/lulu
+                echo "Running the R Container - lulu: "
+                Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
 
-            sed -i -e 's/"X//g' {output.lulu_table}
-            sed -i -e 's/"//g' {output.lulu_table}
-            sed -i '1s/^/OTUId\t/' {output.lulu_table}
+                sed -i -e 's/"X//g' {output.lulu_table}
+                sed -i -e 's/"//g' {output.lulu_table}
+                sed -i '1s/^/OTUId\t/' {output.lulu_table}
 
-            cp {input.table} {params.old_table}
-            cp {output.lulu_table} {input.table}
-            """
+                cp {input.table} {params.old_table}
+                cp {output.lulu_table} {input.table}
+                """
+    else:
+        rule run_lulu:
+            input:
+                table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
+                match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
+            output:
+                lulu_table = os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'),
+            params:
+                old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
+            log:
+                os.path.join(current_path, "logs", "lulu", file_name_raw + ".log")
+            singularity:
+                "docker://itvdsbioinfo/pimba_r:latest"
+            shell:
+                """
+                mkdir -p {current_path}/logs/lulu
+                echo "Running the R Container - lulu: "
+                Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
+
+                sed -i -e 's/"X//g' {output.lulu_table}
+                sed -i -e 's/"//g' {output.lulu_table}
+                sed -i '1s/^/OTUId\t/' {output.lulu_table}
+
+                cp {input.table} {params.old_table}
+                cp {output.lulu_table} {input.table}
+                """
 
 if marker_gene == "16S-SILVA":
     rule run_qiime_assign_taxonomy:
@@ -473,7 +507,7 @@ if marker_gene == "16S-SILVA":
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
         output:
-            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta'),
+            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta')
         params:
             similarity_int = similarity_int,
             db_dir = config['SILVA_DB_16S']
@@ -488,6 +522,57 @@ if marker_gene == "16S-SILVA":
             echo "Running the Qiime Container - align_seqs.py: "
             align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
             -t {params.db_dir}/rep_set_aligned/{params.similarity_int}/{params.similarity_int}_alignment.fna > {log} 2>&1
+            """
+    rule run_qiime_filter_alignment:
+        input:
+            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta')
+        output:
+            filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
+        log:
+            os.path.join(current_path, "logs", "qiime_filter_alignment", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiime:latest"
+        shell:
+            """
+            mkdir -p {current_path}/logs/qiime_filter_alignment
+            mkdir -p {output_dir}/filtered_alignment
+
+            echo "Running the Qiime Container - filter_alignment.py: "
+            filter_alignment.py -i {input.rep_set_align} -o {output_dir}/filtered_alignment > {log} 2>&1
+            """
+    rule run_qiime_make_phylogeny:
+        input:
+            filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
+        output:
+            reference_tree = os.path.join(output_dir, 'rep_set.tre')
+        log:
+            os.path.join(current_path, "logs", "qiime_make_phylogeny", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiime:latest"
+        shell:
+            """
+            mkdir -p {current_path}/logs/qiime_make_phylogeny
+
+            echo "Running the Qiime Container - make_phylogeny.py: "
+            make_phylogeny.py -i {input.filtered_alignment} -o {output.reference_tree} > {log} 2>&1
+            """
+    rule run_create_abundance_file:
+        input:
+            tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
+            otu_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
+        output:
+            abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
+        log:
+            os.path.join(current_path, "logs", "create_abundance_file", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:latest"
+        shell:
+            """
+            mkdir -p {current_path}/logs/create_abundance_file
+            mkdir -p {output.abundance_file_dir}
+            cd {output.abundance_file_dir}
+            echo "Running the QiimePipe Container - createAbundanceFile.py: "
+            python /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
             """
 
 elif marker_gene == "16S-GREENGENES":
@@ -643,7 +728,7 @@ elif marker_gene == "16S-NCBI":
             cd {output_dir}
             blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
     rule run_create_taxon_table:
@@ -689,7 +774,7 @@ elif marker_gene == "COI-NCBI":
             cd {output_dir}
             blastn -query {input.otus_fasta} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
     rule run_create_taxon_table:
@@ -787,7 +872,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             cd {output_dir}
             blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
     rule run_qiimepipe_create_tax_assignment:
@@ -843,7 +928,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             cd {output_dir}
             blastn -query {input.filtered_fasta} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_plants_log}
             """
     rule run_vsearch_usearch_global:
@@ -969,7 +1054,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             cd {output_dir}
             blastn -query {input.otus_fasta} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
     rule run_qiimepipe_create_tax_assignment:
@@ -1025,7 +1110,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             cd {output_dir}
             blastn -query {input.filtered_fasta} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_fungi_log}
             """
     rule run_vsearch_usearch_global:
@@ -1106,7 +1191,7 @@ elif marker_gene == "ALL-NCBI":
             cd {output_dir}
             blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
-                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} -parse_deflines \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
     rule run_create_taxon_table:
@@ -1154,7 +1239,7 @@ else:
             blastn -query {input.fasta_file} -task megablast -db {params.db_dir}/*.fasta \
             -perc_identity {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} \
             -max_hsps {params.hits_per_subject} -max_target_seqs {params.hits_per_subject} \
-            -evalue {params.e_value} -parse_deflines -num_threads {params.threads} \
+            -evalue {params.e_value} -num_threads {params.threads} \
             -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.log_file}
             """
     rule run_qiimepipe_create_taxon_table:
