@@ -1,0 +1,64 @@
+# config.yaml
+
+# number of threads
+num_threads: 8
+
+# pimba prepare general
+minlength: 100
+minphred: 20
+outputprepare: 'AllSamples'
+
+# pimba prepare paired end
+rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdata/'
+adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/adapters.txt'
+
+# pimba prepare single end and single index
+raw_fastq: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
+prefix: 'Chip1-2'
+barcodes_5end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
+singleadapter: 'TCCACTAATCACAAAGANATNGGNAC'
+barcodes_5end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
+
+# pimba prepare single end and dual index
+raw_fastq: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
+barcodes_3end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
+barcodes_3end_rev: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_reverse_Rtags_revcom.txt'
+barcodes_3end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
+barcodes_5end_dir: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcode_for_to_each_R/'
+forward_adapter: 'TCCACTAATCACAAAGANATNGGNAC'
+reverse_adapter: 'AGAAAATCATAATNAANGCNTGNGC'
+
+# pimba run
+outputrun: 'AllSamples_97clust90assign'
+strategy: 'otu'
+otu_similarity: 0.97
+assign_similarity: 0.9
+mincoverage: 0.9
+otu_length: 200
+hits_per_subject: 1
+marker_gene: '16S-GREENGENES'
+e_value: 0.001
+lulu: 'no'
+ITS: 'no'
+taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
+remote: 'no'
+
+# database files
+SILVA_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/Silva_132_release/SILVA_132_QIIME_release/'
+COI_BOLD_DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/COI_BOLD/'
+GG_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/gg_13_8_otus/'
+RDP_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/RDP/'
+NCBI_DB_EXP: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
+ITS_UNITE_DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
+
+# pimba plot
+metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba/mapping_fileCOI.csv'
+group_by: 'FALSE'
+
+# pimba place
+place_otu_table: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/AllSamples_otus_plants.fasta'
+place_newick: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/rbcL_ITS2_alignment.newick'
+place_alignment: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/rbcL_ITS2_alignment.fasta'
+place_taxonpath: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/taxonpath.tsv'
+place_datatype: 'nt'
+place_outputdir: 'place_output_smk'
