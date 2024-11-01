@@ -59,29 +59,27 @@ fi
 # Implement the actions based on the arguments
 if [ "$prepare_mode" == "paired_end" ]; then
     echo "Running PIMBA in paired_end prepare mode"
-    # Add your paired_end preparation commands here
+    snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity --configfile config/config.yaml -j 8
 elif [ "$prepare_mode" == "single_index" ]; then
     echo "Running PIMBA in single_index prepare mode"
-    # Add your single_index preparation commands here
+    snakemake --snakefile workflow/Snakefile_prepare_single_index --use-singularity --configfile config/config.yaml -j 8
 elif [ "$prepare_mode" == "dual_index" ]; then
     echo "Running PIMBA in dual_index prepare mode"
-    # Add your dual_index preparation commands here
+    snakemake --snakefile workflow/Snakefile_prepare_dual_index --use-singularity --configfile config/config.yaml -j 8
 elif [ "$prepare_mode" == "no" ]; then
     echo "No preparation mode selected"
-    # Add your no preparation commands here
 fi
 
 if [ ! -z "$run_mode" ]; then
     echo "Running PIMBA with database: $run_mode"
-    # Add your run commands here using $run_mode
+    snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile config/config.yaml --cores 8 --singularity-args "-B /home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/:/taxdump"
 fi
 
 if [ "$plot_mode" == "yes" ]; then
     echo "Plotting graphs as specified"
-    # Add your plotting commands here
+    snakemake --snakefile workflow/Snakefile_plot --use-singularity --configfile config/config.yaml --cores 8
 elif [ "$plot_mode" == "no" ]; then
     echo "Skipping graph plotting as specified"
-    # Add your non-plotting commands here
 fi
 
 echo "Script execution completed"
