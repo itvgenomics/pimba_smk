@@ -4,10 +4,8 @@ import os
 from math import floor
 
 # Prepare paths
-rawdata = os.path.join(config['outputprepare'] + '.fasta')
-realpath_raw = os.path.realpath(rawdata)
-dir_name_raw = os.path.dirname(realpath_raw)
-file_name_raw = os.path.splitext(os.path.basename(rawdata))[0]
+rawdata = os.path.join("results", "00-prepare", config['outputprepare'] + '.fasta')
+file_name_raw = config['outputprepare']
 current_path = os.getcwd()
 output_dir = os.path.join(current_path, "results", "01-run", config['outputrun'])
 
