@@ -9,7 +9,7 @@ realpath_raw = os.path.realpath(rawdata)
 dir_name_raw = os.path.dirname(realpath_raw)
 file_name_raw = os.path.splitext(os.path.basename(rawdata))[0]
 current_path = os.getcwd()
-output_dir = os.path.join(current_path, config['outputrun'])
+output_dir = os.path.join(current_path, "results", "01-run", config['outputrun'])
 
 # Derived parameters
 similarity_int = floor(config['otu_similarity'] * 100)
@@ -73,7 +73,7 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-FUNGI-UNITE":
         output:
             itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
         log:
-            os.path.join(current_path, 'logs', 'itsx', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'itsx', file_name_raw + '.log')
         params:
             threads = config['num_threads']
         singularity:
@@ -93,7 +93,7 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-FUNGI-UNITE":
         output:
             derep_fasta = os.path.join(output_dir, file_name_raw + '_derep.fasta')
         log:
-            os.path.join(current_path, 'logs', 'vsearch_derep', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_derep', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
@@ -108,7 +108,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         output:
             itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
         log:
-            os.path.join(current_path, 'logs', 'itsx', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'itsx', file_name_raw + '.log')
         params:
             threads = config['num_threads']
         singularity:
@@ -128,7 +128,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         output:
             derep_fasta = os.path.join(output_dir, file_name_raw + '_derep.fasta')
         log:
-            os.path.join(current_path, 'logs', 'vsearch_derep', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_derep', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
@@ -143,7 +143,7 @@ elif ITS == 'its':
         output:
             itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
         log:
-            os.path.join(current_path, 'logs', 'itsx', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'itsx', file_name_raw + '.log')
         params:
             threads = config['num_threads']
         singularity:
@@ -163,7 +163,7 @@ elif ITS == 'its':
         output:
             derep_fasta = os.path.join(output_dir, file_name_raw + '_derep.fasta')
         log:
-            os.path.join(current_path, 'logs', 'vsearch_derep', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_derep', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
@@ -178,12 +178,11 @@ else:
         output:
             derep = os.path.join(output_dir, file_name_raw + '_derep.fasta')
         log:
-            os.path.join(current_path, "logs", "vsearch_derep", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_derep", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
             """
-            mkdir -p {current_path}/logs/vsearch_derep
             echo "Running the VSEARCH Container - --derep_fulllength:"
             mkdir -p {output_dir}
             vsearch --derep_fulllength {input.rawdata} --output {output.derep} --sizeout > {log} 2>&1
@@ -195,12 +194,11 @@ rule run_vsearch_sort:
     output:
         sorted = os.path.join(output_dir, file_name_raw + '_sorted.fasta')
     log:
-        os.path.join(current_path, "logs", "vsearch_sort", file_name_raw + ".log")
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_sort", file_name_raw + ".log")
     singularity:
         "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
     shell:
         """
-        mkdir -p {current_path}/logs/vsearch_sort
         echo "Running the VSEARCH Container - --sortbysize: "
         vsearch --sortbysize {input.derep} --output {output.sorted} --minsize 2 > {log} 2>&1
         """
@@ -213,13 +211,12 @@ rule run_vsearch_trim:
     params:
         otu_length = config['otu_length']
     log:
-        os.path.join(current_path, "logs", "vsearch_trim", file_name_raw + ".log")
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_trim", file_name_raw + ".log")
     singularity:
         "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
     shell:
         """
         if [ {params.otu_length} != "0" ]; then
-            mkdir -p {current_path}/logs/vsearch_trim
             echo "Running the VSEARCH Container - --fastx_filter: "
             vsearch --fastx_filter {input.sorted} --fastq_trunclen {params.otu_length} \
             --fastaout {output.trimmed} > {log} 2>&1
@@ -238,12 +235,11 @@ if strategy == "otu":
             similarity = config['otu_similarity'],
             threads = config['num_threads']
         log:
-            os.path.join(current_path, "logs", "vsearch_otu_clustering", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_otu_clustering", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
             """
-            mkdir -p {current_path}/logs/vsearch_otu_clustering
             echo "Running the VSEARCH Container - --cluster_size: "
             vsearch --cluster_size {input.trimmed} --consout {output.otus} \
             --id {params.similarity} --threads {params.threads} > {log} 2>&1
@@ -258,12 +254,11 @@ if strategy == "asv":
         params:
             threads = config['num_threads']
         log:
-            os.path.join(current_path, "logs", "vsearch_asv_fastx", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_asv_fastx", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
             """
-            mkdir -p {current_path}/logs/vsearch_asv_fastx
             echo "Running the VSEARCH Container - --fastx_filter: "
             vsearch --fastx_filter {input.trimmed} --fastq_maxns 0 --fastaout {output.trimmed_noN} > {log} 2>&1
             """
@@ -275,12 +270,11 @@ if strategy == "asv":
         params:
             threads = config['num_threads']
         log:
-            os.path.join(current_path, "logs", "swarm_derep", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "swarm_derep", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_swarm:v3.1.0"
         shell:
             """
-            mkdir -p {current_path}/logs/swarm_derep
             echo "Running the SWARM Container: "
             swarm -d 0 -z -t {params.threads} -w {output.derep} -o /dev/null {input.trimmed_noN} > {log} 2>&1
             """
@@ -292,12 +286,11 @@ if strategy == "asv":
         params:
             threads = config['num_threads']
         log:
-            os.path.join(current_path, "logs", "find_asvs_with_swarm", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "find_asvs_with_swarm", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_swarm:v3.1.0"
         shell:
             """
-            mkdir -p {current_path}/logs/find_asvs_with_swarm
             swarm -f -t {params.threads} -w {output.asvs} -u {output_dir}/uclust_format.file -z \
             -d 1 {input.derep} > {log} 2>&1
             """
@@ -310,12 +303,11 @@ rule run_vsearch_uchime_denovo:
         nonchimeras = os.path.join(output_dir, file_name_raw + '_noChim.fasta'),
         otusnochim = os.path.join(output_dir, file_name_raw + '_uchime_nochim')
     log:
-        os.path.join(current_path, "logs", "vsearch_uchime_denovo", file_name_raw + ".log")
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_uchime_denovo", file_name_raw + ".log")
     singularity:
         "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
     shell:
         """
-        mkdir -p {current_path}/logs/vsearch_uchime_denovo
         echo "Running the VSEARCH Container - --uchime_denovo:"
         vsearch --uchime_denovo {input.uchime_input} --fasta_width 0 --uchimeout {output.otusnochim} \
         --chimeras {output.chimeras} --nonchimeras {output.nonchimeras} > {log} 2>&1
@@ -327,12 +319,11 @@ rule run_fastx_formatter:
     output:
         formatted = os.path.join(output_dir, file_name_raw + '_noChim_formatted.fasta')
     log:
-        os.path.join(current_path, "logs", "fastx_formatter", file_name_raw + ".log")
+        os.path.join(current_path, "results", "01-run", "logs", "fastx_formatter", file_name_raw + ".log")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
         """
-        mkdir -p {current_path}/logs/fastx_formatter
         echo "Creating and running a fastxtoolkit Container: "
         fasta_formatter -i {input.nonchimeras} -o {output.formatted} > {log} 2>&1
         """
@@ -343,12 +334,11 @@ rule run_bmp_renamer:
     output:
         renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
     log:
-        os.path.join(current_path, "logs", "bmp_renamer", file_name_raw + ".log")
+        os.path.join(current_path, "results", "01-run", "logs", "bmp_renamer", file_name_raw + ".log")
     singularity:
         "docker://itvdsbioinfo/pimba_perl:v5"
     shell:
         """
-        mkdir -p {current_path}/logs/bmp_renamer
         echo "Creating and running a Perl Container: "
         perl /data/bmp-otuName.pl -i {input.formatted} -o {output.renamed} > {log} 2>&1
         """
@@ -363,12 +353,11 @@ rule run_vsearch_map:
         similarity = config['otu_similarity'],
         threads = config['num_threads']
     log:
-        os.path.join(current_path, "logs", "vsearch_map", file_name_raw + ".log")
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
     singularity:
         "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
     shell:
         """
-        mkdir -p {current_path}/logs/vsearch_map
         echo "Running the VSEARCH Container - --usearch_global: "
         vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
         --id {params.similarity} --uc {output.mapfile} --threads {params.threads} > {log} 2>&1
@@ -384,7 +373,6 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/convert_uc_to_table
             echo "Running the QiimePipe Container - uc2otutab: "
             python3.6 /qiimepipe/uc2otutab.py {input.mapfile} > {output.table}
             """
@@ -398,7 +386,6 @@ else:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/convert_uc_to_table
             echo "Running the QiimePipe Container - uc2otutab: "
             python3.6 /qiimepipe/uc2otutab.py {input.mapfile} > {output.table}
             """
@@ -413,13 +400,12 @@ if lulu == "lulu":
         params:
             threads = config['num_threads']
         log:
-            os.path.join(current_path, "logs", "makeblastdb_blastn", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "makeblastdb_blastn", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_blast:latest"
         shell:
             """
             mkdir -p {output_dir}/lulu_output
-            mkdir -p {current_path}/logs/makeblastdb_blastn
             echo "Running the BLAST Container - makeblastdb: "
             makeblastdb -in {input.fasta_file} -out {output_dir}/lulu_output/{file_name_raw}_otus.fasta \
             -parse_seqids -dbtype nucl > {log} 2>&1
@@ -439,12 +425,11 @@ if lulu == "lulu":
             params:
                 old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
             log:
-                os.path.join(current_path, "logs", "lulu", file_name_raw + ".log")
+                os.path.join(current_path, "results", "01-run", "logs", "lulu", file_name_raw + ".log")
             singularity:
                 "docker://itvdsbioinfo/pimba_r:latest"
             shell:
                 """
-                mkdir -p {current_path}/logs/lulu
                 echo "Running the R Container - lulu: "
                 Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
 
@@ -465,12 +450,11 @@ if lulu == "lulu":
             params:
                 old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
             log:
-                os.path.join(current_path, "logs", "lulu", file_name_raw + ".log")
+                os.path.join(current_path, "results", "01-run", "logs", "lulu", file_name_raw + ".log")
             singularity:
                 "docker://itvdsbioinfo/pimba_r:latest"
             shell:
                 """
-                mkdir -p {current_path}/logs/lulu
                 echo "Running the R Container - lulu: "
                 Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
 
@@ -493,12 +477,11 @@ if marker_gene == "16S-SILVA":
             similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
-            os.path.join(current_path, "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_assign_taxonomy
             echo "Running the Qiime Container - assign_taxonomy.py: "
             assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
             -t {params.db_dir}/taxonomy/16S_only/{params.similarity_int}/taxonomy_7_levels.txt \
@@ -514,12 +497,11 @@ if marker_gene == "16S-SILVA":
             similarity_int = similarity_int,
             db_dir = config['SILVA_DB_16S']
         log:
-            os.path.join(current_path, "logs", "qiime_align_seqs", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_align_seqs
             mkdir -p {output_dir}/rep_set_align
             echo "Running the Qiime Container - align_seqs.py: "
             align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
@@ -531,12 +513,11 @@ if marker_gene == "16S-SILVA":
         output:
             filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
         log:
-            os.path.join(current_path, "logs", "qiime_filter_alignment", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_filter_alignment", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_filter_alignment
             mkdir -p {output_dir}/filtered_alignment
 
             echo "Running the Qiime Container - filter_alignment.py: "
@@ -548,13 +529,11 @@ if marker_gene == "16S-SILVA":
         output:
             reference_tree = os.path.join(output_dir, 'rep_set.tre')
         log:
-            os.path.join(current_path, "logs", "qiime_make_phylogeny", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_make_phylogeny", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_make_phylogeny
-
             echo "Running the Qiime Container - make_phylogeny.py: "
             make_phylogeny.py -i {input.filtered_alignment} -o {output.reference_tree} > {log} 2>&1
             """
@@ -565,12 +544,11 @@ if marker_gene == "16S-SILVA":
         output:
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
         log:
-            os.path.join(current_path, "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/create_abundance_file
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
@@ -588,12 +566,11 @@ elif marker_gene == "16S-GREENGENES":
             similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
-            os.path.join(current_path, "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_assign_taxonomy
             echo "Running the Qiime Container - assign_taxonomy.py: "
             assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
             -t {params.db_dir}/taxonomy/{params.similarity_int}_otu_taxonomy.txt \
@@ -609,12 +586,11 @@ elif marker_gene == "16S-GREENGENES":
             similarity_int = similarity_int,
             db_dir = config['GG_DB_16S']
         log:
-            os.path.join(current_path, "logs", "qiime_align_seqs", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_align_seqs
             mkdir -p {output_dir}/rep_set_align
             echo "Running the Qiime Container - align_seqs.py: "
             align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
@@ -626,12 +602,11 @@ elif marker_gene == "16S-GREENGENES":
         output:
             filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
         log:
-            os.path.join(current_path, "logs", "qiime_filter_alignment", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_filter_alignment", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_filter_alignment
             mkdir -p {output_dir}/filtered_alignment
             echo "Running the Qiime Container - filter_alignment.py: "
             filter_alignment.py -i {input.rep_set_align} -o {output_dir}/filtered_alignment > {log} 2>&1
@@ -642,12 +617,11 @@ elif marker_gene == "16S-GREENGENES":
         output:
             phylogeny_tree = os.path.join(output_dir, 'rep_set.tre')
         log:
-            os.path.join(current_path, "logs", "qiime_make_phylogeny", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_make_phylogeny", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_make_phylogeny
             echo "Running the Qiime Container - make_phylogeny.py: "
             make_phylogeny.py -i {input.filtered_alignment} -o {output.phylogeny_tree} > {log} 2>&1
             """
@@ -658,12 +632,11 @@ elif marker_gene == "16S-GREENGENES":
         output:
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
         log:
-            os.path.join(current_path, "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/create_abundance_file
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
@@ -680,12 +653,11 @@ elif marker_gene == "16S-RDP":
             db_dir = config['RDP_DB_16S'],
             similarity_assign = config['assign_similarity']
         log:
-            os.path.join(current_path, "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_assign_taxonomy
             echo "Running the Qiime Container - assign_taxonomy.py: "
             assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
             -t {params.db_dir}/*.txt \
@@ -699,12 +671,11 @@ elif marker_gene == "16S-RDP":
         output:
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
         log:
-            os.path.join(current_path, "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/create_abundance_file
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
@@ -767,12 +738,11 @@ elif marker_gene == "16S-NCBI":
         params:
             taxdump = config['taxdump']
         log:
-            os.path.join(current_path, "logs", "create_taxon_table", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/create_taxon_table
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
@@ -813,12 +783,11 @@ elif marker_gene == "COI-NCBI":
         params:
             taxdump = config['taxdump']
         log:
-            os.path.join(current_path, "logs", "create_taxon_table", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/create_taxon_table
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
@@ -864,7 +833,7 @@ elif marker_gene == "COI-BOLD":
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         log:
-            os.path.join(current_path, 'logs', 'qiimepipe_create_taxon_table', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_taxon_table', file_name_raw + '.log')
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -909,7 +878,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         output:
             tax_assignments = os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt')
         log:
-            os.path.join(current_path, 'logs', 'qiimepipe_create_tax_assignment', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_tax_assignment', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
@@ -928,7 +897,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         output:
             filtered_fasta = os.path.join(output_dir, file_name_raw + '_otus_filtered.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs_filtered.fasta')
         log:
-            os.path.join(current_path, 'logs', 'qiimepipe_filter', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_filter', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
@@ -967,7 +936,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         params:
             similarity = config['otu_similarity']
         log:
-            os.path.join(current_path, 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
@@ -987,7 +956,6 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/convert_uc_to_table
             echo "Running the QiimePipe Container - uc2otutab: "
             python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.plants_table}
             """
@@ -1004,7 +972,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             taxdump = config['taxdump'],
             strategy = strategy
         log:
-            os.path.join(current_path, "logs", "create_taxon_table", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
@@ -1031,12 +999,11 @@ elif marker_gene == "ITS-FUNGI-UNITE":
             similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
-            os.path.join(current_path, "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiime:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/qiime_assign_taxonomy
             echo "Running the Qiime Container - assign_taxonomy.py: "
             assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
             -t {params.db_dir}/*{params.similarity_int}*.txt \
@@ -1050,7 +1017,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
         output:
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
         log:
-            os.path.join(current_path, "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:latest"
         shell:
@@ -1091,7 +1058,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         output:
             tax_assignments = os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt')
         log:
-            os.path.join(current_path, 'logs', 'qiimepipe_create_tax_assignment', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_tax_assignment', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
@@ -1110,7 +1077,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         output:
             filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
         log:
-            os.path.join(current_path, 'logs', 'qiimepipe_filter', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_filter', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
@@ -1149,7 +1116,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         params:
             similarity = config['otu_similarity']
         log:
-            os.path.join(current_path, 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
         singularity:
             "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
         shell:
@@ -1169,7 +1136,6 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/convert_uc_to_table
             echo "Running the QiimePipe Container - uc2otutab: "
             python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.fungi_table}
             """
@@ -1184,7 +1150,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             taxdump = config['taxdump'],
             strategy = strategy
         log:
-            os.path.join(current_path, "logs", "create_taxon_table", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
@@ -1230,12 +1196,11 @@ elif marker_gene == "ALL-NCBI":
         params:
             taxdump = config['taxdump']
         log:
-            os.path.join(current_path, "logs", "create_taxon_table", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
-            mkdir -p {current_path}/logs/create_taxon_table
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
@@ -1281,7 +1246,7 @@ else:
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         log:
-            os.path.join(current_path, 'logs', 'qiimepipe_create_taxon_table', file_name_raw + '.log')
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_taxon_table', file_name_raw + '.log')
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -1303,7 +1268,7 @@ rule convert_otu_table_to_biom:
     output:
         biom = os.path.join(output_dir, file_name_raw + '_otu_table.biom') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.biom')
     log:
-        os.path.join(current_path, 'logs', 'convert_otu_table_to_biom', file_name_raw + '.log')
+        os.path.join(current_path, 'results', '01-run', 'logs', 'convert_otu_table_to_biom', file_name_raw + '.log')
     singularity:
         "docker://itvdsbioinfo/pimba_biom:v2.1.10"
     shell:
@@ -1320,7 +1285,7 @@ rule add_metadata_to_biom_table:
     output:
         biom_with_metadata = os.path.join(output_dir, file_name_raw + '_otu_table_tax.biom') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_tax.biom')
     log:
-        os.path.join(current_path, 'logs', 'add_metadata_to_biom_table', file_name_raw + '.log')
+        os.path.join(current_path, 'results', '01-run', 'logs', 'add_metadata_to_biom_table', file_name_raw + '.log')
     singularity:
         "docker://itvdsbioinfo/pimba_biom:v2.1.10"
     shell:
@@ -1337,7 +1302,7 @@ rule summarize_biom_table:
     output:
         summary = os.path.join(output_dir, file_name_raw + '_biom_table')
     log:
-        os.path.join(current_path, 'logs', 'summarize_biom_table', file_name_raw + '.log')
+        os.path.join(current_path, 'results', '01-run', 'logs', 'summarize_biom_table', file_name_raw + '.log')
     singularity:
         "docker://itvdsbioinfo/pimba_biom:v2.1.10"
     shell:
