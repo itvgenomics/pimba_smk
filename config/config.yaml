@@ -10,7 +10,7 @@ outputprepare: 'AllSamples'
 
 # pimba prepare paired end
 rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdata/'
-adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba/adapters.txt'
+adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/adapters.txt'
 
 # pimba prepare single end and single index
 raw_fastq_single: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'

@@ -17,7 +17,7 @@ strategy = config['strategy']
 marker_gene = config['marker_gene']
 lulu = config['lulu']
 ITS = config['ITS']
-NCBI_DB = config['NCBI_DB_EXP']
+NCBI_DB = config['NCBI-DB']
 remote = config['remote']
 
 # Define the list of files for the `all` rule
@@ -471,7 +471,7 @@ if marker_gene == "16S-SILVA":
         output:
             taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
         params:
-            db_dir = config['SILVA_DB_16S'],
+            db_dir = config['16S-SILVA-DB'],
             similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
@@ -493,7 +493,7 @@ if marker_gene == "16S-SILVA":
             rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta')
         params:
             similarity_int = similarity_int,
-            db_dir = config['SILVA_DB_16S']
+            db_dir = config['16S-SILVA-DB']
         log:
             os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
         singularity:
@@ -560,7 +560,7 @@ elif marker_gene == "16S-GREENGENES":
         output:
             taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
         params:
-            db_dir = config['GG_DB_16S'],
+            db_dir = config['16S-GREENGENES-DB'],
             similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
@@ -582,7 +582,7 @@ elif marker_gene == "16S-GREENGENES":
             rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta'),
         params:
             similarity_int = similarity_int,
-            db_dir = config['GG_DB_16S']
+            db_dir = config['16S-GREENGENES-DB']
         log:
             os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
         singularity:
@@ -648,7 +648,7 @@ elif marker_gene == "16S-RDP":
         output:
             taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
         params:
-            db_dir = config['RDP_DB_16S'],
+            db_dir = config['16S-RDP-DB'],
             similarity_assign = config['assign_similarity']
         log:
             os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
@@ -802,7 +802,7 @@ elif marker_gene == "COI-BOLD":
         output:
             log_file = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
         params:
-            coibold_db = config['COI_BOLD_DB'],
+            coibold_db = config['COI-BOLD-DB'],
             similarity_int_asg = similarity_int_asg,
             coverage_int = coverage_int,
             hits_per_subject = config['hits_per_subject'],
@@ -827,7 +827,7 @@ elif marker_gene == "COI-BOLD":
             tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
             taxon_red_flagged = os.path.join(output_dir, 'output', file_name_raw + '_taxon_red_flagged.txt')
         params:
-            coibold_db = config['COI_BOLD_DB']
+            coibold_db = config['COI-BOLD-DB']
         singularity:
             "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         log:
@@ -993,7 +993,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
         output:
             taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
         params:
-            db_dir = config['ITS_UNITE_DB'],
+            db_dir = config['ITS-FUNGI-UNITE-DB'],
             similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
