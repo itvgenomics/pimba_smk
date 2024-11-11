@@ -4,7 +4,7 @@ import glob
 current_path = os.getcwd()
 
 # Extract sample name from the single FASTQ file
-raw_fastq = config["raw_fastq"]
+raw_fastq = config["raw_fastq_dual"]
 
 def read_sample_names(file_path):
     with open(file_path, 'r') as f:

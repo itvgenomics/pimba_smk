@@ -13,14 +13,14 @@ rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdata/'
 adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba/adapters.txt'
 
 # pimba prepare single end and single index
-raw_fastq: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
+raw_fastq_single: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
 prefix: 'Chip1-2'
 barcodes_5end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
 singleadapter: 'TCCACTAATCACAAAGANATNGGNAC'
 barcodes_5end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
 
 # pimba prepare single end and dual index
-raw_fastq: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
+raw_fastq_dual: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
 barcodes_3end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
 barcodes_3end_rev: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_reverse_Rtags_revcom.txt'
 barcodes_3end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
@@ -44,12 +44,12 @@ taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
 remote: 'no'
 
 # database files
-SILVA_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/Silva_132_release/SILVA_132_QIIME_release/'
-COI_BOLD_DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/COI_BOLD/'
-GG_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/gg_13_8_otus/'
-RDP_DB_16S: '/home/tfleao/Desktop/ITV/pimba_training/pimba/RDP/'
-NCBI_DB_EXP: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
-ITS_UNITE_DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
+16S-SILVA-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/Silva_132_release/SILVA_132_QIIME_release/'
+COI-BOLD-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/COI_BOLD/'
+16S-GREENGENES-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/gg_13_8_otus/'
+16S-RDP-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/RDP/'
+NCBI-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
+ITS-FUNGI-UNITE-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
 
 # pimba plot
 metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba/mapping_fileCOI.csv'
