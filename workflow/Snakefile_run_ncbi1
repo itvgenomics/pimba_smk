@@ -1,0 +1,922 @@
+# Snakefile
+
+import os
+from math import floor
+
+# Prepare paths
+rawdata = os.path.join("results", "00-prepare", config['outputprepare'] + '.fasta')
+file_name_raw = config['outputprepare']
+current_path = os.getcwd()
+output_dir = os.path.join(current_path, "results", "01-run", config['outputrun'])
+
+# Derived parameters
+similarity_int = floor(config['otu_similarity'] * 100)
+coverage_int = floor(config['mincoverage'] * 100)
+similarity_int_asg = floor(config['assign_similarity'] * 100)
+strategy = config['strategy']
+marker_gene = config['marker_gene']
+lulu = config['lulu']
+ITS = config['ITS']
+NCBI_DB = config['NCBI-DB']
+remote = config['remote']
+
+# Define the list of files for the `all` rule
+files_for_all_rule = [
+    os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
+    os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+]
+
+# Conditionally include outputs if marker gene is ITS (plants)
+if marker_gene == "ITS-PLANTS-NCBI":
+    files_for_all_rule.append(os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt'))
+    files_for_all_rule.append(os.path.join(output_dir, file_name_raw + '_blast_plants.log'))
+    files_for_all_rule.append(os.path.join(output_dir, file_name_raw + '_otu_table_plants.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_plants.txt'))
+
+# Conditionally include outputs if marker gene is ITS (fungi)
+if marker_gene == "ITS-FUNGI-NCBI":
+    files_for_all_rule.append(os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt'))
+    files_for_all_rule.append(os.path.join(output_dir, file_name_raw + '_blast_fungi.log'))
+    files_for_all_rule.append(os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt'))
+
+# Conditionally include outputs if lulu is set to on
+if lulu == 'lulu':
+    files_for_all_rule.append(os.path.join(output_dir, 'lulu_output', 'match_list.txt'))
+    files_for_all_rule.append(os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'))
+
+# Rules
+rule all:
+    input:
+        files_for_all_rule
+
+if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-FUNGI-UNITE":
+    rule run_itsx:
+        input:
+            rawdata = rawdata
+        output:
+            itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'itsx', file_name_raw + '.log')
+        params:
+            threads = config['num_threads']
+        singularity:
+            "docker://metashot/itsx:1.1.2-1"
+        shell:
+            """
+            echo "Running the ITSx Container: "
+            mkdir -p {output_dir}
+            ITSx -i {input.rawdata} -o {output_dir}/{file_name_raw}_itsx -t f \
+            --cpu {params.threads} --graphical F > {log} 2>&1
+            
+            cat {output_dir}/*_itsx.ITS1.fasta {output_dir}/*_itsx.ITS2.fasta > {output.itsx_fasta}
+            """
+    rule run_vsearch_derep_fulllength:
+        input:
+            itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
+        output:
+            derep_fasta = os.path.join(output_dir, file_name_raw + '_derep.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_derep', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            echo "Creating a VSEARCH Container: "
+            vsearch --derep_fulllength {input.itsx_fasta} --output {output.derep_fasta} --sizeout > {log} 2>&1
+            """
+elif marker_gene == "ITS-PLANTS-NCBI":
+    rule run_itsx:
+        input:
+            rawdata = rawdata
+        output:
+            itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'itsx', file_name_raw + '.log')
+        params:
+            threads = config['num_threads']
+        singularity:
+            "docker://metashot/itsx:1.1.2-1"
+        shell:
+            """
+            echo "Running the ITSx Container: "
+            mkdir -p {output_dir}
+            ITSx -i {input.rawdata} -o {output_dir}/{file_name_raw}_itsx -t t,b \
+            --cpu {params.threads} --graphical F > {log} 2>&1
+            
+            cat {output_dir}/*_itsx.ITS1.fasta {output_dir}/*_itsx.ITS2.fasta > {output.itsx_fasta}
+            """
+    rule run_vsearch_derep_fulllength:
+        input:
+            itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
+        output:
+            derep_fasta = os.path.join(output_dir, file_name_raw + '_derep.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_derep', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            echo "Creating a VSEARCH Container: "
+            vsearch --derep_fulllength {input.itsx_fasta} --output {output.derep_fasta} --sizeout > {log} 2>&1
+            """
+elif ITS == 'its':
+    rule run_itsx:
+        input:
+            rawdata = rawdata
+        output:
+            itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'itsx', file_name_raw + '.log')
+        params:
+            threads = config['num_threads']
+        singularity:
+            "docker://metashot/itsx:1.1.2-1"
+        shell:
+            """
+            echo "Running the ITSx Container: "
+            mkdir -p {output_dir}
+            ITSx -i {input.rawdata} -o {output_dir}/{file_name_raw}_itsx -t t,b,f \
+            --cpu {params.threads} --graphical F > {log} 2>&1
+            
+            cat {output_dir}/*_itsx.ITS1.fasta {output_dir}/*_itsx.ITS2.fasta > {output.itsx_fasta}
+            """
+    rule run_vsearch_derep_fulllength:
+        input:
+            itsx_fasta = os.path.join(output_dir, file_name_raw + '_itsx.fasta')
+        output:
+            derep_fasta = os.path.join(output_dir, file_name_raw + '_derep.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_derep', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            echo "Creating a VSEARCH Container: "
+            vsearch --derep_fulllength {input.itsx_fasta} --output {output.derep_fasta} --sizeout > {log} 2>&1
+            """
+else:
+    rule run_vsearch_derep:
+        input:
+            rawdata = rawdata
+        output:
+            derep = os.path.join(output_dir, file_name_raw + '_derep.fasta')
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_derep", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            echo "Running the VSEARCH Container - --derep_fulllength:"
+            mkdir -p {output_dir}
+            vsearch --derep_fulllength {input.rawdata} --output {output.derep} --sizeout > {log} 2>&1
+            """
+
+rule run_vsearch_sort:
+    input:
+        derep = os.path.join(output_dir, file_name_raw + '_derep.fasta')
+    output:
+        sorted = os.path.join(output_dir, file_name_raw + '_sorted.fasta')
+    log:
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_sort", file_name_raw + ".log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+    shell:
+        """
+        echo "Running the VSEARCH Container - --sortbysize: "
+        vsearch --sortbysize {input.derep} --output {output.sorted} --minsize 2 > {log} 2>&1
+        """
+
+rule run_vsearch_trim:
+    input:
+        sorted = os.path.join(output_dir, file_name_raw + '_sorted.fasta')
+    output:
+        trimmed = os.path.join(output_dir, file_name_raw + '_trimmed.fasta')
+    params:
+        otu_length = config['otu_length']
+    log:
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_trim", file_name_raw + ".log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+    shell:
+        """
+        if [ {params.otu_length} != "0" ]; then
+            echo "Running the VSEARCH Container - --fastx_filter: "
+            vsearch --fastx_filter {input.sorted} --fastq_trunclen {params.otu_length} \
+            --fastaout {output.trimmed} > {log} 2>&1
+        else
+            cp {input.sorted} {output.trimmed}
+        fi
+        """
+
+if strategy == "otu":
+    rule run_vsearch_otu_clustering:
+        input:
+            trimmed = os.path.join(output_dir, file_name_raw + '_trimmed.fasta')
+        output:
+            otus = os.path.join(output_dir, file_name_raw + '_otus1.fasta')
+        params:
+            similarity = config['otu_similarity'],
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_otu_clustering", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            echo "Running the VSEARCH Container - --cluster_size: "
+            vsearch --cluster_size {input.trimmed} --consout {output.otus} \
+            --id {params.similarity} --threads {params.threads} > {log} 2>&1
+            """
+
+if strategy == "asv":
+    rule run_vsearch_asv_fastx:
+        input:
+            trimmed = os.path.join(output_dir, file_name_raw + '_trimmed.fasta')
+        output:
+            trimmed_noN = os.path.join(output_dir, file_name_raw + '_trimmed_noN.fasta')
+        params:
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_asv_fastx", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            echo "Running the VSEARCH Container - --fastx_filter: "
+            vsearch --fastx_filter {input.trimmed} --fastq_maxns 0 --fastaout {output.trimmed_noN} > {log} 2>&1
+            """
+    rule swarm_derep:
+        input:
+            trimmed_noN = os.path.join(output_dir, file_name_raw + '_trimmed_noN.fasta')
+        output:
+            derep = os.path.join(output_dir, file_name_raw + '_trimmed_noN_derep.fasta')
+        params:
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "swarm_derep", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_swarm:v3.1.0"
+        shell:
+            """
+            echo "Running the SWARM Container: "
+            swarm -d 0 -z -t {params.threads} -w {output.derep} -o /dev/null {input.trimmed_noN} > {log} 2>&1
+            """
+    rule find_asvs_with_swarm:
+        input:
+            derep = os.path.join(output_dir, file_name_raw + '_trimmed_noN_derep.fasta')
+        output:
+            asvs = os.path.join(output_dir, file_name_raw + '_asvs1.fasta')
+        params:
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "find_asvs_with_swarm", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_swarm:v3.1.0"
+        shell:
+            """
+            swarm -f -t {params.threads} -w {output.asvs} -u {output_dir}/uclust_format.file -z \
+            -d 1 {input.derep} > {log} 2>&1
+            """
+
+rule run_vsearch_uchime_denovo:
+    input:
+        uchime_input = lambda wildcards: os.path.join(output_dir, file_name_raw + '_otus1.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs1.fasta')
+    output:
+        chimeras = os.path.join(output_dir, file_name_raw + '_chim.fasta'),
+        nonchimeras = os.path.join(output_dir, file_name_raw + '_noChim.fasta'),
+        otusnochim = os.path.join(output_dir, file_name_raw + '_uchime_nochim')
+    log:
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_uchime_denovo", file_name_raw + ".log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+    shell:
+        """
+        echo "Running the VSEARCH Container - --uchime_denovo:"
+        vsearch --uchime_denovo {input.uchime_input} --fasta_width 0 --uchimeout {output.otusnochim} \
+        --chimeras {output.chimeras} --nonchimeras {output.nonchimeras} > {log} 2>&1
+        """
+
+rule run_fastx_formatter:
+    input:
+        nonchimeras = os.path.join(output_dir, file_name_raw + '_noChim.fasta')
+    output:
+        formatted = os.path.join(output_dir, file_name_raw + '_noChim_formatted.fasta')
+    log:
+        os.path.join(current_path, "results", "01-run", "logs", "fastx_formatter", file_name_raw + ".log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+    shell:
+        """
+        echo "Creating and running a fastxtoolkit Container: "
+        fasta_formatter -i {input.nonchimeras} -o {output.formatted} > {log} 2>&1
+        """
+
+rule run_bmp_renamer:
+    input:
+        formatted = os.path.join(output_dir, file_name_raw + '_noChim_formatted.fasta')
+    output:
+        renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+    log:
+        os.path.join(current_path, "results", "01-run", "logs", "bmp_renamer", file_name_raw + ".log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_perl:v5"
+    shell:
+        """
+        echo "Creating and running a Perl Container: "
+        perl /data/bmp-otuName.pl -i {input.formatted} -o {output.renamed} > {log} 2>&1
+        """
+
+rule run_vsearch_map:
+    input:
+        renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+        rawdata = rawdata
+    output:
+        mapfile = os.path.join(output_dir, file_name_raw + '_map.uc')
+    params:
+        similarity = config['otu_similarity'],
+        threads = config['num_threads']
+    log:
+        os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
+    singularity:
+        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+    shell:
+        """
+        echo "Running the VSEARCH Container - --usearch_global: "
+        vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
+        --id {params.similarity} --uc {output.mapfile} --threads {params.threads} > {log} 2>&1
+        """
+
+if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
+    rule convert_uc_to_table:
+        input:
+            mapfile = os.path.join(output_dir, file_name_raw + '_map.uc')
+        output:
+            table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            echo "Running the QiimePipe Container - uc2otutab: "
+            python3.6 /qiimepipe/uc2otutab.py {input.mapfile} > {output.table}
+            """
+else:
+    rule convert_uc_to_table:
+        input:
+            mapfile = os.path.join(output_dir, file_name_raw + '_map.uc')
+        output:
+            table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            echo "Running the QiimePipe Container - uc2otutab: "
+            python3.6 /qiimepipe/uc2otutab.py {input.mapfile} > {output.table}
+            """
+
+if lulu == "lulu":
+    rule run_makeblastdb_and_blastn:
+        input:
+            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+        output:
+            blast_db = os.path.join(output_dir, 'lulu_output', file_name_raw + '_otus.fasta.nsq'),
+            match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
+        params:
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "makeblastdb_blastn", file_name_raw + ".log")
+        singularity:
+            "docker://itvdsbioinfo/pimba_blast:latest"
+        shell:
+            """
+            mkdir -p {output_dir}/lulu_output
+            echo "Running the BLAST Container - makeblastdb: "
+            makeblastdb -in {input.fasta_file} -out {output_dir}/lulu_output/{file_name_raw}_otus.fasta \
+            -parse_seqids -dbtype nucl > {log} 2>&1
+
+            echo "Running the BLAST Container - blastn: "
+            blastn -db {output_dir}/lulu_output/{file_name_raw}_otus.fasta -outfmt "6 qseqid sseqid pident" \
+            -out {output_dir}/lulu_output/match_list.txt -num_threads {params.threads} \
+            -qcov_hsp_perc 80 -perc_identity 84 -query {input.fasta_file} >> {log} 2>&1
+            """
+    if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
+        rule run_lulu:
+            input:
+                table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt'),
+                match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
+            output:
+                lulu_table = os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'),
+            params:
+                old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
+            log:
+                os.path.join(current_path, "results", "01-run", "logs", "lulu", file_name_raw + ".log")
+            singularity:
+                "docker://itvdsbioinfo/pimba_r:latest"
+            shell:
+                """
+                echo "Running the R Container - lulu: "
+                Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
+
+                sed -i -e 's/"X//g' {output.lulu_table}
+                sed -i -e 's/"//g' {output.lulu_table}
+                sed -i '1s/^/OTUId\t/' {output.lulu_table}
+
+                cp {input.table} {params.old_table}
+                cp {output.lulu_table} {input.table}
+                """
+    else:
+        rule run_lulu:
+            input:
+                table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
+                match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
+            output:
+                lulu_table = os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'),
+            params:
+                old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
+            log:
+                os.path.join(current_path, "results", "01-run", "logs", "lulu", file_name_raw + ".log")
+            singularity:
+                "docker://itvdsbioinfo/pimba_r:latest"
+            shell:
+                """
+                echo "Running the R Container - lulu: "
+                Rscript /data/file.R {input.table} {input.match_list} {output.lulu_table} > {log} 2>&1
+
+                sed -i -e 's/"X//g' {output.lulu_table}
+                sed -i -e 's/"//g' {output.lulu_table}
+                sed -i '1s/^/OTUId\t/' {output.lulu_table}
+
+                cp {input.table} {params.old_table}
+                cp {output.lulu_table} {input.table}
+                """
+
+if marker_gene == "16S-NCBI":
+    if remote == 'yes':
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    else:
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+
+elif marker_gene == "COI-NCBI":
+    if remote == 'yes':
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    else:
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+
+elif marker_gene == "ITS-PLANTS-NCBI":
+    if remote == 'yes':
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    else:
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    rule run_qiimepipe_create_tax_assignment:
+        input:
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log'),
+            txt_table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt')
+        output:
+            tax_assignments = os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_tax_assignment', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            mkdir -p {output_dir}/diversity_by_sample_ncbi
+            cd {output_dir}/diversity_by_sample_ncbi
+
+            echo "Running the QiimePipe Container - create_otuTaxAssignment.py: "
+            python3.6 /qiimepipe/create_otuTaxAssignment.py {input.blast_log} \
+            {input.txt_table} {output.tax_assignments} > {log} 2>&1
+            """
+    rule run_qiimepipe_filter:
+        input:
+            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+            tax_assignments = os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt')
+        output:
+            filtered_fasta = os.path.join(output_dir, file_name_raw + '_otus_filtered.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs_filtered.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_filter', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            cd {output_dir}
+            echo "Running the QiimePipe Container - filterOTUs.py: "
+            python3.6 /qiimepipe/filterOTUs.py {input.fasta_file} {input.tax_assignments} > {log} 2>&1
+            """
+    if remote == 'yes':
+        rule run_blastn_plants:
+            input:
+                filtered_fasta = os.path.join(output_dir, file_name_raw + '_otus_filtered.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs_filtered.fasta')
+            output:
+                blast_plants_log = os.path.join(output_dir, file_name_raw + '_blast_plants.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.filtered_fasta} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_plants_log}
+                """
+    else:
+        rule run_blastn_plants:
+            input:
+                filtered_fasta = os.path.join(output_dir, file_name_raw + '_otus_filtered.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs_filtered.fasta')
+            output:
+                blast_plants_log = os.path.join(output_dir, file_name_raw + '_blast_plants.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.filtered_fasta} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_plants_log}
+                """
+    rule run_vsearch_usearch_global:
+        input:
+            raw_reads = os.path.join(current_path, config['outputprepare'] + '.fasta'),
+            filtered_fasta = os.path.join(output_dir, file_name_raw + '_otus_filtered.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs_filtered.fasta')
+        output:
+            uc_file = os.path.join(output_dir, file_name_raw + '_map_plants.uc')
+        params:
+            similarity = config['otu_similarity']
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            cd {output_dir}
+
+            echo "Running the VSEARCH Container - --usearch_global: "
+            vsearch --usearch_global {input.raw_reads} --db {input.filtered_fasta} --strand both \
+            --id {params.similarity} --uc {output.uc_file} > {log} 2>&1
+            """
+    rule convert_plants_uc_to_table:
+        input:
+            uc_file = os.path.join(output_dir, file_name_raw + '_map_plants.uc')
+        output:
+            plants_table = os.path.join(output_dir, file_name_raw + '_otu_table_plants.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_plants.txt')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            echo "Running the QiimePipe Container - uc2otutab: "
+            python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.plants_table}
+            """
+
+elif marker_gene == "ITS-FUNGI-NCBI":
+    if remote == 'yes':
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    else:
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    rule run_qiimepipe_create_tax_assignment:
+        input:
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log'),
+            txt_table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt')
+        output:
+            tax_assignments = os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_tax_assignment', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            mkdir -p {output_dir}/diversity_by_sample_ncbi
+            cd {output_dir}/diversity_by_sample_ncbi
+
+            echo "Running the QiimePipe Container - create_otuTaxAssignment.py: "
+            python3.6 /qiimepipe/create_otuTaxAssignment.py {input.blast_log} \
+            {input.txt_table} {output.tax_assignments} > {log} 2>&1
+            """
+    rule run_qiimepipe_filter:
+        input:
+            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+            tax_assignments = os.path.join(output_dir, 'diversity_by_sample_ncbi', 'ncbi_tax_assignments.txt')
+        output:
+            filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_filter', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            cd {output_dir}
+            echo "Running the QiimePipe Container - filterOTUs.py: "
+            python3.6 /qiimepipe/filterOTUs.py {input.fasta_file} {input.tax_assignments} > {log} 2>&1
+            """
+    if remote == 'yes':
+        rule run_blastn_fungi:
+            input:
+                filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
+            output:
+                blast_fungi_log = os.path.join(output_dir, file_name_raw + '_blast_fungi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.filtered_fasta} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_fungi_log}
+                """
+    else:
+        rule run_blastn_fungi:
+            input:
+                filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
+            output:
+                blast_fungi_log = os.path.join(output_dir, file_name_raw + '_blast_fungi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.filtered_fasta} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_fungi_log}
+                """
+    rule run_vsearch_usearch_global:
+        input:
+            raw_reads = os.path.join(current_path, config['outputprepare'] + '.fasta'),
+            filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
+        output:
+            uc_file = os.path.join(output_dir, file_name_raw + '_map_fungi.uc')
+        params:
+            similarity = config['otu_similarity']
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
+        singularity:
+            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        shell:
+            """
+            cd {output_dir}
+
+            echo "Running the VSEARCH Container - --usearch_global: "
+            vsearch --usearch_global {input.raw_reads} --db {input.filtered_fasta} --strand both \
+            --id {params.similarity} --uc {output.uc_file} > {log} 2>&1
+            """
+    rule convert_plants_uc_to_table:
+        input:
+            uc_file = os.path.join(output_dir, file_name_raw + '_map_fungi.uc')
+        output:
+            fungi_table = os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt')
+        singularity:
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        shell:
+            """
+            echo "Running the QiimePipe Container - uc2otutab: "
+            python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.fungi_table}
+            """
+
+elif marker_gene == "ALL-NCBI":
+    if remote == 'yes':
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db nt -remote -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """
+    else:
+        rule run_blastn:
+            input:
+                fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+            output:
+                blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
+            params:
+                similarity_int_asg = similarity_int_asg,
+                coverage_int = coverage_int,
+                hits_per_subject = config['hits_per_subject'],
+                evalue = config['e_value'],
+                NCBI_DB = NCBI_DB,
+                threads = config['num_threads'],
+                db_type = config['db_type']
+            singularity:
+                "docker://itvdsbioinfo/pimba_blast:latest"
+            shell:
+                """
+                echo "Running the BLAST Container - blastn: "
+                cd {output_dir}
+                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                    {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                    -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                    -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
+                """

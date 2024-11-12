@@ -65,6 +65,9 @@ raw_fastq_dual=$(grep '^raw_fastq_dual:' "$config_file" | awk '{print $2}')
 # Extract the path for NCBI-DB from the config file
 ncbi_db=$(grep '^NCBI-DB:' "$config_file" | awk '{print $2}')
 
+# Extract the path for taxdump from the config file
+taxdump=$(grep '^taxdump:' "$config_file" | awk '{print $2}')
+
 
 # Implement the actions based on the arguments
 if [ "$prepare_mode" == "paired_end" ]; then
@@ -85,7 +88,8 @@ fi
 # Check if $run_mode contains "NCBI" and adjust the snakemake command accordingly
 if [[ "$run_mode" == *"NCBI"* ]]; then
     echo "Running PIMBA with database: $run_mode"
-    snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B /home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/:/taxdump -B $ncbi_db"
+    snakemake --snakefile workflow/Snakefile_run_ncbi1 --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $ncbi_db"
+    snakemake --snakefile workflow/Snakefile_run_ncbi2 --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $taxdump:/taxdump"
 else
     # Extract the path for the database corresponding to the run_mode
     db_path=$(grep "^$run_mode-DB:" "$config_file" | awk '{print $2}')
