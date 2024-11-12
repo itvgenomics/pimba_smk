@@ -42,6 +42,7 @@ lulu: 'no'
 ITS: 'no'
 taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
 remote: 'no'
+db_type: 'nt'
 
 # database files
 16S-SILVA-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/Silva_132_release/SILVA_132_QIIME_release/'
