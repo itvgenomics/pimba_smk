@@ -53,7 +53,7 @@ NCBI-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
 ITS-FUNGI-UNITE-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
 
 # pimba plot
-metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba/mapping_fileCOI.csv'
+metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/mapping_fileCOI.csv'
 group_by: 'FALSE'
 
 # pimba place

@@ -6,7 +6,7 @@ realpath_raw = os.path.realpath(rawdata)
 dir_name_raw = os.path.dirname(realpath_raw)
 file_name_raw = os.path.splitext(os.path.basename(rawdata))[0]
 current_path = os.getcwd()
-output_dir = os.path.join(current_path, config['outputrun'])
+output_dir = os.path.join(current_path, "results", "01-run", config['outputrun'])
 
 # Derived parameters
 strategy = config['strategy']
@@ -14,7 +14,7 @@ strategy = config['strategy']
 rule all:
     input:
         os.path.join(output_dir, 'output', 'plot_' + file_name_raw + '_tax_assignments.txt'),
-        os.path.join(current_path, 'plots', 'alpha_diversity_dotplot.svg')
+        os.path.join(current_path, 'results', '03-plot', 'plots', 'alpha_diversity_dotplot.svg')
 
 rule prepare_tax_assignments:
     input:
@@ -61,17 +61,17 @@ rule run_phyloseq_plot:
         prepared_tax_assignments = os.path.join(output_dir, 'output', 'plot_' + file_name_raw + '_tax_assignments.txt'),
         metadata = config['metadata']
     output:
-        os.path.join(current_path, 'plots', 'alpha_diversity_dotplot.svg')
+        os.path.join(current_path, 'results', '03-plot', 'plots', 'alpha_diversity_dotplot.svg')
     log:
-        os.path.join(current_path, 'logs', 'phyloseq_plot', file_name_raw + '.log')
+        os.path.join(current_path, 'results', '03-plot', 'logs', 'phyloseq_plot', file_name_raw + '.log')
     params:
         group_by = config['group_by']
     singularity:
         "docker://itvdsbioinfo/pimba_phyloseq:latest"
     shell:
         """
-        mkdir -p {current_path}/plots
-        cd {current_path}/plots
+        mkdir -p {current_path}/results/03-plot/plots
+        cd {current_path}/results/03-plot/plots
         echo "Running the Phyloseq Container: "
         Rscript /data/Phyloseq_pimba.R {input.otu_table} {input.prepared_tax_assignments} {input.metadata} {params.group_by} \
         > {log} 2>&1
