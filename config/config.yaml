@@ -36,12 +36,12 @@ assign_similarity: 0.9
 mincoverage: 0.9
 otu_length: 200
 hits_per_subject: 1
-marker_gene: '16S-GREENGENES'
+marker_gene: '16S-NCBI'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
-taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
-remote: 'no'
+taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/taxdump/'
+remote: 'yes'
 db_type: 'nt'
 
 # database files

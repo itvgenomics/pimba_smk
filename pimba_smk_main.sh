@@ -54,20 +54,22 @@ fi
 config_file="config/config.yaml"
 
 # Extract the path for rawdatadir from the config file
-rawdatadir=$(awk '/rawdatadir:/ {print $2}' "$config_file")
+rawdatadir=$(grep '^rawdatadir:' "$config_file" | awk '{print $2}' | tr -d "'")
 
 # Extract the path for raw_fastq_single from the config file
-raw_fastq_single=$(grep '^raw_fastq_single:' "$config_file" | awk '{print $2}')
+raw_fastq_single=$(grep '^raw_fastq_single:' "$config_file" | awk '{print $2}' | tr -d "'")
 
 # Extract the path for raw_fastq_dual from the config file
-raw_fastq_dual=$(grep '^raw_fastq_dual:' "$config_file" | awk '{print $2}')
+raw_fastq_dual=$(grep '^raw_fastq_dual:' "$config_file" | awk '{print $2}' | tr -d "'")
 
 # Extract the path for NCBI-DB from the config file
-ncbi_db=$(grep '^NCBI-DB:' "$config_file" | awk '{print $2}')
+ncbi_db=$(grep '^NCBI-DB:' "$config_file" | awk '{print $2}' | tr -d "'")
 
 # Extract the path for taxdump from the config file
-taxdump=$(grep '^taxdump:' "$config_file" | awk '{print $2}')
+taxdump=$(grep '^taxdump:' "$config_file" | awk '{print $2}' | tr -d "'")
 
+# Extract remote mode from the config file
+remote=$(grep '^remote:' "$config_file" | awk '{print $2}' | tr -d "'")
 
 # Implement the actions based on the arguments
 if [ "$prepare_mode" == "paired_end" ]; then
@@ -87,16 +89,18 @@ fi
 
 # Check if $run_mode contains "NCBI" and adjust the snakemake command accordingly
 if [[ "$run_mode" == *"NCBI"* ]]; then
-    echo "Running PIMBA with database: $run_mode"
-    snakemake --snakefile workflow/Snakefile_run_ncbi1 --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $ncbi_db"
-    snakemake --snakefile workflow/Snakefile_run_ncbi2 --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $taxdump:/taxdump"
+    echo "Running PIMBA with database $run_mode plus remote mode as $remote"
+    if [ "$remote" == "yes" ]; then
+        snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $taxdump:/taxdump"
+    else
+        snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $ncbi_db -B $taxdump:/taxdump"
+    fi
 else
     # Extract the path for the database corresponding to the run_mode
     db_path=$(grep "^$run_mode-DB:" "$config_file" | awk '{print $2}')
     if [ -z "$db_path" ]; then
-        echo "Database path for $run_mode-DB not found in config file."
+        echo "Database path for $run_mode-DB not found in config file. Using custom database"
         db_path=$run_mode
-        exit 1
     fi
     echo "Running PIMBA with database: $run_mode"
     snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores 8 --singularity-args "-B $db_path"
