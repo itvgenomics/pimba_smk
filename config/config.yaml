@@ -9,7 +9,7 @@ minphred: 20
 outputprepare: 'AllSamples'
 
 # pimba prepare paired end
-rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdata/'
+rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdataCOI/'
 adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/adapters.txt'
 
 # pimba prepare single end and single index
@@ -36,7 +36,7 @@ assign_similarity: 0.9
 mincoverage: 0.9
 otu_length: 200
 hits_per_subject: 1
-marker_gene: '16S-NCBI'
+marker_gene: 'COI-BOLD'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
@@ -54,7 +54,7 @@ ITS-FUNGI-UNITE-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime
 
 # pimba plot
 metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/mapping_fileCOI.csv'
-group_by: 'FALSE'
+group_by: 'Species'
 
 # pimba place
 place_otu_table: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/AllSamples_otus_plants.fasta'

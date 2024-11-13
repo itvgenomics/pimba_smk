@@ -466,12 +466,14 @@ def main():
     parser.add_argument('-o', '--otu', required=True, help='OTU table input file')
     parser.add_argument('-t', '--tax', required=True, help='Taxonomic assignments input file')
     parser.add_argument('-m', '--metadata', required=True, help='Metadata input file')
-    parser.add_argument('-g', '--group_by', default='False', help='Group by flag (e.g., False, Species, SampleName)')
+    parser.add_argument('-g', '--group_by', required=True, help='Group by flag (e.g., Species, SampleName). If you do not want to group samples, set this variable to False')
     args = parser.parse_args()
 
     otu_table_df, tax_table_df, meta_table_df = load_data(args.otu, args.tax, args.metadata)
 
-    if args.group_by != 'False':
+    if args.group_by == 'False':
+        args.group_by = False
+    else:
         if args.group_by not in meta_table_df.columns:
             raise ValueError(f"Group by column '{args.group_by}' not found in metadata")
 
