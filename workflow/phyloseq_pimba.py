@@ -265,18 +265,18 @@ def perform_pvclust(otu_table_df, meta_table_df, output_dir, groupby, method_dis
         return hc, boot_results
 
     # Function to calculate AU (Approximately Unbiased) p-values
-    def calculate_au_pvalues(hc, boot_results):
-        n = len(hc) + 1  # number of original observations
-        au_pvalues = np.zeros(n - 1)
+    def calculate_au_pvalues(hc, boot_results, data):
+        n = data.shape[1]
+        au_pvalues = np.zeros(len(hc))
 
-        for i in range(n - 1):
+        for i in range(len(hc)):
             original_cluster = fcluster(hc, t=hc[i, 2], criterion='distance')
-            count = 0
+            count_au = 0
             for boot_hc in boot_results:
                 boot_cluster = fcluster(boot_hc, t=hc[i, 2], criterion='distance')
-                if np.array_equal(np.sort(original_cluster), np.sort(boot_cluster)):
-                    count += 1
-            au_pvalues[i] = count / len(boot_results)
+                if len(np.unique(original_cluster)) == len(np.unique(boot_cluster)):
+                    count_au += 1
+            au_pvalues[i] = count_au / len(boot_results) * 100
 
         return au_pvalues
 
@@ -292,17 +292,17 @@ def perform_pvclust(otu_table_df, meta_table_df, output_dir, groupby, method_dis
                 boot_cluster = fcluster(boot_hc, t=hc[i, 2], criterion='distance')
                 if np.array_equal(np.sort(original_cluster), np.sort(boot_cluster)):
                     count += 1
-            bootstrap_values[i] = count / len(boot_results)
+            bootstrap_values[i] = count / len(boot_results) * 100
 
         return bootstrap_values
 
     # Function to plot the dendrogram with both AU p-values and bootstrap values
-    def plot_pvclust(hc, boot_results, labels, output_dir, alpha=0.95):
+    def plot_pvclust(hc, boot_results, data, labels, output_dir, alpha=0.95):
         plt.figure(figsize=(15, 8))
         dend = dendrogram(hc, labels=labels, leaf_rotation=90)
         
         # Calculate AU p-values and bootstrap values
-        au_pvalues = calculate_au_pvalues(hc, boot_results)
+        au_pvalues = calculate_au_pvalues(hc, boot_results, data)
         bootstrap_values = calculate_bootstrap_values(hc, boot_results)
         
         # Add AU p-values and bootstrap values to the dendrogram
@@ -335,7 +335,7 @@ def perform_pvclust(otu_table_df, meta_table_df, output_dir, groupby, method_dis
         labels = meta_table_df['SampleName'].values
 
     # Plot the result
-    plot_pvclust(hc, boot_results, labels, output_dir)
+    plot_pvclust(hc, boot_results, taxon_matrix, labels, output_dir)
 
 def perform_pcoa_unweighted_unifrac(otu_table_df, meta_table_df, output_dir, groupby):
     # Function to create a random tree using a simple balanced tree approach

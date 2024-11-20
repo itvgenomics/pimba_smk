@@ -5,10 +5,20 @@ import glob
 
 current_path = os.getcwd()
 
-# Extract sample names from files with "_R1" in the raw data directory
+# Extract sample names and their suffixes from files with "_R1" in the raw data directory
 raw_data_dir = config["rawdatadir"]
 R1_files = glob.glob(os.path.join(raw_data_dir, '*_R1*'))
-SAMPLES = [os.path.basename(f).split('_R1')[0] for f in R1_files]
+
+# Create a dictionary to store the sample names and their suffixes
+sample_suffixes = {}
+for f in R1_files:
+    basename = os.path.basename(f)
+    sample = basename.split('_R1')[0]
+    suffix = basename.split('_R1')[1]
+    sample_suffixes[sample] = suffix
+
+# Generate a list of samples
+SAMPLES = list(sample_suffixes.keys())
 
 rule all:
     input:
@@ -21,8 +31,8 @@ rule prepare_directories:
     input:
         full_path_raw = config["rawdatadir"]
     output:
-        expand(os.path.join(current_path, "results", "00-prepare", "prepare_output", "R1/{sample}_R1.fastq"), sample=SAMPLES),
-        expand(os.path.join(current_path, "results", "00-prepare", "prepare_output", "R2/{sample}_R2.fastq"), sample=SAMPLES)
+        r1_files = [os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R1/{sample}_R1{suffix}") for sample, suffix in sample_suffixes.items()],
+        r2_files = [os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R2/{sample}_R2{suffix}") for sample, suffix in sample_suffixes.items()]
     shell:
         """
         mkdir -p {current_path}/results/00-prepare/prepare_output/R1 {current_path}/results/00-prepare/prepare_output/R2
@@ -32,8 +42,8 @@ rule prepare_directories:
 
 rule run_adapter_removal:
     input:
-        r1 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "R1/{sample}_R1.fastq"),
-        r2 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "R2/{sample}_R2.fastq")
+        r1 = lambda wildcards: os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R1/{wildcards.sample}_R1{sample_suffixes[wildcards.sample]}"),
+        r2 = lambda wildcards: os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R2/{wildcards.sample}_R2{sample_suffixes[wildcards.sample]}")
     output:
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.discarded"),
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
