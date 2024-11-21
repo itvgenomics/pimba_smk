@@ -196,6 +196,6 @@ rule run_prinseq_truncated:
         prinseq-lite.pl -fastq {input.truncated_file} -out_format 1 -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name} > {log} 2>&1
 
         mv {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta {current_path}/results/00-prepare
-#        rm {current_path}/results/00-prepare/prepare_output/indexforbol_unmatched.fastq
-#        rm {current_path}/results/00-prepare/prepare_output/indexreveol_unmatched.fastq
+        rm {current_path}/results/00-prepare/prepare_output/indexforbol_unmatched.fastq
+        rm {current_path}/results/00-prepare/prepare_output/indexreveol_unmatched.fastq
         """

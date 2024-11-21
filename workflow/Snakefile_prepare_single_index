@@ -23,7 +23,7 @@ rule all:
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_min.truncated").format(output_name=config["outputprepare"]),
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_clipped.fastq").format(output_name=config["outputprepare"]),
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.truncated").format(output_name=config["outputprepare"]),
-        os.path.join(current_path, "results", "00-prepare", "{output_name}_good.fasta").format(output_name=config["outputprepare"])
+        os.path.join(current_path, "results", "00-prepare", "{output_name}.fasta").format(output_name=config["outputprepare"])
 
 rule run_fastx_barcode_splitter:
     input:
@@ -123,7 +123,7 @@ rule run_prinseq_truncated:
     input:
         truncated_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.truncated").format(output_name=config["outputprepare"])
     output:
-        good_fasta = os.path.join(current_path, "results", "00-prepare", "{output_name}_good.fasta").format(output_name=config["outputprepare"])
+        good_fasta = os.path.join(current_path, "results", "00-prepare", "{output_name}.fasta").format(output_name=config["outputprepare"])
     params:
         output_name = config["outputprepare"]
     log:
@@ -133,7 +133,7 @@ rule run_prinseq_truncated:
     shell:
         """
         echo "Creating and running a Prinseq Container: "
-        prinseq-lite.pl -fastq {input.truncated_file} -out_format 1 -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name}_good > {log} 2>&1
+        prinseq-lite.pl -fastq {input.truncated_file} -out_format 1 -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name} > {log} 2>&1
 
-        mv {current_path}/results/00-prepare/prepare_output/{params.output_name}_good.fasta {current_path}/results/00-prepare/
+        mv {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta {current_path}/results/00-prepare/
         """
