@@ -9,7 +9,7 @@ minphred: 20
 outputprepare: 'AllSamples'
 
 # pimba prepare paired end
-rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdataCOI/'
+rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdata/'
 adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/adapters.txt'
 
 # pimba prepare single end and single index
@@ -21,10 +21,10 @@ barcodes_5end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rta
 
 # pimba prepare single end and dual index
 raw_fastq_dual: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
-barcodes_3end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
-barcodes_3end_rev: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_reverse_Rtags_revcom.txt'
-barcodes_3end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
-barcodes_5end_dir: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcode_for_to_each_R/'
+barcodes_3end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcodes_Rtags.txt'
+barcodes_3end_rev: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcodes_reverse_Rtags_revcom.txt'
+barcodes_3end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcodes_Rtags.fasta'
+barcodes_5end_dir: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcode_for_to_each_R/'
 forward_adapter: 'TCCACTAATCACAAAGANATNGGNAC'
 reverse_adapter: 'AGAAAATCATAATNAANGCNTGNGC'
 
@@ -36,11 +36,11 @@ assign_similarity: 0.9
 mincoverage: 0.9
 otu_length: 200
 hits_per_subject: 1
-marker_gene: 'COI-BOLD'
+marker_gene: '16S-GREENGENES'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
-taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/taxdump/'
+taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
 remote: 'yes'
 db_type: 'nt'
 
