@@ -9,8 +9,8 @@ minphred: 20
 outputprepare: 'AllSamples'
 
 # pimba prepare paired end
-rawdatadir: '/home/tfleao/Desktop/ITV/pimba_training/rawdata/'
-adapters: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/adapters.txt'
+rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/rawdata_COI'
+adapters: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/adapters.txt'
 
 # pimba prepare single end and single index
 raw_fastq_single: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
@@ -36,7 +36,7 @@ assign_similarity: 0.9
 mincoverage: 0.9
 otu_length: 200
 hits_per_subject: 1
-marker_gene: '16S-GREENGENES'
+marker_gene: 'COI-BOLD'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
@@ -45,15 +45,15 @@ remote: 'yes'
 db_type: 'nt'
 
 # database files
-16S-SILVA-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/Silva_132_release/SILVA_132_QIIME_release/'
-COI-BOLD-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/COI_BOLD/'
-16S-GREENGENES-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/gg_13_8_otus/'
-16S-RDP-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/RDP/'
+16S-SILVA-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/Silva_132_release/SILVA_132_QIIME_release/'
+COI-BOLD-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/COI_BOLD/'
+16S-GREENGENES-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/gg_13_8_otus/'
+16S-RDP-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/RDP/'
 NCBI-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
 ITS-FUNGI-UNITE-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
 
 # pimba plot
-metadata: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/resources/mapping_fileCOI.csv'
+metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/mapping_file_COI.csv'
 group_by: 'Species'
 
 # pimba place
