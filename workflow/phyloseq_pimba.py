@@ -332,7 +332,7 @@ def perform_pvclust(otu_table_df, meta_table_df, output_dir, groupby, method_dis
         hell_tip_labels = meta_table_df.loc[otu_table_df.columns, groupby].values
         labels = [f"{hell_tip_labels[i]}-{meta_table_df.loc[otu_table_df.columns[i], 'SampleName']}" for i in range(len(hell_tip_labels))]
     else:
-        labels = meta_table_df['SampleName'].values
+        labels = otu_table_df.columns
 
     # Plot the result
     plot_pvclust(hc, boot_results, taxon_matrix, labels, output_dir)
