@@ -108,7 +108,7 @@ rule run_prinseq:
         > {log} 2>&1
         """
 
-rule run_qiimepipe:
+rule run_relabel:
     input:
         assembled_fasta = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.fasta")
     output:
@@ -170,7 +170,7 @@ rule run_prinseq_singleton:
         > {log} 2>&1
         """
 
-rule run_qiimepipe_singleton:
+rule run_relabel_singleton:
     input:
         assembled_fasta_singleton = expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.withSingleton.fasta"), sample=SAMPLES)
     output:

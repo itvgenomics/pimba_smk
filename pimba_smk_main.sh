@@ -91,23 +91,27 @@ elif [ "$prepare_mode" == "no" ]; then
     echo "No prepare mode selected"
 fi
 
-# Check if $run_mode contains "NCBI" and adjust the snakemake command accordingly
-if [[ "$run_mode" == *"NCBI"* ]]; then
-    echo "Running PIMBA with database $run_mode plus remote mode as $remote"
-    if [ "$remote" == "yes" ]; then
-        snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $taxdump:/taxdump"
-    else
-        snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $ncbi_db -B $taxdump:/taxdump"
-    fi
+if [ "$run_mode" == "no" ]; then
+    echo "No running mode selected"
 else
-    # Extract the path for the database corresponding to the run_mode
-    db_path=$(grep "^$run_mode-DB:" "$config_file" | awk '{print $2}')
-    if [ -z "$db_path" ]; then
-        echo "Database path for $run_mode-DB not found in config file. Using custom database"
-        db_path=$run_mode
+    # Check if $run_mode contains "NCBI" and adjust the snakemake command accordingly
+    if [[ "$run_mode" == *"NCBI"* ]]; then
+        echo "Running PIMBA with database $run_mode plus remote mode as $remote"
+        if [ "$remote" == "yes" ]; then
+            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $taxdump"
+        else
+            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $ncbi_db -B $taxdump"
+        fi
+    else
+        # Extract the path for the database corresponding to the run_mode
+        db_path=$(grep "^$run_mode-DB:" "$config_file" | awk '{print $2}')
+        if [ -z "$db_path" ]; then
+            echo "Database path for $run_mode-DB not found in config file. Using custom database"
+            db_path=$run_mode
+        fi
+        echo "Running PIMBA with database: $run_mode"
+        snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $db_path"
     fi
-    echo "Running PIMBA with database: $run_mode"
-    snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $db_path"
 fi
 
 if [ "$plot_mode" == "yes" ]; then
