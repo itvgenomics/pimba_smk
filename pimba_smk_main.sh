@@ -98,9 +98,9 @@ else
     if [[ "$run_mode" == *"NCBI"* ]]; then
         echo "Running PIMBA with database $run_mode plus remote mode as $remote"
         if [ "$remote" == "yes" ]; then
-            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $taxdump"
+            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $taxdump:/taxdump -B $taxdump"
         else
-            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $ncbi_db -B $taxdump"
+            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $ncbi_db -B $taxdump:/taxdump -B $taxdump"
         fi
     else
         # Extract the path for the database corresponding to the run_mode

@@ -1237,7 +1237,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 """
     rule run_vsearch_usearch_global:
         input:
-            raw_reads = os.path.join(current_path, config['outputprepare'] + '.fasta'),
+            raw_reads = os.path.join(current_path, 'results', '00-prepare', config['outputprepare'] + '.fasta'),
             filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
         output:
             uc_file = os.path.join(output_dir, file_name_raw + '_map_fungi.uc')
