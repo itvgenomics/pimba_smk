@@ -1099,7 +1099,6 @@ elif marker_gene == "ITS-FUNGI-UNITE":
             "docker://itvdsbioinfo/pimba_qiimepipe:latest"
         shell:
             """
-            mkdir -p {current_path}/logs/create_abundance_file
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
