@@ -816,7 +816,7 @@ elif marker_gene == "COI-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp > {log} 2>&1
+            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -1057,7 +1057,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile.py {input.blast_plants_log} {input.plants_table} {params.taxdump}/rankedlineage.dmp > {log} 2>&1
+            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_plants_log} {input.plants_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -1287,7 +1287,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile.py {input.blast_fungi_log} {input.fungi_table} {params.taxdump}/rankedlineage.dmp > {log} 2>&1
+            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_fungi_log} {input.fungi_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -1359,7 +1359,7 @@ elif marker_gene == "ALL-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp > {log} 2>&1
+            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
