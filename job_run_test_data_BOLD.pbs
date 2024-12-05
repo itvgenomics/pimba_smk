@@ -1,0 +1,31 @@
+#PBS -l nodes=1:ppn=24
+#PBS -N smk_run_COI
+#PBS -o smk_run_COI.log
+#PBS -e smk_run_COI.err
+
+
+CORES=$[ `cat $PBS_NODEFILE | wc -l` ]
+NODES=$[ `uniq $PBS_NODEFILE | wc -l` ]
+
+printf "Inico: `date`\n";
+TBEGIN=`echo "print time();" | perl`
+
+printf "\n"
+printf "> Executando job_code7\n";
+printf "> Rodando em $CORES nucleos, em $NODES nos\n"
+cd $PBS_O_WORKDIR
+
+source /mnt/gen/opt/softwares/miniconda3/etc/profile.d/conda.sh
+conda activate snakemake
+
+bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g no -t 24
+
+
+TEND=`echo "print time();" | perl`
+
+printf "\n"/
+printf "Fim: `date`\n";
+printf "Tempo decorrido (s): `expr $TEND - $TBEGIN`\n";
+printf "Tempo decorrido (min): `expr $(( ($TEND - $TBEGIN)/60 ))`\n";
+echo "TERMINADO"
+
