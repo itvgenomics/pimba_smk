@@ -38,7 +38,7 @@ def plot_taxonomic_composition(otu_table_df, tax_table_df, meta_table_df, rank, 
     ps_taxa = ps_taxa.merge(meta_table_df, left_on='Sample', right_index=True, how='left')
     
     # Define the number of unique taxa and generate the color palette
-    n = len(ps_taxa[rank].unique())
+    n = len(ps_taxa[rank].unique()) + 1
     palette = sns.color_palette("tab20", n)
     
     # Set plot size and font scale
@@ -48,9 +48,11 @@ def plot_taxonomic_composition(otu_table_df, tax_table_df, meta_table_df, rank, 
     if groupby:
         # Pivot the dataframe to get the format needed for stacked bars
         pivot_df = ps_taxa.pivot_table(index=['Sample', groupby], columns=rank, values='Abundance').fillna(0).reset_index()
-
+        
+        # Calculate low abundance taxa per sample and add to pivot_df
+        pivot_df['Low abundance taxa'] = 1 - pivot_df.drop(columns=['Sample', groupby]).sum(axis=1)
+        
         # Save pivot_df to a CSV file
-        pivot_wide_df = ps_taxa.pivot(index='Sample', columns=rank, values='Abundance').fillna(0)
         pivot_df.to_csv(os.path.join(output_dir, f'{rank}_pivot_table.tsv'), sep='\t')
         
         # Initialize the FacetGrid
@@ -76,6 +78,12 @@ def plot_taxonomic_composition(otu_table_df, tax_table_df, meta_table_df, rank, 
     else:
         # Pivot the dataframe to get the format needed for stacked bars
         pivot_df = ps_taxa.pivot(index='Sample', columns=rank, values='Abundance').fillna(0)
+        
+        # Calculate low abundance taxa per sample and add to pivot_df
+        pivot_df['Low abundance taxa'] = 1 - pivot_df.sum(axis=1)
+        
+        # Save pivot_df to a CSV file
+        pivot_df.to_csv(os.path.join(output_dir, f'{rank}_pivot_table.tsv'), sep='\t')
         
         # Plotting the stacked bar plot
         pivot_df.plot(kind='bar', stacked=True, color=palette, figsize=(20, 10))

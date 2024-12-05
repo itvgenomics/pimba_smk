@@ -9,24 +9,24 @@ minphred: 20
 outputprepare: 'AllSamples'
 
 # pimba prepare paired end
-rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/rawdata_COI'
+rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/rawdata_COI/'
 adapters: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/adapters.txt'
 
 # pimba prepare single end and single index
-raw_fastq_single: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
-prefix: 'Chip1-2'
-barcodes_5end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.txt'
-singleadapter: 'TCCACTAATCACAAAGANATNGGNAC'
-barcodes_5end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba/barcodes_Rtags.fasta'
+raw_fastq_single: ''
+prefix: ''
+barcodes_5end_txt: ''
+singleadapter: ''
+barcodes_5end_fasta: ''
 
 # pimba prepare single end and dual index
-raw_fastq_dual: '/home/tfleao/Desktop/ITV/pimba_training/rawdata_single/Chip1-2.fastq'
-barcodes_3end_txt: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcodes_Rtags.txt'
-barcodes_3end_rev: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcodes_reverse_Rtags_revcom.txt'
-barcodes_3end_fasta: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcodes_Rtags.fasta'
-barcodes_5end_dir: '/home/tfleao/Desktop/ITV/pimba_training/pimba_smk/barcode_for_to_each_R/'
-forward_adapter: 'TCCACTAATCACAAAGANATNGGNAC'
-reverse_adapter: 'AGAAAATCATAATNAANGCNTGNGC'
+raw_fastq_dual: ''
+barcodes_3end_txt: ''
+barcodes_3end_rev: ''
+barcodes_3end_fasta: ''
+barcodes_5end_dir: ''
+forward_adapter: ''
+reverse_adapter: ''
 
 # pimba run
 outputrun: 'AllSamples_97clust90assign'
@@ -40,26 +40,26 @@ marker_gene: 'COI-BOLD'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
-taxdump: '/home/tfleao/Desktop/ITV/pimba_training/pimba/taxdump/'
+taxdump: ''
 remote: 'yes'
 db_type: 'nt'
 
 # database files
-16S-SILVA-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/Silva_132_release/SILVA_132_QIIME_release/'
+16S-SILVA-DB: ''
 COI-BOLD-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/COI_BOLD/'
-16S-GREENGENES-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/gg_13_8_otus/'
-16S-RDP-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/RDP/'
-NCBI-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/ALL_NCBI/blastdb'
-ITS-FUNGI-UNITE-DB: '/home/tfleao/Desktop/ITV/pimba_training/pimba/sh_refs_qiime_ver8.2/'
+16S-GREENGENES-DB: ''
+16S-RDP-DB: ''
+NCBI-DB: ''
+ITS-FUNGI-UNITE-DB: ''
 
 # pimba plot
-metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/mapping_file_COI.csv'
+metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/mapping_file_COI.csv'
 group_by: 'Species'
 
 # pimba place
-place_otu_table: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/AllSamples_otus_plants.fasta'
-place_newick: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/rbcL_ITS2_alignment.newick'
-place_alignment: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/rbcL_ITS2_alignment.fasta'
-place_taxonpath: '/home/tfleao/Desktop/ITV/pimba_training/pimba/place_inputs/taxonpath.tsv'
-place_datatype: 'nt'
-place_outputdir: 'place_output_smk'
+place_otu_table: ''
+place_newick: ''
+place_alignment: ''
+place_taxonpath: ''
+place_datatype: ''
+place_outputdir: ''
