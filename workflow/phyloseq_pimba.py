@@ -17,8 +17,18 @@ from sklearn.manifold import MDS
 def load_data(otu_file, tax_file, metadata_file):
     # Load OTU table
     otu_table_df = pd.read_csv(otu_file, sep='\t', index_col=0).sort_index()
-    # Load taxonomy table
+    # Load and fix taxonomy table
+    def is_numeric_string(s):
+    # Check if the string represents a numeric value
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
     tax_table_df = pd.read_csv(tax_file, sep='\t', index_col=0).sort_index()
+    tax_table_df = tax_table_df.drop(columns=['similarity', 'aux'])
+    tax_table_df.replace(' ', 'Unassigned', inplace=True)
+    tax_table_df = tax_table_df.applymap(lambda x: 'Unassigned' if isinstance(x, str) and is_numeric_string(x) else x)
     # Load metadata
     meta_table_df = pd.read_csv(metadata_file, sep=',', index_col=0).sort_index()
     return otu_table_df, tax_table_df, meta_table_df
@@ -93,8 +103,7 @@ def plot_taxonomic_composition(otu_table_df, tax_table_df, meta_table_df, rank, 
         plt.yticks(fontsize=16)
         plt.legend(title=rank.capitalize(), bbox_to_anchor=(1.05, 1), loc='upper left', title_fontsize='18', fontsize='14')
         plt.title(f'{rank.capitalize()} Stacked Barplot', fontsize=22)
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, f'{rank}_barplots.svg'))
+        plt.savefig(os.path.join(output_dir, f'{rank}_barplots.svg'), bbox_inches='tight')
 
 def plot_alpha_diversity(otu_table_df, output_dir):
     def calculate_alpha_diversity(otu_table):
