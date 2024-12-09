@@ -170,7 +170,7 @@ elif ITS == 'its':
             vsearch --derep_fulllength {input.itsx_fasta} --output {output.derep_fasta} --sizeout > {log} 2>&1
             """
 else:
-    rule run_vsearch_derep:
+    rule run_vsearch_derep_fulllength:
         input:
             rawdata = rawdata
         output:
