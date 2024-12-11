@@ -170,9 +170,7 @@ def plot_alpha_diversity(otu_table_df, output_dir):
 def plot_rarefaction_curves(otu_table_df, output_dir):
     # Transpose the OTU table
     otu_dataFC = otu_table_df.T
-
-    # Calculate the number of species (S)
-    S = (otu_dataFC > 0).sum(axis=1)
+    otu_dataFC = otu_dataFC.loc[otu_dataFC.sum(axis=1) >= 100]
 
     # Calculate the minimum row sum (raremax)
     raremax = otu_dataFC.sum(axis=1).min()
@@ -188,9 +186,6 @@ def plot_rarefaction_curves(otu_table_df, output_dir):
         log_comb = lambda n, k: gammaln(n + 1) - gammaln(k + 1) - gammaln(n - k + 1)
         rare = sum(1 - np.exp(log_comb(n - x, sample) - log_comb(n, sample)))
         return rare
-
-    # Apply rarefy function to each row of the OTU table
-    Srare = otu_dataFC.apply(lambda row: rarefy(row, raremax), axis=1)
 
     # Plotting parameters
     lty = ['-', '--', '-.', ':']
@@ -214,7 +209,7 @@ def plot_rarefaction_curves(otu_table_df, output_dir):
     plt.legend(loc='best')
 
     # Save the plot as an SVG file
-    plt.savefig(os.path.join(output_dir, 'rarefaction_curve2.svg'))
+    plt.savefig(os.path.join(output_dir, 'rarefaction_curve.svg'))
 
 def plot_cluster_dendrogram(otu_table_df, meta_table_df, output_dir, groupby):
     # Transpose OTU table to have samples as rows
