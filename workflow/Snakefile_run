@@ -1267,7 +1267,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             echo "Running the QiimePipe Container - uc2otutab: "
             python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.fungi_table}
             """
-    rule run_create_plants_taxon_table:
+    rule run_create_fungi_taxon_table:
         input:
             blast_fungi_log = os.path.join(output_dir, file_name_raw + '_blast_fungi.log'),
             fungi_table = os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt')
