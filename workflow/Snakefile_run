@@ -341,51 +341,47 @@ rule run_bmp_renamer:
         perl /data/bmp-otuName.pl -i {input.formatted} -o {output.renamed} > {log} 2>&1
         """
 
-rule run_vsearch_map:
-    input:
-        renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
-        rawdata = rawdata
-    output:
-        mapfile = os.path.join(output_dir, file_name_raw + '_map.uc')
-    params:
-        similarity = config['otu_similarity'],
-        threads = config['num_threads']
-    log:
-        os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
-    singularity:
-        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
-    shell:
-        """
-        echo "Running the VSEARCH Container - --usearch_global: "
-        vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
-        --id {params.similarity} --uc {output.mapfile} --threads {params.threads} > {log} 2>&1
-        """
-
 if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
-    rule convert_uc_to_table:
+    rule run_vsearch_map:
         input:
-            mapfile = os.path.join(output_dir, file_name_raw + '_map.uc')
+            renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+            rawdata = rawdata
         output:
-            table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt')
+            mapfile = os.path.join(output_dir, file_name_raw + '_map.uc'),
+            table_txt = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt')
+        params:
+            similarity = config['otu_similarity'],
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
         shell:
             """
-            echo "Running the QiimePipe Container - uc2otutab: "
-            python3.6 /qiimepipe/uc2otutab.py {input.mapfile} > {output.table}
+            echo "Running the VSEARCH Container - --usearch_global: "
+            vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
+            --id {params.similarity} --uc {output.mapfile} --otutabout {output.table_txt} --threads {params.threads} > {log} 2>&1
             """
 else:
-    rule convert_uc_to_table:
+    rule run_vsearch_map:
         input:
-            mapfile = os.path.join(output_dir, file_name_raw + '_map.uc')
+            renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+            rawdata = rawdata
         output:
-            table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
+            mapfile = os.path.join(output_dir, file_name_raw + '_map.uc'),
+            table_txt = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
+        params:
+            similarity = config['otu_similarity'],
+            threads = config['num_threads']
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
         shell:
             """
-            echo "Running the QiimePipe Container - uc2otutab: "
-            python3.6 /qiimepipe/uc2otutab.py {input.mapfile} > {output.table}
+            echo "Running the VSEARCH Container - --usearch_global: "
+            vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
+            --id {params.similarity} --uc {output.mapfile} --otutabout {output.table_txt} --threads {params.threads} > {log} 2>&1
             """
 
 if lulu == "lulu":
@@ -1009,32 +1005,21 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             raw_reads = os.path.join(current_path, 'results', '00-prepare', config['outputprepare'] + '.fasta'),
             filtered_fasta = os.path.join(output_dir, file_name_raw + '_otus_filtered.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs_filtered.fasta')
         output:
-            uc_file = os.path.join(output_dir, file_name_raw + '_map_plants.uc')
+            uc_file = os.path.join(output_dir, file_name_raw + '_map_plants.uc'),
+            plants_table = os.path.join(output_dir, file_name_raw + '_otu_table_plants.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_plants.txt')
         params:
             similarity = config['otu_similarity']
         log:
             os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
         shell:
             """
             cd {output_dir}
 
             echo "Running the VSEARCH Container - --usearch_global: "
             vsearch --usearch_global {input.raw_reads} --db {input.filtered_fasta} --strand both \
-            --id {params.similarity} --uc {output.uc_file} > {log} 2>&1
-            """
-    rule convert_plants_uc_to_table:
-        input:
-            uc_file = os.path.join(output_dir, file_name_raw + '_map_plants.uc')
-        output:
-            plants_table = os.path.join(output_dir, file_name_raw + '_otu_table_plants.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_plants.txt')
-        singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
-        shell:
-            """
-            echo "Running the QiimePipe Container - uc2otutab: "
-            python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.plants_table}
+            --id {params.similarity} --uc {output.uc_file} --otutabout {output.plants_table} > {log} 2>&1
             """
     rule run_create_plants_taxon_table:
         input:
@@ -1240,32 +1225,21 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             raw_reads = os.path.join(current_path, 'results', '00-prepare', config['outputprepare'] + '.fasta'),
             filtered_fasta = os.path.join(output_dir, 'k__Fungi.fasta')
         output:
-            uc_file = os.path.join(output_dir, file_name_raw + '_map_fungi.uc')
+            uc_file = os.path.join(output_dir, file_name_raw + '_map_fungi.uc'),
+            fungi_table = os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt')
         params:
             similarity = config['otu_similarity']
         log:
             os.path.join(current_path, 'results', '01-run', 'logs', 'vsearch_usearch_global', file_name_raw + '.log')
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
         shell:
             """
             cd {output_dir}
 
             echo "Running the VSEARCH Container - --usearch_global: "
             vsearch --usearch_global {input.raw_reads} --db {input.filtered_fasta} --strand both \
-            --id {params.similarity} --uc {output.uc_file} > {log} 2>&1
-            """
-    rule convert_plants_uc_to_table:
-        input:
-            uc_file = os.path.join(output_dir, file_name_raw + '_map_fungi.uc')
-        output:
-            fungi_table = os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt')
-        singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
-        shell:
-            """
-            echo "Running the QiimePipe Container - uc2otutab: "
-            python3.6 /qiimepipe/uc2otutab.py {input.uc_file} > {output.fungi_table}
+            --id {params.similarity} --uc {output.uc_file} --otutabout {output.fungi_table} > {log} 2>&1
             """
     rule run_create_fungi_taxon_table:
         input:

@@ -26,7 +26,7 @@ def load_data(otu_file, tax_file, metadata_file):
         except ValueError:
             return False
     tax_table_df = pd.read_csv(tax_file, sep='\t', index_col=0).sort_index()
-    tax_table_df = tax_table_df.drop(columns=['similarity', 'aux'])
+    tax_table_df = tax_table_df.drop(columns=['similarity'])
     tax_table_df.replace(' ', 'Unassigned', inplace=True)
     tax_table_df = tax_table_df.applymap(lambda x: 'Unassigned' if isinstance(x, str) and is_numeric_string(x) else x)
     # Load metadata
