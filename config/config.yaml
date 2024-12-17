@@ -40,7 +40,6 @@ marker_gene: 'COI-BOLD'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
-taxdump: ''
 remote: 'yes'
 db_type: 'nt'
 
@@ -51,6 +50,7 @@ COI-BOLD-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/COI_BOLD/'
 16S-RDP-DB: ''
 NCBI-DB: ''
 ITS-FUNGI-UNITE-DB: ''
+taxdump: ''
 
 # pimba plot
 metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/mapping_file_BSM.csv'
