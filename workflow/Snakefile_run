@@ -55,7 +55,7 @@ if marker_gene == "ITS-FUNGI-NCBI":
     files_for_all_rule.append(os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt'))
 
 # Conditionally include outputs if lulu is set to on
-if lulu == 'lulu':
+if lulu == 'yes':
     files_for_all_rule.append(os.path.join(output_dir, 'lulu_output', 'match_list.txt'))
     files_for_all_rule.append(os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'))
 
@@ -384,7 +384,7 @@ else:
             --id {params.similarity} --uc {output.mapfile} --otutabout {output.table_txt} --threads {params.threads} > {log} 2>&1
             """
 
-if lulu == "lulu":
+if lulu == "yes":
     rule run_makeblastdb_and_blastn:
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
