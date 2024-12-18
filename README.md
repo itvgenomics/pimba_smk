@@ -43,7 +43,7 @@ For example:
 
 3. Follow the instructions on the installer screens. If you are unsure about any settings, accept the defaults. You can change them later;
 4. To apply the changes, close and reopen the terminal window;
-5. Test your installation. In the terminal window, run the command conda list. A list of installed packages will appear if the installation was successful.
+5. Test your installation. In the terminal window, run the command `conda list`. A list of installed packages will appear if the installation was successful.
 
 ### B) Snakemake
 
@@ -88,7 +88,7 @@ If the user wishes to run the "prepare" mode to prepare the reads for the "run" 
 | ----------- | ----------- |
 | minlength | The minimum length of a read after quality filtering. |
 | minphred | The minimum PHRED score for quality filtering. |
-| outputprepare | The name of the output file to be created in FASTA format. The .fasta extension is included automatically |
+| outputprepare | The name of the output file to be created in FASTA format. The ".fasta" extension is included automatically |
 
 #### Inputs to run paired-end reads
 If the user wishes to run PIMBA for paired-end reads, it is necessary to configure:
@@ -135,7 +135,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | otu_length           | Minimum length for trimming reads. If the value is 0, no reads will be trimmed.                 |
 | hits_per_subject     | If 1, choose the best hit. If > 1, choose by majority. The default is 1.                        |
 | marker_gene          | Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. |
-| e_value              | Expected value (e-value) used by BLAST. The default is 0.00001.                                  |
+| e_value              | Expected value (e-value) used by BLAST. The default is 0.001.                                  |
 | lulu                 | If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU). |
 | ITS                  | Set to 'yes' if the reads are ITS.                                                               |
 | remote | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
@@ -148,7 +148,7 @@ Depending on the database used, provide the full path to the files related to th
 `tar -xzvf new_taxdump.tar.gz`
 
 #### Inputs for the Plot Mode
-This section refers to generating plots for the processed results. To run PIMBA plot, configure "" with the path to the metadata file and . Below is an example; replace it with the correct paths on your machine.
+This section refers to generating plots for the processed results. To run PIMBA plot, configure:
 
 | Parameter | Description |
 | ----------- | ----------- |
