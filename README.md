@@ -77,31 +77,31 @@ The config.yaml file (inside the config folder) is the general configuration fil
 
 #### General options for all modes
 
-| Variable | Description |
+| Parameter | Description |
 | ----------- | ----------- |
 | num_threads | The num_threads option indicates the maximum number of processors to be used for tasks that allow parallelization. |
 
 #### General options for the Prepare Mode
 If the user wishes to run the "prepare" mode to prepare the reads for the "run" mode, edit the following options:
 
-| Variable | Description |
+| Parameter | Description |
 | ----------- | ----------- |
 | minlength | The minimum length of a read after quality filtering. |
 | minphred | The minimum PHRED score for quality filtering. |
 | outputprepare | The name of the output file to be created in FASTA format. The .fasta extension is included automatically |
 
-#### Inputs to run paired-end reads: 
+#### Inputs to run paired-end reads
 If the user wishes to run PIMBA for paired-end reads, it is necessary to configure:
 
-| Variable | Description |
+| Parameter | Description |
 | ----------- | ----------- |
-| rawdatadir | the path to the directory where the reads are located |
-| adapters | the path to the adapter file within the resources directory |
+| rawdatadir | The path to the directory where the reads are located |
+| adapters | The path to the adapter file within the resources directory |
 
-#### Inputs for single end and single index reads: 
+#### Inputs for single end and single index reads
 If the user has unpaired reads containing a single index, the following options need to be configured:
 
-| Variable | Description |
+| Parameter | Description |
 | ----------- | ----------- |
 | raw_fastq | Input FASTQ file. |
 | prefix | Name to be included as a prefix for the files to be generated. |
@@ -109,10 +109,10 @@ If the user has unpaired reads containing a single index, the following options 
 | singleadapter | Adapter sequence found in the reads. |
 | barcodes_5end_fasta | Path to the FASTA file for the barcodes_5end_txt. |
 
-#### Inputs for single end and dual index reads: 
+#### Inputs for single end and dual index reads
 If the user has unpaired reads and a dual index, the following options need to be configured:
 
-| Variable | Description |
+| Parameter | Description |
 | ----------- | ----------- |
 |raw_fastq | Input FASTQ file. |
 | barcodes_3end_txt | Path to the barcode file used as an index at the 3' end of the reads. |
@@ -121,3 +121,49 @@ If the user has unpaired reads and a dual index, the following options need to b
 | barcodes_5end_dir | Path to the directory containing all the barcodes.fasta and barcodes.txt files used at the 5' end of the reads. Each 3' barcode should have a corresponding FASTA and TXT file with all the associated 5' barcodes. |
 | forward_adapter | Forward primer sequence. |
 | reverse_adapter | Reverse primer sequence. |
+
+#### Inputs for the Run Mode
+After configuring the "prepare" mode according to the type of read being used, configure the inputs for the "run" mode according to the parameters below.
+
+| Parameter | Description |
+| ----------- | ----------- |
+| outputrun            | Name of the output folder to be generated.                                                        |
+| strategy             | Analysis strategy to be used. Can be "otu" or "asv". If "otu", PIMBA uses vsearch. If "asv", swarm is used. |
+| otu_similarity       | Percentage of similarity used in OTU clustering. The default is 0.97.                            |
+| assign_similarity    | Percentage of similarity used in taxonomy assignment. The default is 0.9.                       |
+| mincoverage          | Minimum coverage for alignment. The default is 0.9.                                              |
+| otu_length           | Minimum length for trimming reads. If the value is 0, no reads will be trimmed.                 |
+| hits_per_subject     | If 1, choose the best hit. If > 1, choose by majority. The default is 1.                        |
+| marker_gene          | Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. |
+| e_value              | Expected value (e-value) used by BLAST. The default is 0.00001.                                  |
+| lulu                 | If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU). |
+| ITS                  | Set to 'yes' if the reads are ITS.                                                               |
+| remote | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
+
+#### Database paths
+Depending on the database used, provide the full path to the files related to that database. Snakemake will only use the path specified in the "marker_gene" option from the previous item, so only the specified marker gene needs to be configured. Additionally, for runs including the NCBI database, the taxdump folder needs to be downloaded and the full path needs to be included in the config file. Use the following commands to download and uncompress the taxdump folder:
+
+`wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz`
+
+`tar -xzvf new_taxdump.tar.gz`
+
+#### Inputs for the Plot Mode
+This section refers to generating plots for the processed results. To run PIMBA plot, configure "" with the path to the metadata file and . Below is an example; replace it with the correct paths on your machine.
+
+| Parameter | Description |
+| ----------- | ----------- |
+| metadata | The path to the metadata file |
+| group_by | Set "group_by" with the metadata parameter to group the samples (use "False" for not grouping the samples) |
+
+### B) Run the "pimba_smk_main.sh" file
+The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
+
+- "-p": PIMBA preparation mode; choose between "paired_end", "single_index", "dual_index", or "no".
+- "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene. To skip, indicate "no".
+- "-g": PIMBA plotting mode; choose between "yes" or "no".
+- "-t": number of processors.
+
+#### Example of Testing: 
+Use the data in the "test_data" folder to test the algorithm by running it. First, modify the correct paths in the config file (including the path to the BOLD database), and then run the following command:
+
+`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g no -t 8`
