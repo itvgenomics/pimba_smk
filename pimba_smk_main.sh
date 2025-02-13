@@ -75,6 +75,9 @@ taxdump=$(grep '^taxdump:' "$config_file" | awk '{print $2}' | tr -d "'")
 # Extract remote mode from the config file
 remote=$(grep '^remote:' "$config_file" | awk '{print $2}' | tr -d "'")
 
+# Extract remote mode from the config file
+metadata=$(grep '^metadata:' "$config_file" | awk '{print $2}' | tr -d "'")
+
 # Implement the actions based on the arguments
 if [ "$prepare_mode" == "paired_end" ]; then
     echo "Running PIMBA in paired_end prepare mode"
@@ -116,7 +119,7 @@ fi
 
 if [ "$plot_mode" == "yes" ]; then
     echo "Plotting graphs as specified"
-    snakemake --snakefile workflow/Snakefile_plot --use-singularity --configfile "$config_file" --cores "$threads"
+    snakemake --snakefile workflow/Snakefile_plot --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $metadata"
 elif [ "$plot_mode" == "no" ];then
     echo "Skipping graph plotting as specified"
 fi
