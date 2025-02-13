@@ -68,7 +68,7 @@ rule run_phyloseq_plot:
         """
         mkdir -p {current_path}/results/02-plot/
         cd {current_path}/results/02-plot/
-        echo "Running the Phyloseq Container: "
-        python {current_path}/workflow/phyloseq_pimba.py -o {input.otu_table} -t {input.prepared_tax_assignments} -m {input.metadata} -g {params.group_by} \
+        echo "Running the Plot Python Container: "
+        python {current_path}/workflow/plot_graphs.py -o {input.otu_table} -t {input.prepared_tax_assignments} -m {input.metadata} -g {params.group_by} \
         > {log} 2>&1
         """

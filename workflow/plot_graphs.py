@@ -31,6 +31,9 @@ def load_data(otu_file, tax_file, metadata_file):
     tax_table_df = tax_table_df.applymap(lambda x: 'Unassigned' if isinstance(x, str) and is_numeric_string(x) else x)
     # Load metadata
     meta_table_df = pd.read_csv(metadata_file, sep=',', index_col=0).sort_index()
+    # Filter otu_table_df to keep only the columns present in the SampleID list
+    sample_ids = meta_table_df.index.tolist()
+    otu_table_df = otu_table_df[sample_ids]
     return otu_table_df, tax_table_df, meta_table_df
 
 def plot_taxonomic_composition(otu_table_df, tax_table_df, meta_table_df, rank, groupby, output_dir):
@@ -250,104 +253,71 @@ def plot_cluster_dendrogram(otu_table_df, meta_table_df, output_dir, groupby):
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "cluster_dendrogram.svg"))
 
-def perform_pvclust(otu_table_df, meta_table_df, output_dir, groupby, method_dist='correlation', method_hclust='ward', nboot=1000):
-    # Function to perform hierarchical clustering with bootstrap resampling
-    def pvclust(data, method_dist, method_hclust, nboot):
-        def hierarchical_clustering(data, method_dist, method_hclust):
-            if method_dist == 'correlation':
-                dist = pdist(data.T, metric='correlation')
-            else:
-                dist = pdist(data.T, metric=method_dist)
-            hc = linkage(dist, method=method_hclust)
-            return hc
-
-        def bootstrap(data, method_dist, method_hclust, nboot):
-            boot_results = []
-            n = data.shape[1]
-            for _ in range(nboot):
-                indices = np.random.choice(n, n, replace=True)
-                boot_data = data[:, indices]
-                hc = hierarchical_clustering(boot_data, method_dist, method_hclust)
-                boot_results.append(hc)
-            return boot_results
-
-        hc = hierarchical_clustering(data, method_dist, method_hclust)
-        boot_results = bootstrap(data, method_dist, method_hclust, nboot)
-        
-        return hc, boot_results
-
-    # Function to calculate AU (Approximately Unbiased) p-values
-    def calculate_au_pvalues(hc, boot_results, data):
-        n = data.shape[1]
-        au_pvalues = np.zeros(len(hc))
-
-        for i in range(len(hc)):
-            original_cluster = fcluster(hc, t=hc[i, 2], criterion='distance')
-            count_au = 0
-            for boot_hc in boot_results:
-                boot_cluster = fcluster(boot_hc, t=hc[i, 2], criterion='distance')
-                if len(np.unique(original_cluster)) == len(np.unique(boot_cluster)):
-                    count_au += 1
-            au_pvalues[i] = count_au / len(boot_results) * 100
-
-        return au_pvalues
-
-    # Function to calculate bootstrap values
-    def calculate_bootstrap_values(hc, boot_results):
-        n = len(hc) + 1  # number of original observations
-        bootstrap_values = np.zeros(n - 1)
-
-        for i in range(n - 1):
-            original_cluster = fcluster(hc, t=hc[i, 2], criterion='distance')
-            count = 0
-            for boot_hc in boot_results:
-                boot_cluster = fcluster(boot_hc, t=hc[i, 2], criterion='distance')
-                if np.array_equal(np.sort(original_cluster), np.sort(boot_cluster)):
-                    count += 1
-            bootstrap_values[i] = count / len(boot_results) * 100
-
-        return bootstrap_values
-
-    # Function to plot the dendrogram with both AU p-values and bootstrap values
-    def plot_pvclust(hc, boot_results, data, labels, output_dir, alpha=0.95):
-        plt.figure(figsize=(15, 8))
-        dend = dendrogram(hc, labels=labels, leaf_rotation=90)
-        
-        # Calculate AU p-values and bootstrap values
-        au_pvalues = calculate_au_pvalues(hc, boot_results, data)
-        bootstrap_values = calculate_bootstrap_values(hc, boot_results)
-        
-        # Add AU p-values and bootstrap values to the dendrogram
-        for i, (x_coords, y_coords) in enumerate(zip(dend['icoord'], dend['dcoord'])):
-            x = 0.5 * sum(x_coords[1:3])
-            y = y_coords[1]
-            
-            # Display AU p-value
-            plt.text(x, y, f'AU: {au_pvalues[i]:.2f}', va='bottom', ha='center', fontsize=10, color='blue')
-
-            # Display Bootstrap value
-            plt.text(x, y - 0.05, f'Bootstrap: {bootstrap_values[i]:.2f}', va='bottom', ha='center', fontsize=10, color='red')
-
-        plt.title("Cluster analysis with AU and Bootstrap values")
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, "cluster_bootstrap1000.svg"))
-
-    # Convert OTU table to matrix and ensure all values are finite
-    taxon_matrix = otu_table_df.values
-
-    # Perform clustering
-    hc, boot_results = pvclust(taxon_matrix, method_dist, method_hclust, nboot)
-
-    # Optionally reorder labels based on a grouping variable
+def perform_hierarchical_clustering_with_bootstrap(otu_table_df, meta_table_df, output_dir, groupby, n_bootstrap):
+    # Load metadata if groupby is specified
     if groupby:
-        order = [i[0] for i in sorted(enumerate(hc[:, 2]), key=lambda x: x[1])]
-        hell_tip_labels = meta_table_df.loc[otu_table_df.columns, groupby].values
-        labels = [f"{hell_tip_labels[i]}-{meta_table_df.loc[otu_table_df.columns[i], 'SampleName']}" for i in range(len(hell_tip_labels))]
+        # Append metadata group names to sample labels
+        sample_labels = []
+        for sample in otu_table_df.columns:
+            if sample in meta_table_df.index:
+                sample_labels.append(f"{meta_table_df.loc[sample, groupby]}-{sample}")
+            else:
+                sample_labels.append(sample)  # Keep original name if not found in metadata
     else:
-        labels = otu_table_df.columns
+        sample_labels = list(otu_table_df.columns)  # Keep original sample names
 
-    # Plot the result
-    plot_pvclust(hc, boot_results, taxon_matrix, labels, output_dir)
+    # Transpose to cluster **samples**
+    data = otu_table_df.T.astype(float)
+
+    # Perform hierarchical clustering on original data
+    original_linkage = linkage(pdist(data, metric='euclidean'), method='average')
+
+    # Bootstrap parameters
+    n_otus = data.shape[1]
+    n_samples = data.shape[0]
+
+    # Track cluster co-occurrence
+    co_occurrence = np.zeros((n_samples, n_samples))
+
+    # Bootstrap resampling
+    for _ in range(n_bootstrap):
+        resampled_idx = np.random.choice(range(n_otus), size=n_otus, replace=True)  # Resample OTUs
+        resampled_data = data.iloc[:, resampled_idx]
+
+        resampled_linkage = linkage(pdist(resampled_data, metric='euclidean'), method='average')
+        clusters = fcluster(resampled_linkage, t=0.5 * max(resampled_linkage[:, 2]), criterion='distance')
+
+        for i in range(n_samples):
+            for j in range(i + 1, n_samples):
+                if clusters[i] == clusters[j]:  # If samples cluster together
+                    co_occurrence[i, j] += 1
+                    co_occurrence[j, i] += 1  # Symmetric matrix
+
+    # Normalize bootstrap values
+    co_occurrence = (co_occurrence / n_bootstrap) * 100
+
+    # Plot the dendrogram
+    plt.figure(figsize=(12, 6))
+    dendro = dendrogram(original_linkage, labels=sample_labels, leaf_rotation=90, leaf_font_size=10)
+
+    # Add bootstrap values at branching points
+    for i, d in zip(dendro['icoord'], dendro['dcoord']):
+        x = 0.5 * sum(i[1:3])  # X-coordinate for text
+        y = d[1]  # Y-coordinate for text
+
+        # Identify samples in this branch
+        members = [sample_labels[int(i[1] / 10)], sample_labels[int(i[2] / 10)]]
+        support = co_occurrence[sample_labels.index(members[0]), sample_labels.index(members[1])]
+
+        plt.text(x, y, f"{support:.1f}%", va='bottom', ha='center', fontsize=8, color='red')
+
+    plt.title(f'Hierarchical Clustering of Samples with {n_bootstrap} Bootstraps')
+    plt.xlabel('Samples' if not groupby else f'Samples (Grouped by {groupby})')
+    plt.ylabel('Distance')
+
+    # Save the figure
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "cluster_bootstrap1000.svg"))
 
 def perform_pcoa_unweighted_unifrac(otu_table_df, meta_table_df, output_dir, groupby):
     # Function to create a random tree using a simple balanced tree approach
@@ -505,7 +475,7 @@ def main():
 
     plot_cluster_dendrogram(otu_table_df, meta_table_df, output_dir, args.group_by)
 
-    perform_pvclust(otu_table_df, meta_table_df, output_dir, args.group_by)
+    perform_hierarchical_clustering_with_bootstrap(otu_table_df, meta_table_df, output_dir, args.group_by, 1000)
 
     perform_pcoa_unweighted_unifrac(otu_table_df, meta_table_df, output_dir, args.group_by)
 
