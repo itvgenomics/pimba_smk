@@ -475,7 +475,7 @@ def main():
 
     plot_cluster_dendrogram(otu_table_df, meta_table_df, output_dir, args.group_by)
 
-    perform_hierarchical_clustering_with_bootstrap(otu_table_df, meta_table_df, output_dir, args.group_by, 1000)
+   #perform_hierarchical_clustering_with_bootstrap(otu_table_df, meta_table_df, output_dir, args.group_by, 1000)
 
     perform_pcoa_unweighted_unifrac(otu_table_df, meta_table_df, output_dir, args.group_by)
 
