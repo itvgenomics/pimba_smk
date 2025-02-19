@@ -119,25 +119,35 @@ taxon_matrix <- otu_table(ps)
 taxon_matrix  <- as.matrix(taxon_matrix)
 taxon_matrix
 
+# Extract current column names (sample names)
+sample_names <- colnames(taxon_matrix)
+
+# Ensure metadata column names are characters
+metadata$SampleName <- as.character(rownames(metadata))
+
+# Only rename if groupby is NOT "False"
+if (groupby != "False") {
+  # Check if the column exists in metadata
+  if (groupby %in% colnames(metadata)) {
+    # Create a named vector for mapping SampleName -> Chosen Grouping Column
+    sample_group_map <- setNames(metadata[[groupby]], metadata$SampleName)
+    
+    # Rename columns by appending the selected metadata column value
+    new_colnames <- paste0(sample_names, "_", sample_group_map[sample_names])
+    
+    # Assign the new column names to taxon_matrix
+    colnames(taxon_matrix) <- new_colnames
+  } else {
+    stop(paste("Error: Column", groupby, "not found in metadata"))
+  }
+}
+
+
 result <- pvclust(as.matrix(taxon_matrix),
                   method.dist =  "correlation", 
                   method.hclust="ward.D2", nboot=1000)
 
 svg("cluster_bootstrap1000.svg", width = 15, height = 8)
-
-if(groupby != "False"){
-  order <- result$hclust$order
-  hell.tip.labels <- as(get_variable(ps, groupby), "character")
-  new_labels <- paste(hell.tip.labels[order], sample_names(META)[order], sep="-")
-  
-  # Modify the hierarchical clustering labels
-  result$hclust$labels <- new_labels
-}
-
-
-
-
-
 
 p = plot(result,
      main="Cluster analysis. Bootstrap = 1000"

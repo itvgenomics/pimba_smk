@@ -63,7 +63,7 @@ def plot_taxonomic_composition(otu_table_df, tax_table_df, meta_table_df, rank, 
         pivot_df = ps_taxa.pivot_table(index=['Sample', groupby], columns=rank, values='Abundance').fillna(0).reset_index()
         
         # Calculate low abundance taxa per sample and add to pivot_df
-        pivot_df['Low abundance taxa'] = 1 - pivot_df.drop(columns=['Sample', groupby]).sum(axis=1)
+        pivot_df['Low abundance taxa (<1%)'] = 1 - pivot_df.drop(columns=['Sample', groupby]).sum(axis=1)
         
         # Save pivot_df to a CSV file
         pivot_df.to_csv(os.path.join(output_dir, f'{rank}_pivot_table.tsv'), sep='\t')
