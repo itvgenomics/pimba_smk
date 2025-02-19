@@ -14,27 +14,19 @@ args<-commandArgs(TRUE)
 library(phyloseq)
 library(ggplot2)
 library(ape)
-#library(RColorBrewer)
-#library(colorRamps)
 library(scales)
 library(plyr)
 library(Biostrings)
 library(vegan)
-#library(diveRsity)
-#library(dplyr)
 library(grid)
 library(reshape2)
-#library(gridExtra)
-#library(xfun)
 library(pvclust)
-#library(dendextend) 
 
 ###Creating a phyloseq obj###
 
 # Read in OTU table
 otu_table_file = args[1]
 otu_table_in <- read.csv(otu_table_file, sep = "\t", row.names = 1)
-#otu_table_in <- read.csv("../results_BSM_GG/01-run/AllSamples_97clust90assign/AllSamples_otu_table.txt", sep = "\t", row.names = 1)
 otu_table_in <- as.matrix(otu_table_in)
 otu_table_in
 
@@ -42,14 +34,12 @@ otu_table_in
 # Separated by kingdom, phylum, class, order, family, genus, species
 taxonomy_file = args[2]
 taxonomy <- read.csv(taxonomy_file, sep = "\t", row.names = 1, check.names = FALSE)
-#taxonomy <- read.csv("../results_BSM_GG/01-run/AllSamples_97clust90assign/output/plot_AllSamples_tax_assignments.txt", sep = "\t", row.names = 1, check.names = FALSE)
 taxonomy <- as.matrix(taxonomy)
 taxonomy
 
 # Read in metadata
 metadata_file = args[3]
 metadata <- read.csv(metadata_file, sep = ",", row.names = 1)
-#metadata <- read.csv("../mapping_file_BSM.csv", sep = ",", row.names = 1)
 metadata
 
 
@@ -77,7 +67,6 @@ sample_names(OTU)
 sample_names(META)
 
 groupby = args[4]
-#groupby = FALSE
 
 cl = c("yellow","blue","red","cyan","green",
        "magenta","snow","mistyrose4","darkgreen","cyan4",
@@ -113,7 +102,6 @@ sample_variables(ps)
 
 ###Clustering analysis
 
-#groupby = args[4]
 
 taxon_matrix <- otu_table(ps)
 taxon_matrix  <- as.matrix(taxon_matrix)
