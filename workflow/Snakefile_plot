@@ -83,6 +83,8 @@ rule run_pvclust:
         os.path.join(current_path, 'results', '02-plot', 'plots', 'cluster_bootstrap1000.svg')
     log:
         os.path.join(current_path, 'results', '02-plot', 'logs', 'pvclust', file_name_raw + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_phyloseq:latest"
     params:
         group_by = config['group_by']
     shell:
@@ -90,6 +92,6 @@ rule run_pvclust:
         mkdir -p {current_path}/results/02-plot/
         cd {current_path}/results/02-plot/plots
         echo "Running the pvclust container: "
-        Rscript {current_path}/workflow/pvclust.R {input.otu_table} {input.prepared_tax_assignments} {input.metadata} {params.group_by} \
+        Rscript /data/pvclust.R {input.otu_table} {input.prepared_tax_assignments} {input.metadata} {params.group_by} \
         > {log} 2>&1
         """
