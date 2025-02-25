@@ -23,8 +23,6 @@ SAMPLES = list(sample_suffixes.keys())
 rule all:
     input:
         os.path.join(current_path, "results", "00-prepare", config["outputprepare"] + ".fasta"),
-        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES),
-        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES),
         os.path.join(current_path, "results", "00-prepare", config["outputprepare"] + "_withSingleton.fasta")
 
 rule prepare_directories:
