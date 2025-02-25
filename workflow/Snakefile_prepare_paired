@@ -199,4 +199,5 @@ rule concatenate_and_rename_singletons:
         cd {current_path}/results/00-prepare/assemblies/pear/
         cat *_relabel_withSingleton.fasta > {params.outputname}_withSingleton.fasta
         mv {params.outputname}_withSingleton.fasta {current_path}/results/00-prepare/
+        rm -r {current_path}/results/00-prepare/assemblies/
         """
