@@ -177,11 +177,12 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene. To skip, indicate "no".
 - "-g": PIMBA plotting mode; choose between "yes" or "no".
 - "-t": number of processors.
+- "-c": the path to the config file.
 
 #### Example of Testing: 
 Use the data in the "test_data" folder to test the algorithm by running it. First, modify the correct paths in the config file (including the path to the BOLD database), and then run the following command:
 
-`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g no -t 8`
+`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -t 8 -c config/config.yaml`
 
 ## References
 
