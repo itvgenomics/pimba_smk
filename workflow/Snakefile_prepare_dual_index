@@ -21,6 +21,181 @@ rule all:
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.truncated").format(output_name=config["outputprepare"]),
         os.path.join(current_path, "results", "00-prepare", "{output_name}.fasta").format(output_name=config["outputprepare"])
 
-include: "rules/fastx_and_concatenate.smk"
-include: "rules/strip_prinseq_fastx.smk"
-include: "rules/concatenate_adapter_removal_prinseq.smk"
+rule run_fastx_barcode_splitter_forbol:
+    input:
+        rawdata = raw_fastq,
+        barcodes_3end_txt = barcodes_3end_txt
+    output:
+        forbol_file = expand(os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexforbol_{sample}.fastq"), sample=SAMPLES),
+        unmatchedforbol = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexforbol_unmatched.fastq")
+    log:
+        os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter_forbol', config["outputprepare"] + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+    shell:
+        """
+        echo "Creating and running a fastxtoolkit Container: "
+        mkdir -p {current_path}/results/00-prepare/prepare_output
+        cat {input.rawdata} | fastx_barcode_splitter.pl --bcfile {input.barcodes_3end_txt} --prefix {current_path}/results/00-prepare/prepare_output/indexforbol_ --suffix .fastq --bol --exact > {log} 2>&1
+        """
+
+rule run_fastx_barcode_splitter_reveol:
+    input:
+        unmatchedforbol = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexforbol_unmatched.fastq"),
+        barcodes_3end_rev = config["barcodes_3end_rev"]
+    output:
+        reveol_file = expand(os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexreveol_{sample}.fastq"), sample=SAMPLES),
+        unmatchedreveol = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexreveol_unmatched.fastq")
+    log:
+        os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter_reveol', config["outputprepare"] + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+    shell:
+        """
+        cat {input.unmatchedforbol} | fastx_barcode_splitter.pl --bcfile {input.barcodes_3end_rev} --prefix {current_path}/results/00-prepare/prepare_output/indexreveol_ --suffix .fastq --eol --exact > {log} 2>&1
+        """
+
+rule run_fastx_reverse_complement_reveol:
+    input:
+        reveol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexreveol_{sample}.fastq")
+    output:
+        creveol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexcreveol_{sample}.fastq")
+    singularity:
+        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+    shell:
+        """
+        fastx_reverse_complement -i {input.reveol_file} > {output.creveol_file}
+        rm {input.reveol_file}
+        """
+
+rule concatenate_barcodes:
+    input:
+        forbol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexforbol_{sample}.fastq"),
+        creveol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexcreveol_{sample}.fastq")
+    output:
+        index_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "index_{sample}.fastq")
+    shell:
+        """
+        cat {input.forbol_file} {input.creveol_file} > {output.index_file}
+        rm {input.forbol_file} {input.creveol_file}
+        """
+
+rule run_qiimepipe_strip:
+    input:
+        index_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "index_{sample}.fastq")
+    output:
+        clipped_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_clipped.fastq")
+    params:
+        reverse_adapter = config["reverse_adapter"],
+        barcodes_3end_fasta = config["barcodes_3end_fasta"]
+    singularity:
+        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+    shell:
+        """
+        echo "Running the QiimePipe Container: "
+        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.index_file} {params.reverse_adapter} {params.barcodes_3end_fasta} Ex > {output.clipped_file}
+        rm {input.index_file}
+        """
+
+rule run_prinseq:
+    input:
+        clipped_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_clipped.fastq")
+    output:
+        filtered_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_min50.fastq")
+    log:
+        os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq', config["outputprepare"] + '_{sample}' + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+    shell:
+        """
+        echo "Creating and running a Prinseq Container: "
+        prinseq-lite.pl -fastq {input.clipped_file} -min_len 50 -out_good {current_path}/results/00-prepare/prepare_output/{wildcards.sample}_min50 > {log} 2>&1
+        rm {input.clipped_file}
+        """
+
+rule run_fastx_reverse_complement_filtered:
+    input:
+        filtered_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_min50.fastq")
+    output:
+        revclipped_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_revclipped.fastq")
+    log:
+        os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_reverse_complement_filtered', config["outputprepare"] + '_{sample}' + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+    shell:
+        """
+        echo "Creating and running a fasxttoolkit Container: "
+        fastx_reverse_complement -i {input.filtered_file} -o {output.revclipped_file} > {log} 2>&1
+        rm {input.filtered_file} {current_path}/results/00-prepare/prepare_output/{wildcards.sample}_clipped_prinseq_bad_*.fastq
+        """
+
+rule run_qiimepipe_strip_revclipped:
+    input:
+        revclipped_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_revclipped.fastq")
+    output:
+        fastq_sample = os.path.join(current_path, "results", "00-prepare", "prepare_output", "samples_{sample}.fastq")
+    params:
+        forward_adapter = config["forward_adapter"],
+        barcodes_5end_dir = config["barcodes_5end_dir"]
+    singularity:
+        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+    shell:
+        """
+        echo "Running the QiimePipe Container: "
+        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.revclipped_file} {params.forward_adapter} {params.barcodes_5end_dir}/barcodes_{wildcards.sample}.fasta Ex > {output.fastq_sample}
+        rm {input.revclipped_file}
+        """
+
+rule concatenate_samples:
+    input:
+        fastq_sample = expand(os.path.join(current_path, "results", "00-prepare", "prepare_output", "samples_{sample}.fastq"), sample=SAMPLES)
+    output:
+        fastq_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", config["outputprepare"] + ".fastq")
+    shell:
+        """
+        cat {current_path}/results/00-prepare/prepare_output/samples_R* > {output.fastq_file}
+        """
+
+rule run_adapter_removal:
+    input:
+        fastq_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", config["outputprepare"] + ".fastq")
+    output:
+        discarded_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.discarded").format(output_name=config["outputprepare"]),
+        truncated_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.truncated").format(output_name=config["outputprepare"]),
+        settings_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.settings").format(output_name=config["outputprepare"])
+    params:
+        num_threads = config["num_threads"],
+        minphred = config["minphred"],
+        minlength = config["minlength"],
+        output_name = config["outputprepare"]
+    log:
+        os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+    shell:
+        """
+        echo "Creating and running an AdapterRemoval Container: "
+        AdapterRemoval --file1 {input.fastq_file} --threads {params.num_threads} --trimwindows 10 \
+        --minquality {params.minphred} --minlength {params.minlength} --qualitymax 64 --basename {current_path}/results/00-prepare/prepare_output/{params.output_name}_good > {log} 2>&1
+        """
+
+rule run_prinseq_truncated:
+    input:
+        truncated_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{output_name}_good.truncated").format(output_name=config["outputprepare"])
+    output:
+        good_fasta = os.path.join(current_path, "results", "00-prepare", "{output_name}.fasta").format(output_name=config["outputprepare"])
+    params:
+        output_name = config["outputprepare"]
+    log:
+        os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
+    singularity:
+        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+    shell:
+        """
+        echo "Creating and running a Prinseq Container: "
+        prinseq-lite.pl -fastq {input.truncated_file} -out_format 1 -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name} > {log} 2>&1
+
+        mv {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta {current_path}/results/00-prepare
+        rm {current_path}/results/00-prepare/prepare_output/indexforbol_unmatched.fastq
+        rm {current_path}/results/00-prepare/prepare_output/indexreveol_unmatched.fastq
+        """
