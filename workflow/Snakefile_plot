@@ -63,6 +63,8 @@ rule run_plot_graphs:
         os.path.join(current_path, 'results', '02-plot', 'plots', 'alpha_diversity_dotplot.svg')
     log:
         os.path.join(current_path, 'results', '02-plot', 'logs', 'plot_graphs', file_name_raw + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "plot_graphs_python.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_python_plot:latest"
     params:
@@ -87,6 +89,8 @@ rule run_pvclust:
         os.path.join(current_path, 'results', '02-plot', 'plots', 'cluster_bootstrap1000.svg')
     log:
         os.path.join(current_path, 'results', '02-plot', 'logs', 'pvclust', file_name_raw + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "plot_pvclust.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_phyloseq:latest"
     params:

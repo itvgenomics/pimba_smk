@@ -42,18 +42,21 @@ taxdump=$(grep '^taxdump:' "$config_file" | awk '{print $2}' | tr -d "'")
 remote=$(grep '^remote:' "$config_file" | awk '{print $2}' | tr -d "'")
 metadata=$(grep '^metadata:' "$config_file" | awk '{print $2}' | tr -d "'")
 
-# Implement actions based on the arguments
-if [ "$prepare_mode" == "paired_end" ]; then
-    echo "Running PIMBA in paired_end prepare mode"
-    snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $rawdatadir -B $config_file"
-elif [ "$prepare_mode" == "single_index" ]; then
-    echo "Running PIMBA in single_index prepare mode"
-    raw_fastq_dir=$(dirname "$raw_fastq_single")
-    snakemake --snakefile workflow/Snakefile_prepare_single_index --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $raw_fastq_dir -B $config_file"
-elif [ "$prepare_mode" == "dual_index" ]; then
-    echo "Running PIMBA in dual_index prepare mode"
-    raw_fastq_dir=$(dirname "$raw_fastq_dual")
-    snakemake --snakefile workflow/Snakefile_prepare_dual_index --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $raw_fastq_dir -B $config_file"
+if [ "$prepare_mode" != "no" ]; then
+    if [ "$prepare_mode" == "paired_end" ]; then
+        echo "Running PIMBA in paired_end prepare mode"
+        snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $rawdatadir -B $config_file"
+    elif [ "$prepare_mode" == "single_index" ]; then
+        echo "Running PIMBA in single_index prepare mode"
+        raw_fastq_dir=$(dirname "$raw_fastq_single")
+        snakemake --snakefile workflow/Snakefile_prepare_single_index --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $raw_fastq_dir -B $config_file"
+    elif [ "$prepare_mode" == "dual_index" ]; then
+        echo "Running PIMBA in dual_index prepare mode"
+        raw_fastq_dir=$(dirname "$raw_fastq_dual")
+        snakemake --snakefile workflow/Snakefile_prepare_dual_index --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $raw_fastq_dir -B $config_file"
+    fi
+else
+    echo "Skipping PIMBA prepare as specified"
 fi
 
 if [ "$run_mode" != "no" ]; then
@@ -73,6 +76,8 @@ if [ "$run_mode" != "no" ]; then
         echo "Running PIMBA with database: $run_mode"
         snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --singularity-args "-B $db_path -B $config_file"
     fi
+else
+    echo "Skipping PIMBA run as specified"
 fi
 
 if [ "$plot_mode" == "yes" ]; then
