@@ -30,6 +30,8 @@ rule run_fastx_barcode_splitter_forbol:
         unmatchedforbol = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexforbol_unmatched.fastq")
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter_forbol', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_fastx_barcode_splitter_forbol.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
@@ -48,6 +50,8 @@ rule run_fastx_barcode_splitter_reveol:
         unmatchedreveol = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexreveol_unmatched.fastq")
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter_reveol', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_fastx_barcode_splitter_reveol.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
@@ -60,6 +64,8 @@ rule run_fastx_reverse_complement_reveol:
         reveol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexreveol_{sample}.fastq")
     output:
         creveol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexcreveol_{sample}.fastq")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_fastx_reverse_complement_reveol.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
@@ -88,6 +94,8 @@ rule run_qiimepipe_strip:
     params:
         reverse_adapter = config["reverse_adapter"],
         barcodes_3end_fasta = config["barcodes_3end_fasta"]
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_qiimepipe_strip.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
@@ -104,6 +112,8 @@ rule run_prinseq:
         filtered_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_min50.fastq")
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq', config["outputprepare"] + '_{sample}' + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
     shell:
@@ -120,6 +130,8 @@ rule run_fastx_reverse_complement_filtered:
         revclipped_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_revclipped.fastq")
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_reverse_complement_filtered', config["outputprepare"] + '_{sample}' + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_fastx_reverse_complement_filtered.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
@@ -137,6 +149,8 @@ rule run_qiimepipe_strip_revclipped:
     params:
         forward_adapter = config["forward_adapter"],
         barcodes_5end_dir = config["barcodes_5end_dir"]
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_strip_revclipped.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
@@ -170,6 +184,8 @@ rule run_adapter_removal:
         output_name = config["outputprepare"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_adapter_removal.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
     shell:
@@ -188,6 +204,8 @@ rule run_prinseq_truncated:
         output_name = config["outputprepare"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_prinseq_truncated.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
     shell:

@@ -36,6 +36,8 @@ rule run_fastx_barcode_splitter:
         prefix = prefix
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_fastx_barcode_splitter.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
@@ -71,6 +73,8 @@ rule run_adapter_removal:
         output_name = config["outputprepare"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_adapter_removal.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
     shell:
@@ -88,6 +92,8 @@ rule run_qiimepipe_strip:
     params:
         adapter = config["singleadapter"],
         barcodes_5end_fasta = config["barcodes_5end_fasta"]
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_qiimepipe_strip.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
@@ -110,6 +116,8 @@ rule run_adapter_removal_clipped:
         output_name = config["outputprepare"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_adapter_removal_clipped.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
     shell:
@@ -128,6 +136,8 @@ rule run_prinseq_truncated:
         output_name = config["outputprepare"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "prepare_prinseq_truncated.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
     shell:
