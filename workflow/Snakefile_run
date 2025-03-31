@@ -1132,7 +1132,10 @@ rule convert_otu_table_to_biom:
 rule add_metadata_to_biom_table:
     input:
         biom = os.path.join(output_dir, file_name_raw + '_otu_table.biom') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.biom'),
+        table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
         tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
+    params:
+        tax_filtered = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments_filtered.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments_filtered.txt')
     output:
         biom_with_metadata = os.path.join(output_dir, file_name_raw + '_otu_table_tax.biom') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_tax.biom')
     log:
@@ -1144,6 +1147,7 @@ rule add_metadata_to_biom_table:
     shell:
         """
         echo "Running the Biom-Format Container - add-metadata: "
+#        grep -F -f <(awk 'NR > 1 {{print $1}}' {input.table}) {input.tax_assignments} > {params.tax_filtered}
         biom add-metadata -i {input.biom} -o {output.biom_with_metadata} \
         --observation-metadata-fp {input.tax_assignments} --observation-header OTUID,taxonomy,confidence \
         --sc-separated taxonomy --float-fields confidence &> {log}

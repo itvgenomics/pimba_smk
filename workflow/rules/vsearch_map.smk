@@ -19,4 +19,5 @@ rule run_vsearch_map:
         echo "Running the VSEARCH Container - --usearch_global: "
         vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
         --id {params.similarity} --uc {output.mapfile} --otutabout {output.table_txt} --threads {params.threads} > {log} 2>&1
+#        awk '{{if (NF > 1) {{zero=1; for(i=2; i<=NF; i++) if ($i != 0) {{zero=0; break}} }} if (!zero) print}}' {output.table_txt} > {output.table_txt}.tmp && mv {output.table_txt}.tmp {output.table_txt}
         """

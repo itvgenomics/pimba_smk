@@ -7,6 +7,8 @@ rule run_vsearch_uchime_denovo:
         otusnochim = os.path.join(output_dir, file_name_raw + '_uchime_nochim')
     log:
         os.path.join(current_path, "results", "01-run", "logs", "vsearch_uchime_denovo", file_name_raw + ".log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "run_vsearch_uchime_denovo.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
     shell:
@@ -23,6 +25,8 @@ rule run_fastx_formatter:
         formatted = os.path.join(output_dir, file_name_raw + '_noChim_formatted.fasta')
     log:
         os.path.join(current_path, "results", "01-run", "logs", "fastx_formatter", file_name_raw + ".log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "run_fastx_formatter.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
     shell:
@@ -38,6 +42,8 @@ rule run_bmp_renamer:
         renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
     log:
         os.path.join(current_path, "results", "01-run", "logs", "bmp_renamer", file_name_raw + ".log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "run_bmp_renamer.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_perl:v5"
     shell:
