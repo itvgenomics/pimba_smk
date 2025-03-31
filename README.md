@@ -184,6 +184,29 @@ Use the data in the "test_data" folder to test the algorithm by running it. Firs
 
 `bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -t 8 -c config/config.yaml`
 
+## Configure your personalized database
+Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
+
+Example of the FASTA file:
+<p align="center">
+<img src="figures/fasta_example.png" alt="Fasta example" width="50%">
+</p>
+
+Example of the taxonomy file:
+<p align="center">
+<img src="figures/tax_example.png" alt="Fasta example" width="100%">
+</p>
+
+Then, install blastn on your computer and run makeblastdb in your fasta file:
+
+`conda install bioconda::blast`
+
+`makeblastdb -in <your_fasta.fasta> -dbtype nucl -parse_seqids`
+
+After that, you need is to set the /path/to/your/database/ in the config variable `marker_gene` and run the bash script like this example:
+
+`bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -t 8 -c config/config.yaml`
+
 ## References
 
 1. Bolyen, Evan, Jai Ram Rideout, Matthew R. Dillon, Nicholas A. Bokulich, Christian C. Abnet, Gabriel A. Al-Ghalith, Harriet Alexander, et al. 2019. “Reproducible, Interactive, Scalable and Extensible Microbiome Data Science Using QIIME 2.” Nature Biotechnology 37 (8): 852–57.
