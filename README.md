@@ -2,9 +2,9 @@
 
 Authors: Tiago Ferreira Leão, Renato R. M. Oliveira
 
-Document Version: 1.0
+Document Version: 1.1
 
-Date: 13/12/2024
+Date: 31/03/2025
 
 ## Description
 <p align="center">
