@@ -178,11 +178,12 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-g": PIMBA plotting mode; choose between "yes" or "no".
 - "-t": number of processors.
 - "-c": the path to the config file.
+- "-d": the path to the working directory.
 
 #### Example of Testing: 
 Use the data in the "test_data" folder to test the algorithm by running it. First, modify the correct paths in the config file (including the path to the BOLD database), and then run the following command:
 
-`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -t 8 -c config/config.yaml`
+`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -t 8 -c config/config.yaml -d .`
 
 ## Configure your personalized database
 Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
