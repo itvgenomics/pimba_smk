@@ -142,7 +142,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             echo "Creating a VSEARCH Container: "
             vsearch --derep_fulllength {input.itsx_fasta} --output {output.derep_fasta} --sizeout > {log} 2>&1
             """
-elif ITS == 'its':
+elif ITS == 'yes':
     rule run_itsx:
         input:
             rawdata = rawdata
