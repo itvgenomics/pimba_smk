@@ -146,6 +146,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | lulu                 | If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU). |
 | ITS                  | Set to 'yes' if the reads are ITS.                                                               |
 | remote | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
+| db_type | Define the NCBI BLAST database, for example, nt, core_nt and so on |
 
 #### Database paths
 Depending on the database used, provide the full path to the files related to that database. Snakemake will only use the path specified in the "marker_gene" option from the previous item, so only the specified marker gene needs to be configured. Additionally, for runs including the NCBI database, the taxdump folder needs to be downloaded and the full path needs to be included in the config file. Use the following commands to download and uncompress the taxdump folder:
