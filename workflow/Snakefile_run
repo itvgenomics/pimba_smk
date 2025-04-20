@@ -393,9 +393,20 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
         shell:
             """
             echo "Running the VSEARCH Container - --usearch_global: "
+
+            # Step 1: Run VSEARCH
             vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
-            --id {params.similarity} --uc {output.mapfile} --otutabout {output.table_txt} --threads {params.threads} > {log} 2>&1
+                --id {params.similarity} --uc {output.mapfile} \
+                --otutabout {output.table_txt}.raw --threads {params.threads} > {log} 2>&1
+
+            # Step 2: Filter out OTUs with all zero counts
+            awk 'NR==1 {{print; next}} {{sum=0; for (i=2; i<=NF; i++) sum+=$i; if (sum>0) print}}' \
+                {output.table_txt}.raw > {output.table_txt}
+
+            # Step 3: Clean up
+            rm -f {output.table_txt}.raw
             """
+
 else:
     rule run_vsearch_map:
         input:
@@ -416,8 +427,18 @@ else:
         shell:
             """
             echo "Running the VSEARCH Container - --usearch_global: "
+
+            # Step 1: Run VSEARCH
             vsearch --usearch_global {input.rawdata} --db {input.renamed} --strand both \
-            --id {params.similarity} --uc {output.mapfile} --otutabout {output.table_txt} --threads {params.threads} > {log} 2>&1
+                --id {params.similarity} --uc {output.mapfile} \
+                --otutabout {output.table_txt}.raw --threads {params.threads} > {log} 2>&1
+
+            # Step 2: Filter out OTUs with all zero counts
+            awk 'NR==1 {{print; next}} {{sum=0; for (i=2; i<=NF; i++) sum+=$i; if (sum>0) print}}' \
+                {output.table_txt}.raw > {output.table_txt}
+
+            # Step 3: Clean up
+            rm -f {output.table_txt}.raw
             """
 
 if lulu == "yes":
@@ -1532,8 +1553,7 @@ rule convert_otu_table_to_biom:
     shell:
         """
         echo "Running the Biom-Format Container - convert: "
-        biom convert -i {input.table} -o {output.biom} \
-        --table-type="OTU table" --to-json &> {log}
+        biom convert -i {input.table} -o {output.biom} --to-hdf5 --table-type="OTU table" &> {log}
         """
 
 rule add_metadata_to_biom_table:
@@ -1550,11 +1570,33 @@ rule add_metadata_to_biom_table:
         "docker://itvdsbioinfo/pimba_biom:v2.1.10"
     shell:
         """
-        echo "Running the Biom-Format Container - add-metadata: "
+        echo "Running the Biom-Format Container - pad-missing + add-metadata"
+
+        # Convert biom to TSV so we can extract all OTU IDs
+        biom convert -i {input.biom} -o temp_table.tsv --to-tsv --header-key OTUID
+
+        # Extract OTU IDs from the converted TSV table
+        tail -n +2 temp_table.tsv | cut -f1 | sort > all_otus.txt
+
+        # Extract OTU IDs that already have taxonomy assignments
+        cut -f1 {input.tax_assignments} | sort > assigned_otus.txt
+
+        # Create lines with "missing" values for OTUs without assignments
+        comm -23 all_otus.txt assigned_otus.txt | awk '{{print $1"\\tmissing\\tmissing"}}' > missing_assignments.txt
+
+        # Combine with the original taxonomy assignments
+        cat {input.tax_assignments} missing_assignments.txt > tax_assignments_padded.txt
+
+        # Add metadata
         biom add-metadata -i {input.biom} -o {output.biom_with_metadata} \
-        --observation-metadata-fp {input.tax_assignments} --observation-header OTUID,taxonomy,confidence \
-        --sc-separated taxonomy --float-fields confidence &> {log}
+            --observation-metadata-fp tax_assignments_padded.txt \
+            --observation-header OTUID,taxonomy,confidence \
+            --sc-separated taxonomy --float-fields confidence &> {log}
+
+        # Clean up
+        rm -f temp_table.tsv all_otus.txt assigned_otus.txt missing_assignments.txt tax_assignments_padded.txt
         """
+
 
 rule summarize_biom_table:
     input:
