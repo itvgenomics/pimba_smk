@@ -2,9 +2,9 @@
 
 Authors: Tiago Ferreira Leão, Renato R. M. Oliveira
 
-Document Version: 1.1
+Document Version: 1.2
 
-Date: 31/03/2025
+Date: 05/05/2025
 
 ## Description
 <p align="center">
@@ -95,15 +95,18 @@ If the user wishes to run the "prepare" mode to prepare the reads for the "run" 
 | ----------- | ----------- |
 | minlength | The minimum length of a read after quality filtering. |
 | minphred | The minimum PHRED score for quality filtering. |
-| outputprepare | The name of the output file to be created in FASTA format. The ".fasta" extension is included automatically |
+| outputprepare | The name of the output file to be created in FASTA format. The ".fasta" extension is included automatically. |
 
 #### Inputs to run paired-end reads
 If the user wishes to run PIMBA for paired-end reads, it is necessary to configure:
 
 | Parameter | Description |
 | ----------- | ----------- |
-| rawdatadir | The path to the directory where the reads are located |
-| adapters | The path to the adapter file within the resources directory |
+| rawdatadir | The path to the directory where the reads are located. |
+| adapters | The path to the adapter file within the resources directory. |
+| minoverlap | Minimum overlap to merge paired reads. Default is 10 bases. |
+| minsim |  Minimum similarity to merge paired reads. Default is 90% similarity. |
+| merger | Select the paired read merger between "pear" (PEAR) and "overlapper" (OverlapPER). |
 
 #### Inputs for single end and single index reads
 If the user has unpaired reads containing a single index, the following options need to be configured:
@@ -146,7 +149,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | lulu                 | If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU). |
 | ITS                  | Set to 'yes' if the reads are ITS.                                                               |
 | remote | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
-| db_type | Define the NCBI BLAST database, for example, nt, core_nt and so on |
+| db_type | Define the NCBI BLAST database, for example, nt, core_nt and so on. |
 
 #### Database paths
 Depending on the database used, provide the full path to the files related to that database. Snakemake will only use the path specified in the "marker_gene" option from the previous item, so only the specified marker gene needs to be configured. Additionally, for runs including the NCBI database, the taxdump folder needs to be downloaded and the full path needs to be included in the config file. Use the following commands to download and uncompress the taxdump folder:
@@ -168,8 +171,8 @@ This section refers to generating plots for the processed results. To run PIMBA 
 
 | Parameter | Description |
 | ----------- | ----------- |
-| metadata | The path to the metadata file |
-| group_by | Set "group_by" with the metadata parameter to group the samples (use "False" for not grouping the samples) |
+| metadata | The path to the metadata file. |
+| group_by | Set "group_by" with the metadata parameter to group the samples (use "False" for not grouping the samples). |
 
 ### B) Run the "pimba_smk_main.sh" file
 The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
