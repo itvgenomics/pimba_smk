@@ -78,7 +78,8 @@ rule run_pear:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.unassembled.forward.fastq"),
         os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.unassembled.reverse.fastq")
     params:
-        num_threads = config["num_threads"]
+        num_threads = config["num_threads"],
+        minoverlap = config["minoverlap"]
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "pear", "{sample}.log")
     benchmark:
@@ -88,7 +89,7 @@ rule run_pear:
     shell:
         """
         mkdir -p {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}
-        pear -j {params.num_threads} -f {input.pair1} -r {input.pair2} -o {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}/{wildcards.sample} \
+        pear -j {params.num_threads} -f {input.pair1} -v {params.minoverlap} -r {input.pair2} -o {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}/{wildcards.sample} \
         > {log} 2>&1
         for i in {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}/*.assembled.fastq; do sed -i "s/ /_/g" $i; done
         """

@@ -11,6 +11,8 @@ outputprepare: 'AllSamples'
 # pimba prepare paired end
 rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/rawdata_COI/'
 adapters: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/adapters.txt'
+minoverlap: 10
+minsim: 0.9
 
 # pimba prepare single end and single index
 raw_fastq_single: ''
