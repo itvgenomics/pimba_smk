@@ -92,7 +92,7 @@ rule run_pvclust:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "plot_pvclust.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_phyloseq:latest"
+        "docker://itvdsbioinfo/pimba_phyloseq:v2"
     params:
         group_by = config['group_by']
     shell:
@@ -100,6 +100,6 @@ rule run_pvclust:
         mkdir -p {current_path}/results/02-plot/
         cd {current_path}/results/02-plot/plots
         echo "Running the pvclust container: "
-        Rscript /data/pvclust.R {input.otu_table} {input.prepared_tax_assignments} {input.metadata} {params.group_by} \
+        Rscript /app/pvclust.R {input.otu_table} {input.prepared_tax_assignments} {input.metadata} {params.group_by} \
         > {log} 2>&1
         """

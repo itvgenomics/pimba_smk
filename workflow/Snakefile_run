@@ -366,11 +366,11 @@ rule run_bmp_renamer:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_bmp_renamer.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_perl:v5"
+        "docker://itvdsbioinfo/pimba_perl:v6"
     shell:
         """
         echo "Creating and running a Perl Container: "
-        perl /data/bmp-otuName.pl -i {input.formatted} -o {output.renamed} > {log} 2>&1
+        perl /app/bmp-otuName.pl -i {input.formatted} -o {output.renamed} > {log} 2>&1
         """
 
 if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
