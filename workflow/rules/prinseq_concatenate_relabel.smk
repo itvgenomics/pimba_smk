@@ -5,6 +5,8 @@ rule run_prinseq:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.fasta"),
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq", "{sample}.log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
     shell:
@@ -22,6 +24,8 @@ rule run_relabel:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_notSingleton.fasta")
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "qiimepipe", "{sample}.log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_relabel.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:

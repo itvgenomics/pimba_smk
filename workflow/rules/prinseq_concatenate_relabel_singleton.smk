@@ -19,6 +19,8 @@ rule run_prinseq_singleton:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.withSingleton.fasta"),
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq_singleton", "{sample}.log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq_singleton.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
     shell:
@@ -36,6 +38,8 @@ rule run_relabel_singleton:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_withSingleton.fasta")
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "qiimepipe_singleton", "{sample}.log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_relabel_singleton.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:

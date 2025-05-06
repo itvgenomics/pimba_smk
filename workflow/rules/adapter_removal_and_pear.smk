@@ -28,6 +28,8 @@ rule run_adapter_removal:
         min_length = config["minlength"]
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "adapter_removal", "{sample}.log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_adapter_removal.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
     shell:
@@ -52,6 +54,8 @@ rule run_pear:
         num_threads = config["num_threads"]
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "pear", "{sample}.log")
+    benchmark:
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_pear.txt")
     singularity:
         "docker://itvdsbioinfo/pimba_pear:v0.9.10"
     shell:
