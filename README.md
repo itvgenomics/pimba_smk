@@ -144,7 +144,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | mincoverage          | Minimum coverage for alignment. The default is 0.9.                                              |
 | otu_length           | Minimum length for trimming reads. If the value is 0, no reads will be trimmed.                 |
 | hits_per_subject     | If 1, choose the best hit. If > 1, choose by majority. The default is 1.                        |
-| marker_gene          | Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. |
+| marker_gene          | Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, COI-NCBI, COI-BOLD, ITS-PLANTS-NCBI, ITS-FUNGI-UNITE, ITS-FUNGI-NCBI, or ALL-NCBI. |
 | e_value              | Expected value (e-value) used by BLAST. The default is 0.001.                                  |
 | lulu                 | If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU). |
 | ITS                  | Set to 'yes' if the reads are ITS.                                                               |
