@@ -45,52 +45,105 @@ taxdump=$(grep '^taxdump:' "$config_file" | awk '{print $2}' | tr -d "'")
 remote=$(grep '^remote:' "$config_file" | awk '{print $2}' | tr -d "'")
 metadata=$(grep '^metadata:' "$config_file" | awk '{print $2}' | tr -d "'")
 
-mkdir -p $workdir/tmp $workdir/singularity
+mkdir -p "$workdir/tmp" "$workdir/singularity"
+export SINGULARITY_CACHEDIR="$workdir/singularity"
+export TMPDIR="$workdir/tmp"
 
-export SINGULARITY_CACHEDIR=$workdir/singularity && \
-export TMPDIR=$workdir/tmp
-
+# ---------------- PIMBA Prepare ----------------
 if [ "$prepare_mode" != "no" ]; then
     if [ "$prepare_mode" == "paired_end" ]; then
+        if [ -z "$rawdatadir" ] || [ ! -d "$rawdatadir" ]; then
+            echo "ERROR: rawdatadir is not defined or does not exist."
+            exit 1
+        fi
         echo "Running PIMBA in paired_end prepare mode"
-        snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $rawdatadir -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+        snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity \
+            --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+            --singularity-args "-B $rawdatadir -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+
     elif [ "$prepare_mode" == "single_index" ]; then
-        echo "Running PIMBA in single_index prepare mode"
+        if [ -z "$raw_fastq_single" ] || [ ! -e "$raw_fastq_single" ]; then
+            echo "ERROR: raw_fastq_single is not defined or does not exist."
+            exit 1
+        fi
         raw_fastq_dir=$(dirname "$raw_fastq_single")
-        snakemake --snakefile workflow/Snakefile_prepare_single_index --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $raw_fastq_dir -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+        echo "Running PIMBA in single_index prepare mode"
+        snakemake --snakefile workflow/Snakefile_prepare_single_index --use-singularity \
+            --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+            --singularity-args "-B $raw_fastq_dir -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+
     elif [ "$prepare_mode" == "dual_index" ]; then
-        echo "Running PIMBA in dual_index prepare mode"
+        if [ -z "$raw_fastq_dual" ] || [ ! -e "$raw_fastq_dual" ]; then
+            echo "ERROR: raw_fastq_dual is not defined or does not exist."
+            exit 1
+        fi
         raw_fastq_dir=$(dirname "$raw_fastq_dual")
-        snakemake --snakefile workflow/Snakefile_prepare_dual_index --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $raw_fastq_dir -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+        echo "Running PIMBA in dual_index prepare mode"
+        snakemake --snakefile workflow/Snakefile_prepare_dual_index --use-singularity \
+            --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+            --singularity-args "-B $raw_fastq_dir -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
     fi
 else
     echo "Skipping PIMBA prepare as specified"
 fi
 
+# ---------------- PIMBA Run ----------------
 if [ "$run_mode" != "no" ]; then
-    if [[ "$run_mode" == *"NCBI"* ]]; then
-        echo "Running PIMBA with database $run_mode plus remote mode as $remote"
-        if [ "$remote" == "yes" ]; then
-            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $taxdump:/taxdump -B $taxdump -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
-        else
-            snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $ncbi_db -B $taxdump:/taxdump -B $taxdump -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
-        fi
-    else
-        db_path=$(grep "^$run_mode-DB:" "$config_file" | awk '{print $2}')
-        if [ -z "$db_path" ]; then
-            echo "Database path for $run_mode-DB not found in config file. Using custom database"
-            db_path=$run_mode
-        fi
-        echo "Running PIMBA with database: $run_mode"
-        snakemake --snakefile workflow/Snakefile_run --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $db_path -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
-    fi
+    case "$run_mode" in
+        "16S-NCBI"|"COI-NCBI"|"ITS-PLANTS-NCBI"|"ITS-FUNGI-NCBI"|"ALL-NCBI")
+            echo "Running PIMBA with database $run_mode plus remote mode as $remote"
+            if [ "$remote" == "yes" ]; then
+                if [ -z "$taxdump" ] || [ ! -d "$taxdump" ]; then
+                    echo "ERROR: taxdump is not defined or does not exist."
+                    exit 1
+                fi
+                snakemake --snakefile workflow/Snakefile_run --use-singularity \
+                    --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+                    --singularity-args "-B $taxdump:/taxdump -B $taxdump -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+            else
+                if [ -z "$ncbi_db" ] || [ ! -d "$ncbi_db" ]; then
+                    echo "ERROR: ncbi_db is not defined or does not exist."
+                    exit 1
+                fi
+                if [ -z "$taxdump" ] || [ ! -d "$taxdump" ]; then
+                    echo "ERROR: taxdump is not defined or does not exist."
+                    exit 1
+                fi
+                snakemake --snakefile workflow/Snakefile_run --use-singularity \
+                    --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+                    --singularity-args "-B $ncbi_db -B $taxdump:/taxdump -B $taxdump -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+            fi
+            ;;
+        *)
+            db_path=$(grep "^$run_mode-DB:" "$config_file" | awk '{print $2}' | tr -d "'")
+            if [ -z "$db_path" ]; then
+                echo "Database path for $run_mode-DB not found in config file. Using custom database"
+                db_path=$run_mode
+            fi
+            if [ ! -d "$db_path" ]; then
+                echo "ERROR: Database path '$db_path' does not exist."
+                exit 1
+            fi
+            echo "Running PIMBA with database: $db_path"
+            snakemake --snakefile workflow/Snakefile_run --use-singularity \
+                --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+                --singularity-args "-B $db_path -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+            ;;
+    esac
 else
     echo "Skipping PIMBA run as specified"
 fi
 
+# ---------------- PIMBA Plot ----------------
 if [ "$plot_mode" == "yes" ]; then
+    if [ -z "$metadata" ] || [ ! -e "$metadata" ]; then
+        echo "ERROR: metadata is not defined or does not exist."
+        exit 1
+    fi
     echo "Plotting graphs as specified"
-    snakemake --snakefile workflow/Snakefile_plot --use-singularity --configfile "$config_file" --cores "$threads" --directory "$workdir" --singularity-args "-B $metadata -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
+    snakemake --snakefile workflow/Snakefile_plot --use-singularity \
+        --configfile "$config_file" --cores "$threads" --directory "$workdir" \
+        --singularity-args "-B $metadata -B $workdir:/mnt -B $workdir/tmp:/tmp --pwd /mnt"
 else
     echo "Skipping graph plotting as specified"
 fi
