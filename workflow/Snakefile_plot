@@ -66,7 +66,7 @@ rule run_plot_graphs:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "plot_graphs_python.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_python_plot:latest"
+        f"{config['sif_dir']}/pimba_python_plot.sif"
     params:
         group_by = config['group_by']
     shell:
@@ -92,7 +92,7 @@ rule run_pvclust:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "plot_pvclust.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_phyloseq:v2"
+        f"{config['sif_dir']}/pimba_phyloseq.sif"
     params:
         group_by = config['group_by']
     shell:

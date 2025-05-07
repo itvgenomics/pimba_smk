@@ -58,7 +58,7 @@ rule run_adapter_removal:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_adapter_removal.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+        f"{config['sif_dir']}/pimba_adapterremoval.sif"
     shell:
         """
         cd {current_path}/results/00-prepare/prepare_output/
@@ -85,7 +85,7 @@ rule run_pear:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_pear.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_pear:v0.9.10"
+        f"{config['sif_dir']}/pimba_pear.sif"
     shell:
         """
         mkdir -p {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}
@@ -104,7 +104,7 @@ rule run_prinseq:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        f"{config['sif_dir']}/pimba_prinseq.sif"
     shell:
         """
         export LANG=C
@@ -123,7 +123,7 @@ rule run_relabel:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_relabel.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        f"{config['sif_dir']}/pimba_qiimepipe.sif"
     shell:
         """
         cd {current_path}/results/00-prepare/assemblies/pear/
@@ -170,7 +170,7 @@ rule run_prinseq_singleton:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq_singleton.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        f"{config['sif_dir']}/pimba_prinseq.sif"
     shell:
         """
         export LANG=C
@@ -189,7 +189,7 @@ rule run_relabel_singleton:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_relabel_singleton.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        f"{config['sif_dir']}/pimba_qiimepipe.sif"
     shell:
         """
         cd {current_path}/results/00-prepare/assemblies/pear/

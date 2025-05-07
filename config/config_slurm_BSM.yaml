@@ -1,10 +1,10 @@
 # config.yaml
 
 # singularity folder
-sif_dir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/singularity_test/'
+sif_dir: '/data1/tiagoleao/pimba_smk/singularity_test/'
 
 # number of threads
-num_threads: 8
+num_threads: 24
 
 # pimba prepare general
 minlength: 100
@@ -12,8 +12,8 @@ minphred: 20
 outputprepare: 'AllSamples'
 
 # pimba prepare paired end
-rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/rawdata_COI/'
-adapters: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/adapters.txt'
+rawdatadir: '/data1/tiagoleao/rawdata_BSM/'
+adapters: '/data1/tiagoleao/pimba_smk/resources/adapters.txt'
 minoverlap: 10
 minsim: 0.9
 merger: 'pear'
@@ -42,7 +42,7 @@ assign_similarity: 0.9
 mincoverage: 0.9
 otu_length: 200
 hits_per_subject: 1
-marker_gene: 'COI-BOLD'
+marker_gene: '16S-GREENGENES'
 e_value: 0.001
 lulu: 'no'
 ITS: 'no'
@@ -51,16 +51,16 @@ db_type: 'nt'
 
 # database files
 16S-SILVA-DB: ''
-COI-BOLD-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/COI_BOLD/'
-16S-GREENGENES-DB: ''
+COI-BOLD-DB: ''
+16S-GREENGENES-DB: '/data1/databases/gg_13_8_otus/'
 16S-RDP-DB: ''
 NCBI-DB: ''
 ITS-FUNGI-UNITE-DB: ''
 taxdump: ''
 
 # pimba plot
-metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/mapping_file_COI.csv'
-group_by: 'Species'
+metadata: '/data1/tiagoleao/pimba_smk/mapping_file_BSM.csv'
+group_by: 'False'
 
 # pimba place
 place_otu_table: ''
