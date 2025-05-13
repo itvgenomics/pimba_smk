@@ -1,8 +1,8 @@
 rule run_prinseq:
     input:
-        assembled = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.assembled.fastq")
+        assembled = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.assembled.fastq")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.fasta"),
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta"),
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq", "{sample}.log")
     benchmark:
@@ -13,15 +13,15 @@ rule run_prinseq:
         """
         export LANG=C
         export LC_ALL=C
-        prinseq-lite.pl -fastq {input.assembled} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}.assembled \
+        prinseq-lite.pl -fastq {input.assembled} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled \
         > {log} 2>&1
         """
 
 rule run_relabel:
     input:
-        assembled_fasta = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.fasta")
+        assembled_fasta = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_notSingleton.fasta")
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}_relabel_notSingleton.fasta")
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "qiimepipe", "{sample}.log")
     benchmark:
@@ -30,7 +30,7 @@ rule run_relabel:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
         """
-        cd {current_path}/results/00-prepare/assemblies/pear/
+        cd {current_path}/results/00-prepare/assemblies/
         python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.fasta . \
         > {log} 2>&1
         mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_notSingleton.fasta
@@ -38,14 +38,14 @@ rule run_relabel:
 
 rule concatenate_and_rename:
     input:
-        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES)
+        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES)
     output:
         os.path.join(current_path, "results", "00-prepare", config["outputprepare"] + ".fasta")
     params:
         outputname = config["outputprepare"]
     shell:
         """
-        cd {current_path}/results/00-prepare/assemblies/pear/
+        cd {current_path}/results/00-prepare/assemblies/
         cat *relabel_notSingleton.fasta > {params.outputname}.fasta
         mv {params.outputname}.fasta {current_path}/results/00-prepare/
         """

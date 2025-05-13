@@ -67,38 +67,64 @@ rule run_adapter_removal:
         > {log} 2>&1
         rm {input.r1} {input.r2}
         """
-
-rule run_pear:
-    input:
-        pair1 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
-        pair2 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair2.truncated"),
-    output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.assembled.fastq"),
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.discarded.fastq"),
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.unassembled.forward.fastq"),
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.unassembled.reverse.fastq")
-    params:
-        num_threads = config["num_threads"],
-        minoverlap = config["minoverlap"]
-    log:
-        os.path.join(current_path, "results", "00-prepare", "logs", "pear", "{sample}.log")
-    benchmark:
-        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_pear.txt")
-    singularity:
-        "docker://itvdsbioinfo/pimba_pear:v0.9.10"
-    shell:
-        """
-        mkdir -p {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}
-        pear -j {params.num_threads} -f {input.pair1} -v {params.minoverlap} -r {input.pair2} -o {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}/{wildcards.sample} \
-        > {log} 2>&1
-        for i in {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}/*.assembled.fastq; do sed -i "s/ /_/g" $i; done
-        """
+if config["merger"] == "pear":
+    rule run_pear:
+        input:
+            pair1 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
+            pair2 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair2.truncated"),
+        output:
+            os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.assembled.fastq"),
+            os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.discarded.fastq"),
+            os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.unassembled.forward.fastq"),
+            os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.unassembled.reverse.fastq")
+        params:
+            num_threads = config["num_threads"],
+            minoverlap = config["minoverlap"]
+        log:
+            os.path.join(current_path, "results", "00-prepare", "logs", "pear", "{sample}.log")
+        benchmark:
+            os.path.join(current_path, "results", "benchmark", "{sample}_prepare_pear.txt")
+        singularity:
+            "docker://itvdsbioinfo/pimba_pear:v0.9.10"
+        shell:
+            """
+            mkdir -p {current_path}/results/00-prepare/assemblies/{wildcards.sample}
+            pear -j {params.num_threads} -f {input.pair1} -v {params.minoverlap} -r {input.pair2} -o {current_path}/results/00-prepare/assemblies/{wildcards.sample}/{wildcards.sample} \
+            > {log} 2>&1
+            for i in {current_path}/results/00-prepare/assemblies/{wildcards.sample}/*.assembled.fastq; do sed -i "s/ /_/g" $i; done
+            """
+else:
+    rule run_overlapper:
+        input:
+            pair1 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
+            pair2 = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair2.truncated"),
+        output:
+            assembled = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.assembled.fastq"),
+            un_forward = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.unassembled.forward.fastq"),
+            un_reverse = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.unassembled.reverse.fastq")
+        params:
+            minoverlap = config["minoverlap"],
+            minsim = config["minsim"]
+        log:
+            os.path.join(current_path, "results", "00-prepare", "logs", "overlapper", "{sample}.log")
+        benchmark:
+            os.path.join(current_path, "results", "benchmark", "{sample}_prepare_overlapper.txt")
+        shell:
+            """
+            mkdir -p {current_path}/results/00-prepare/assemblies/{wildcards.sample}
+            cd {current_path}/results/00-prepare/assemblies/{wildcards.sample}
+            python {current_path}/workflow/scripts/overlapper.py -f {input.pair1} -r {input.pair2} --mo {params.minoverlap} --ms {params.minsim} > {log} 2>&1
+            mv overlapped.fastq {output.assembled}
+            mv notAssembled-1.fastq {output.un_forward}
+            mv notAssembled-2.fastq {output.un_reverse}
+            for i in {current_path}/results/00-prepare/assemblies/{wildcards.sample}/*.assembled.fastq; do sed -i "s/ /_/g" $i; done
+            """
 
 rule run_prinseq:
     input:
-        assembled = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.assembled.fastq")
+        assembled = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.assembled.fastq")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.fasta"),
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta"),
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq", "{sample}.log")
     benchmark:
@@ -109,15 +135,15 @@ rule run_prinseq:
         """
         export LANG=C
         export LC_ALL=C
-        prinseq-lite.pl -fastq {input.assembled} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}.assembled \
+        prinseq-lite.pl -fastq {input.assembled} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled \
         > {log} 2>&1
         """
 
 rule run_relabel:
     input:
-        assembled_fasta = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.fasta")
+        assembled_fasta = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_notSingleton.fasta")
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}_relabel_notSingleton.fasta")
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "qiimepipe", "{sample}.log")
     benchmark:
@@ -126,7 +152,7 @@ rule run_relabel:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
         """
-        cd {current_path}/results/00-prepare/assemblies/pear/
+        cd {current_path}/results/00-prepare/assemblies/
         python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.fasta . \
         > {log} 2>&1
         mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_notSingleton.fasta
@@ -134,26 +160,26 @@ rule run_relabel:
 
 rule concatenate_and_rename:
     input:
-        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES)
+        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}_relabel_notSingleton.fasta"), sample=SAMPLES)
     output:
         os.path.join(current_path, "results", "00-prepare", config["outputprepare"] + ".fasta")
     params:
         outputname = config["outputprepare"]
     shell:
         """
-        cd {current_path}/results/00-prepare/assemblies/pear/
+        cd {current_path}/results/00-prepare/assemblies/
         cat *relabel_notSingleton.fasta > {params.outputname}.fasta
         mv {params.outputname}.fasta {current_path}/results/00-prepare/
         """
 
 rule concatenate_singletons:
     input:
-        assembled_fastq = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.assembled.fastq"),
-        unassembled_forward = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.unassembled.forward.fastq"),
-        unassembled_reverse = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}.unassembled.reverse.fastq"),
+        assembled_fastq = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.assembled.fastq"),
+        unassembled_forward = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.unassembled.forward.fastq"),
+        unassembled_reverse = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.unassembled.reverse.fastq"),
         singleton_truncated = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.singleton.truncated")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}_withSingleton.fastq")
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}_withSingleton.fastq")
     shell:
         """
         cat {input.assembled_fastq} {input.unassembled_forward} {input.unassembled_reverse} {input.singleton_truncated} > {output}
@@ -162,9 +188,9 @@ rule concatenate_singletons:
 
 rule run_prinseq_singleton:
     input:
-        assembled_singleton = os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}", "{sample}_withSingleton.fastq")
+        assembled_singleton = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}_withSingleton.fastq")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.withSingleton.fasta"),
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.withSingleton.fasta"),
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq_singleton", "{sample}.log")
     benchmark:
@@ -175,15 +201,15 @@ rule run_prinseq_singleton:
         """
         export LANG=C
         export LC_ALL=C
-        prinseq-lite.pl -fastq {input.assembled_singleton} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/pear/{wildcards.sample}.assembled.withSingleton \
+        prinseq-lite.pl -fastq {input.assembled_singleton} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled.withSingleton \
         > {log} 2>&1
         """
 
 rule run_relabel_singleton:
     input:
-        assembled_fasta_singleton = expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}.assembled.withSingleton.fasta"), sample=SAMPLES)
+        assembled_fasta_singleton = expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.withSingleton.fasta"), sample=SAMPLES)
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_withSingleton.fasta")
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}_relabel_withSingleton.fasta")
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "qiimepipe_singleton", "{sample}.log")
     benchmark:
@@ -192,7 +218,7 @@ rule run_relabel_singleton:
         "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
         """
-        cd {current_path}/results/00-prepare/assemblies/pear/
+        cd {current_path}/results/00-prepare/assemblies/
         python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.withSingleton.fasta . \
         > {log} 2>&1
         mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_withSingleton.fasta
@@ -200,14 +226,14 @@ rule run_relabel_singleton:
 
 rule concatenate_and_rename_singletons:
     input:
-        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "pear", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES)
+        expand(os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}_relabel_withSingleton.fasta"), sample=SAMPLES)
     output:
         os.path.join(current_path, "results", "00-prepare", config["outputprepare"] + "_withSingleton.fasta")
     params:
         outputname = config["outputprepare"]
     shell:
         """
-        cd {current_path}/results/00-prepare/assemblies/pear/
+        cd {current_path}/results/00-prepare/assemblies/
         cat *_relabel_withSingleton.fasta > {params.outputname}_withSingleton.fasta
         mv {params.outputname}_withSingleton.fasta {current_path}/results/00-prepare/
         rm -r {current_path}/results/00-prepare/assemblies/

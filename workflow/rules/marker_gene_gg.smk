@@ -92,5 +92,5 @@ rule run_create_abundance_file:
         mkdir -p {output.abundance_file_dir}
         cd {output.abundance_file_dir}
         echo "Running the QiimePipe Container - createAbundanceFile.py: "
-        python /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+        python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
         """
