@@ -87,7 +87,7 @@ rule run_create_abundance_file:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:latest"
+        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
     shell:
         """
         mkdir -p {output.abundance_file_dir}

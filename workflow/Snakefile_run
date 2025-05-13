@@ -601,7 +601,7 @@ if marker_gene == "16S-SILVA":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:latest"
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -699,7 +699,7 @@ elif marker_gene == "16S-GREENGENES":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:latest"
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -742,7 +742,7 @@ elif marker_gene == "16S-RDP":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:latest"
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -1196,7 +1196,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:latest"
+            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
         shell:
             """
             mkdir -p {output.abundance_file_dir}
