@@ -607,7 +607,7 @@ if marker_gene == "16S-SILVA":
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
             """
 
 elif marker_gene == "16S-GREENGENES":
@@ -705,7 +705,7 @@ elif marker_gene == "16S-GREENGENES":
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
             """
 
 elif marker_gene == "16S-RDP":
@@ -748,7 +748,7 @@ elif marker_gene == "16S-RDP":
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
             """
 
 elif marker_gene == "16S-NCBI":
@@ -1202,7 +1202,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
             mkdir -p {output.abundance_file_dir}
             cd {output.abundance_file_dir}
             echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
             """
 
 elif marker_gene == "ITS-FUNGI-NCBI":
