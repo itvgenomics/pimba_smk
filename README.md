@@ -105,7 +105,7 @@ If the user wishes to run PIMBA for paired-end reads, it is necessary to configu
 | rawdatadir | The path to the directory where the reads are located. |
 | adapters | The path to the adapter file within the resources directory. |
 | minoverlap | Minimum overlap to merge paired reads. Default is 10 bases. |
-| minsim |  Minimum similarity to merge paired reads. Default is 90% similarity. |
+| minsim |  Minimum similarity to merge paired reads (only for OverlapPER). Default is 0.9 (90%) similarity. |
 | merger | Select the paired read merger between "pear" (PEAR) and "overlapper" (OverlapPER). |
 
 #### Inputs for single end and single index reads
