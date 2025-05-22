@@ -167,12 +167,29 @@ The links for downloading the databases can be found here:
 - BOLD for COI: https://onedrive.live.com/?authkey=%21AMxWRtW1Kj%5FEdWo&id=21DAD68EB08355AE%2189152&cid=21DAD68EB08355AE&parId=root&parQt=sharedby&o=OneUp
 
 #### Inputs for the Plot Mode
-This section refers to generating plots for the processed results. To run PIMBA plot, configure:
+This section refers to generating plots for the processed results. To run PIMBA Plot, configure:
 
 | Parameter | Description |
 | ----------- | ----------- |
 | metadata | The path to the metadata file. |
 | group_by | Set "group_by" with the metadata parameter to group the samples (use "False" for not grouping the samples). |
+
+#### Inputs for the Place Mode
+This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with:
+
+| Parameter | Description |
+| ----------- | ----------- |
+| samples | List of input FASTA files (unclassified OTUs). It can be a single file or a list with several files, using -"" to list each one of the files. |
+| reference-tree | Reference tree in newick format. |
+| reference-alignment | Reference alignment in FASTA format. Needs to contain the same sequences (by name) as the reference tree. |
+| taxonomy-file | File containing a tab-separated list of reference taxon with full taxonomic string assignments to the names in the reference tree file (see example below). |
+| datatype | Type of data, 'nt' for DNA, 'aa' for protein. |
+
+~~~
+EF635241.1_Pseudoalteromonas_sp._BSw20683	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
+MT634734.1_Pseudoalteromonas_sp._strain_GAMAL14_SWC	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
+MT634729.1_Pseudoalteromonas_sp._strain_GAMAL3_SWC	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
+~~~
 
 ### B) Run the "pimba_smk_main.sh" file
 The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
@@ -180,6 +197,7 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-p": PIMBA preparation mode; choose between "paired_end", "single_index", "dual_index", or "no".
 - "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene. To skip, indicate "no".
 - "-g": PIMBA plotting mode; choose between "yes" or "no".
+- "-l": PIMBA Place mode (for phylogenetic placement of unclassified OTUs); choose between "yes" or "no".
 - "-t": number of processors.
 - "-c": the path to the config file.
 - "-d": the path to the working directory.
@@ -187,7 +205,7 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 #### Example of Testing: 
 Use the data in the "test_data" folder to test the algorithm by running it. First, modify the correct paths in the config file (including the path to the BOLD database), and then run the following command:
 
-`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -t 8 -c config/config.yaml -d .`
+`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d .`
 
 ## Configure your personalized database
 Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
