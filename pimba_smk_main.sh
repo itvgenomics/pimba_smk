@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SECONDS=0
+
 # Function to display help message
 show_help() {
     echo "Usage: $0 -p <PIMBA prepare mode> -r <PIMBA run mode> -g <PIMBA plot mode> -t <number of threads> -c <config file> -d <work directory>"
@@ -13,7 +15,7 @@ show_help() {
 }
 
 # Parse command-line arguments
-while getopts ":p:r:g:t:c:d:" opt; do
+while getopts ":p:r:g:t:c:d:l:" opt; do
     case ${opt} in
         p ) prepare_mode=$OPTARG ;;
         r ) run_mode=$OPTARG ;;
@@ -21,13 +23,14 @@ while getopts ":p:r:g:t:c:d:" opt; do
         t ) threads=$OPTARG ;;
         c ) config_file=$OPTARG ;;
         d ) workdir=$OPTARG ;;
+        l ) place_mode=$OPTARG ;;
         \? ) echo "Invalid option: -$OPTARG" 1>&2; show_help ;;
         : ) echo "Invalid option: -$OPTARG requires an argument" 1>&2; show_help ;;
     esac
 done
 
 # Check if all required arguments are provided
-if [ -z "$prepare_mode" ] || [ -z "$run_mode" ] || [ -z "$plot_mode" ] || [ -z "$threads" ] || [ -z "$config_file" ] || [ -z "$workdir" ]; then
+if [ -z "$prepare_mode" ] || [ -z "$run_mode" ] || [ -z "$plot_mode" ] || [ -z "$threads" ] || [ -z "$config_file" ] || [ -z "$workdir" ] || [ -z "$place_mode" ]; then
     echo "All arguments must be provided"
     show_help
 fi
@@ -85,7 +88,7 @@ if [ "$prepare_mode" != "no" ]; then
             --singularity-args "-B $raw_fastq_dir"
     fi
 else
-    echo "Skipping PIMBA prepare as specified"
+    echo "Skipping PIMBA Prepare as specified"
 fi
 
 # ---------------- PIMBA Run ----------------
@@ -133,7 +136,7 @@ if [ "$run_mode" != "no" ]; then
             ;;
     esac
 else
-    echo "Skipping PIMBA run as specified"
+    echo "Skipping PIMBA Run as specified"
 fi
 
 # ---------------- PIMBA Plot ----------------
@@ -150,4 +153,13 @@ else
     echo "Skipping graph plotting as specified"
 fi
 
-echo "Script execution completed"
+# ---------------- PIMBA Place ----------------
+
+if [ "$place_mode" == "yes" ]; then
+    snakemake --snakefile workflow/Snakefile_place --cores "$threads" --use-conda --configfile config/config_place.yaml --conda-frontend conda
+else
+    echo "Skipping PIMBA Place as specified"
+fi
+
+duration=$SECONDS
+echo "Script execution completed in $((duration / 60)) minutes and $((duration % 60)) seconds"
