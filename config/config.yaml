@@ -58,11 +58,3 @@ taxdump: ''
 # pimba plot
 metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/mapping_file_COI.csv'
 group_by: 'Species'
-
-# pimba place
-place_otu_table: ''
-place_newick: ''
-place_alignment: ''
-place_taxonpath: ''
-place_datatype: ''
-place_outputdir: ''
