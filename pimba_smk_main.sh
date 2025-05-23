@@ -15,7 +15,7 @@ show_help() {
 }
 
 # Parse command-line arguments
-while getopts ":p:r:g:t:c:d:l:" opt; do
+while getopts ":p:r:g:t:c:d:l:u" opt; do
     case ${opt} in
         p ) prepare_mode=$OPTARG ;;
         r ) run_mode=$OPTARG ;;
@@ -24,6 +24,7 @@ while getopts ":p:r:g:t:c:d:l:" opt; do
         c ) config_file=$OPTARG ;;
         d ) workdir=$OPTARG ;;
         l ) place_mode=$OPTARG ;;
+        u ) SETUNLOCK="--unlock" ;;
         \? ) echo "Invalid option: -$OPTARG" 1>&2; show_help ;;
         : ) echo "Invalid option: -$OPTARG requires an argument" 1>&2; show_help ;;
     esac
@@ -63,7 +64,7 @@ if [ "$prepare_mode" != "no" ]; then
         echo "Running PIMBA in paired_end prepare mode"
         snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity \
             --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-            --singularity-args "-B $rawdatadir -B $adapters"
+            --singularity-args "-B $rawdatadir -B $adapters" ${SETUNLOCK}
     
     elif [ "$prepare_mode" == "single_index" ]; then
         if [ -z "$raw_fastq_single" ] || [ ! -e "$raw_fastq_single" ]; then
@@ -74,7 +75,7 @@ if [ "$prepare_mode" != "no" ]; then
         echo "Running PIMBA in single_index prepare mode"
         snakemake --snakefile workflow/Snakefile_prepare_single_index --use-singularity \
             --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-            --singularity-args "-B $raw_fastq_dir"
+            --singularity-args "-B $raw_fastq_dir" ${SETUNLOCK}
 
     elif [ "$prepare_mode" == "dual_index" ]; then
         if [ -z "$raw_fastq_dual" ] || [ ! -e "$raw_fastq_dual" ]; then
@@ -85,7 +86,7 @@ if [ "$prepare_mode" != "no" ]; then
         echo "Running PIMBA in dual_index prepare mode"
         snakemake --snakefile workflow/Snakefile_prepare_dual_index --use-singularity \
             --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-            --singularity-args "-B $raw_fastq_dir"
+            --singularity-args "-B $raw_fastq_dir" ${SETUNLOCK}
     fi
 else
     echo "Skipping PIMBA Prepare as specified"
@@ -103,7 +104,7 @@ if [ "$run_mode" != "no" ]; then
                 echo "Running PIMBA with database $run_mode plus remote mode as $remote"
                 snakemake --snakefile workflow/Snakefile_run --use-singularity \
                     --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-                    --singularity-args "-B $taxdump:/taxdump -B $taxdump"
+                    --singularity-args "-B $taxdump:/taxdump -B $taxdump" ${SETUNLOCK}
             else
                 if [ -z "$ncbi_db" ] || [ ! -d "$ncbi_db" ]; then
                     echo "ERROR: ncbi_db is not defined or does not exist."
@@ -116,7 +117,7 @@ if [ "$run_mode" != "no" ]; then
                 echo "Running PIMBA with database $run_mode plus remote mode as $remote"
                 snakemake --snakefile workflow/Snakefile_run --use-singularity \
                     --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-                    --singularity-args "-B $ncbi_db -B $taxdump:/taxdump -B $taxdump"
+                    --singularity-args "-B $ncbi_db -B $taxdump:/taxdump -B $taxdump" ${SETUNLOCK}
             fi
             ;;
         *)
@@ -132,7 +133,7 @@ if [ "$run_mode" != "no" ]; then
             echo "Running PIMBA with database: $db_path"
             snakemake --snakefile workflow/Snakefile_run --use-singularity \
                 --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-                --singularity-args "-B $db_path"
+                --singularity-args "-B $db_path" ${SETUNLOCK}
             ;;
     esac
 else
@@ -148,7 +149,7 @@ if [ "$plot_mode" == "yes" ]; then
     echo "Plotting graphs as specified"
     snakemake --snakefile workflow/Snakefile_plot --use-singularity \
         --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-        --singularity-args "-B $metadata"
+        --singularity-args "-B $metadata" ${SETUNLOCK}
 else
     echo "Skipping graph plotting as specified"
 fi
@@ -156,7 +157,7 @@ fi
 # ---------------- PIMBA Place ----------------
 
 if [ "$place_mode" == "yes" ]; then
-    snakemake --snakefile workflow/Snakefile_place --cores "$threads" --use-conda --configfile config/config_place.yaml --conda-frontend conda
+    snakemake --snakefile workflow/Snakefile_place --cores "$threads" --use-conda --configfile config/config_place.yaml --conda-frontend conda ${SETUNLOCK}
 else
     echo "Skipping PIMBA Place as specified"
 fi
