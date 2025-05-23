@@ -211,9 +211,9 @@ Use the data in the "test_data" folder to test the algorithm by running it. Firs
 `bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d .`
 
 #### Unlocking the working directory
-If the execution of the Snakemake is interrupted, the working directory will be locked. To unlock it, run the code with the flag `-unlock` as in this example below and then run it again without the flag.
+If the execution of the Snakemake is interrupted, the working directory will be locked. To unlock it, run the code with the flag `-u` as in this example below and then run it again without the flag.
 
-`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d . -unlock`
+`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d . -u`
 
 ## Configure your personalized database
 Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
