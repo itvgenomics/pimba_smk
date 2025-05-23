@@ -2,9 +2,9 @@
 
 Authors: Tiago Ferreira Leão, Renato R. M. Oliveira
 
-Document Version: 1.2
+Document Version: 1.3
 
-Date: 05/05/2025
+Date: 23/05/2025
 
 ## Description
 <p align="center">
@@ -175,11 +175,11 @@ This section refers to generating plots for the processed results. To run PIMBA 
 | group_by | Set "group_by" with the metadata parameter to group the samples (use "False" for not grouping the samples). |
 
 #### Inputs for the Place Mode
-This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with:
+This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with these parameters (the remaining parameters can be left as default):
 
 | Parameter | Description |
 | ----------- | ----------- |
-| samples | List of input FASTA files (unclassified OTUs). It can be a single file or a list with several files, using -"" to list each one of the files. |
+| samples | List of input FASTA files (unclassified OTUs to be placed). It can be a single file or a list with several files, using -"" to list each one of the files. |
 | reference-tree | Reference tree in newick format. |
 | reference-alignment | Reference alignment in FASTA format. Needs to contain the same sequences (by name) as the reference tree. |
 | taxonomy-file | File containing a tab-separated list of reference taxon with full taxonomic string assignments to the names in the reference tree file (see example below). |
@@ -189,7 +189,10 @@ This section is optional and refers to generating a tree with unclassified OTUs 
 EF635241.1_Pseudoalteromonas_sp._BSw20683	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
 MT634734.1_Pseudoalteromonas_sp._strain_GAMAL14_SWC	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
 MT634729.1_Pseudoalteromonas_sp._strain_GAMAL3_SWC	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
+...
 ~~~
+
+The output ".jplace" file containing the tree with the OTUs placed can be found at `/results/03-placed/no_clustering/placed/` and it can be visualized using iTOL (https://itol.embl.de/).
 
 ### B) Run the "pimba_smk_main.sh" file
 The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
@@ -202,10 +205,15 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-c": the path to the config file.
 - "-d": the path to the working directory.
 
-#### Example of Testing: 
+#### Example of testing: 
 Use the data in the "test_data" folder to test the algorithm by running it. First, modify the correct paths in the config file (including the path to the BOLD database), and then run the following command:
 
 `bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d .`
+
+#### Unlocking the working directory
+If the execution of the Snakemake is interrupted, the working directory will be locked. To unlock it, run the code with the flag `-unlock` as in this example below and then run it again without the flag.
+
+`bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d . -unlock`
 
 ## Configure your personalized database
 Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
@@ -228,7 +236,7 @@ Then, install blastn on your computer and run makeblastdb in your fasta file:
 
 After that, you need is to set the /path/to/your/database/ in the config variable `marker_gene` and run the bash script like this example:
 
-`bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -t 8 -c config/config.yaml`
+`bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -l no -t 8 -c config/config.yaml -d .`
 
 ## References
 
