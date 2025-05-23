@@ -1,7 +1,7 @@
 #PBS -l nodes=1:ppn=24
-#PBS -N smk_run_COI
-#PBS -o smk_run_COI.log
-#PBS -e smk_run_COI.err
+#PBS -N smk_test_COI
+#PBS -o smk_test_COI.log
+#PBS -e smk_test_COI.err
 
 
 CORES=$[ `cat $PBS_NODEFILE | wc -l` ]
@@ -18,7 +18,7 @@ cd $PBS_O_WORKDIR
 source /mnt/gen/opt/softwares/miniconda3/etc/profile.d/conda.sh
 conda activate snakemake
 
-bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -t 24 -c config/config.yaml -d .
+bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 24 -c config/config.yaml -d .
 
 
 TEND=`echo "print time();" | perl`

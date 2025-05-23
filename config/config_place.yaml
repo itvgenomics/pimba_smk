@@ -14,15 +14,11 @@ data:
   # Reference tree in newick format.
   reference-tree: "/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/place_smk/place_inputs/RAxML_bipartitions.newick"
 
-  # Reference alignment, preferrably in fasta format, but currently, any format that is accepted
-  # by hmmbuild also works here.
-  # TODO might need to change this once we allow for different alignment tools as well!
+  # Reference alignment in fasta format
   # Needs to contain the same sequences (by name) as the reference tree above.
   reference-alignment: "/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/place_smk/place_inputs/assigned_ncbi_sequences_aligned_trimmed.fasta"
 
-  # OPTIONAL File containing a tab-separated list of reference taxon to taxonomic string assignments, as
-  # used by 'gappa assign'. If provided, taxonomic assignment is added as an output
-  # taxonomy-file: "data/reference/taxopaths.tsv"
+  # File containing a tab-separated list of reference taxon to taxonomic string assignments
   taxonomy-file: "/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/place_smk/place_inputs/taxonpath_final.tsv"
 
 # =================================================================================================
