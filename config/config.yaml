@@ -45,6 +45,7 @@ lulu: 'no'
 ITS: 'no'
 remote: 'yes'
 db_type: 'nt'
+create_excel: 'yes'
 
 # database files
 16S-SILVA-DB: ''

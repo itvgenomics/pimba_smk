@@ -19,6 +19,7 @@ lulu = config['lulu']
 ITS = config['ITS']
 NCBI_DB = config['NCBI-DB']
 remote = config['remote']
+excel = config['create_excel']
 
 # Define the list of files for the `all` rule
 files_for_all_rule = [
@@ -26,6 +27,10 @@ files_for_all_rule = [
     os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
     os.path.join(output_dir, file_name_raw + '_biom_table')
 ]
+
+# Conditionally include outputs if excel table should be create
+if excel == 'yes':
+    files_for_all_rule.append(os.path.join(output_dir, 'output', file_name_raw + '_tax_assignments_to_validate.xlsx'))
 
 # Conditionally include outputs if marker gene is 16S SILVA
 if marker_gene == "16S-SILVA":
@@ -1597,3 +1602,26 @@ rule summarize_biom_table:
         echo "Running the Biom-Format Container - summarize-table: "
         biom summarize-table -i {input.biom_with_metadata} -o {output.summary} &> {log}
         """
+
+if excel == 'yes':
+    rule r_curation:
+        input:
+            otu_file = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
+            tax_file = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
+            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+        output:
+            xlsx = os.path.join(output_dir, 'output', file_name_raw + '_tax_assignments_to_validate.xlsx')
+        log:
+            os.path.join(current_path, 'results', '01-run', 'logs', 'r_curation', file_name_raw + '.log')
+        benchmark:
+            os.path.join(current_path, "results", "benchmark", "run_r_curation.txt")
+        singularity:
+            "docker://itvdsbioinfo/r_curation:v1"
+        shell:
+            """
+            Rscript /app/main.R \
+                {input.tax_file} \
+                {input.otu_file} \
+                {input.fasta_file} \
+                {output.xlsx} > {log} 2>&1
+            """
