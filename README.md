@@ -150,6 +150,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | ITS                  | Set to 'yes' if the reads are ITS.                                                               |
 | remote | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
 | db_type | Define the NCBI BLAST database, for example, nt, core_nt and so on. |
+| create_excel | If set to 'yes', PIMBA will create an excel sheet for manual curation, flagging inconsistent OTUs/ASVs. The default is 'yes' |
 
 #### Database paths
 Depending on the database used, provide the full path to the files related to that database. Snakemake will only use the path specified in the "marker_gene" option from the previous item, so only the specified marker gene needs to be configured. Additionally, for runs including the NCBI database, the taxdump folder needs to be downloaded and the full path needs to be included in the config file. Use the following commands to download and uncompress the taxdump folder:
@@ -237,6 +238,10 @@ Then, install blastn on your computer and run makeblastdb in your fasta file:
 After that, you need is to set the /path/to/your/database/ in the config variable `marker_gene` and run the bash script like this example:
 
 `bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -l no -t 8 -c config/config.yaml -d .`
+
+## Manual curation
+
+This mode is optional but recommended. If create_excel is set to 'yes' in the config.yaml file, PIMBA will create an excel sheet to flag inconsistent OTU/ASV records. Instructions for manual curation can be found in the `manual_curation_guide.pdf`.
 
 ## References
 
