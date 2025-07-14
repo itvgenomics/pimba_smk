@@ -87,6 +87,7 @@ The config.yaml file (inside the config folder) is the general configuration fil
 | Parameter | Description |
 | ----------- | ----------- |
 | num_threads | The num_threads option indicates the maximum number of processors to be used for tasks that allow parallelization. |
+| sif_dir | Directory to build all singularity image files used in the pipeline. If the path already contains the images, they will not be pulled. |
 
 #### General options for the Prepare Mode
 If the user wishes to run the "prepare" mode to prepare the reads for the "run" mode, edit the following options:
