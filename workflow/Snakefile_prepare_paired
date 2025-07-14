@@ -58,7 +58,7 @@ rule run_adapter_removal:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_adapter_removal.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_adapterremoval")
     shell:
         """
         cd {current_path}/results/00-prepare/prepare_output/
@@ -85,7 +85,7 @@ if config["merger"] == "pear":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "{sample}_prepare_pear.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_pear:v0.9.10"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_pear")
         shell:
             """
             mkdir -p {current_path}/results/00-prepare/assemblies/{wildcards.sample}
@@ -130,7 +130,7 @@ rule run_prinseq:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
     shell:
         """
         export LANG=C
@@ -149,7 +149,7 @@ rule run_relabel:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_relabel.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
     shell:
         """
         cd {current_path}/results/00-prepare/assemblies/
@@ -196,7 +196,7 @@ rule run_prinseq_singleton:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq_singleton.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
     shell:
         """
         export LANG=C
@@ -215,7 +215,7 @@ rule run_relabel_singleton:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_relabel_singleton.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
     shell:
         """
         cd {current_path}/results/00-prepare/assemblies/

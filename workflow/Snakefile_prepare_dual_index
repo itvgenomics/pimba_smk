@@ -31,7 +31,7 @@ rule run_fastx_barcode_splitter_forbol:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter_forbol', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_fastxtoolkit")
     shell:
         """
         echo "Creating and running a fastxtoolkit Container: "
@@ -49,7 +49,7 @@ rule run_fastx_barcode_splitter_reveol:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter_reveol', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_fastxtoolkit")
     shell:
         """
         cat {input.unmatchedforbol} | fastx_barcode_splitter.pl --bcfile {input.barcodes_3end_rev} --prefix {current_path}/results/00-prepare/prepare_output/indexreveol_ --suffix .fastq --eol --exact > {log} 2>&1
@@ -61,7 +61,7 @@ rule run_fastx_reverse_complement_reveol:
     output:
         creveol_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "indexcreveol_{sample}.fastq")
     singularity:
-        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_fastxtoolkit")
     shell:
         """
         fastx_reverse_complement -i {input.reveol_file} > {output.creveol_file}
@@ -89,7 +89,7 @@ rule run_qiimepipe_strip:
         reverse_adapter = config["reverse_adapter"],
         barcodes_3end_fasta = config["barcodes_3end_fasta"]
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
     shell:
         """
         echo "Running the QiimePipe Container: "
@@ -105,7 +105,7 @@ rule run_prinseq:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq', config["outputprepare"] + '_{sample}' + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
     shell:
         """
         echo "Creating and running a Prinseq Container: "
@@ -121,7 +121,7 @@ rule run_fastx_reverse_complement_filtered:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_reverse_complement_filtered', config["outputprepare"] + '_{sample}' + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_fastxtoolkit")
     shell:
         """
         echo "Creating and running a fasxttoolkit Container: "
@@ -138,7 +138,7 @@ rule run_qiimepipe_strip_revclipped:
         forward_adapter = config["forward_adapter"],
         barcodes_5end_dir = config["barcodes_5end_dir"]
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
     shell:
         """
         echo "Running the QiimePipe Container: "
@@ -171,7 +171,7 @@ rule run_adapter_removal:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_adapterremoval")
     shell:
         """
         echo "Creating and running an AdapterRemoval Container: "
@@ -189,7 +189,7 @@ rule run_prinseq_truncated:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
     shell:
         """
         echo "Creating and running a Prinseq Container: "

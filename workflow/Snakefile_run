@@ -82,7 +82,7 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-FUNGI-UNITE":
         params:
             threads = config['num_threads']
         singularity:
-            "docker://metashot/itsx:1.1.2-1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "itsx")
         shell:
             """
             echo "Running the ITSx Container: "
@@ -102,7 +102,7 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-FUNGI-UNITE":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_derep.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Creating a VSEARCH Container: "
@@ -121,7 +121,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         params:
             threads = config['num_threads']
         singularity:
-            "docker://metashot/itsx:1.1.2-1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "itsx")
         shell:
             """
             echo "Running the ITSx Container: "
@@ -141,7 +141,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_derep.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Creating a VSEARCH Container: "
@@ -160,7 +160,7 @@ elif ITS == 'yes':
         params:
             threads = config['num_threads']
         singularity:
-            "docker://metashot/itsx:1.1.2-1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "itsx")
         shell:
             """
             echo "Running the ITSx Container: "
@@ -180,7 +180,7 @@ elif ITS == 'yes':
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_derep.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Creating a VSEARCH Container: "
@@ -197,7 +197,7 @@ else:
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_derep.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Running the VSEARCH Container - --derep_fulllength:"
@@ -215,7 +215,7 @@ rule run_vsearch_sort:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_vsearch_sort.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
     shell:
         """
         echo "Running the VSEARCH Container - --sortbysize: "
@@ -234,7 +234,7 @@ rule run_vsearch_trim:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_vsearch_trim.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
     shell:
         """
         if [ {params.otu_length} != "0" ]; then
@@ -260,7 +260,7 @@ if strategy == "otu":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_otu_clustering.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Running the VSEARCH Container - --cluster_size: "
@@ -281,7 +281,7 @@ if strategy == "asv":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_asv_fastx.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Running the VSEARCH Container - --fastx_filter: "
@@ -299,7 +299,7 @@ if strategy == "asv":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_swarm_derep.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_swarm:v3.1.0"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_swarm")
         shell:
             """
             echo "Running the SWARM Container: "
@@ -317,7 +317,7 @@ if strategy == "asv":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_find_asvs_with_swarm.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_swarm:v3.1.0"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_swarm")
         shell:
             """
             swarm -f -t {params.threads} -w {output.asvs} -u {output_dir}/uclust_format.file -z \
@@ -336,7 +336,7 @@ rule run_vsearch_uchime_denovo:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_vsearch_uchime_denovo.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_vsearch:v2.15.2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
     shell:
         """
         echo "Running the VSEARCH Container - --uchime_denovo:"
@@ -354,7 +354,7 @@ rule run_fastx_formatter:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_fastx_formatter.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_fastxtoolkit")
     shell:
         """
         echo "Creating and running a fastxtoolkit Container: "
@@ -371,7 +371,7 @@ rule run_bmp_renamer:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_bmp_renamer.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_perl:v6"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_perl")
     shell:
         """
         echo "Creating and running a Perl Container: "
@@ -394,7 +394,7 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_map.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Running the VSEARCH Container - --usearch_global: "
@@ -422,7 +422,7 @@ else:
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_map.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             echo "Running the VSEARCH Container - --usearch_global: "
@@ -448,7 +448,7 @@ if lulu == "yes":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_makeblastdb_blastn.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_blast:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
             mkdir -p {output_dir}/lulu_output
@@ -475,7 +475,7 @@ if lulu == "yes":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_lulu.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_r:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_r")
             shell:
                 """
                 echo "Running the R Container - lulu: "
@@ -502,7 +502,7 @@ if lulu == "yes":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_lulu.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_r:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_r")
             shell:
                 """
                 echo "Running the R Container - lulu: "
@@ -531,7 +531,7 @@ if marker_gene == "16S-SILVA":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             echo "Running the Qiime Container - assign_taxonomy.py: "
@@ -553,7 +553,7 @@ if marker_gene == "16S-SILVA":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_align_seqs.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             mkdir -p {output_dir}/rep_set_align
@@ -571,7 +571,7 @@ if marker_gene == "16S-SILVA":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_filter_alignment.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             mkdir -p {output_dir}/filtered_alignment
@@ -589,7 +589,7 @@ if marker_gene == "16S-SILVA":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_make_phylogeny.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             echo "Running the Qiime Container - make_phylogeny.py: "
@@ -606,7 +606,7 @@ if marker_gene == "16S-SILVA":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -630,7 +630,7 @@ elif marker_gene == "16S-GREENGENES":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             echo "Running the Qiime Container - assign_taxonomy.py: "
@@ -652,7 +652,7 @@ elif marker_gene == "16S-GREENGENES":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_align_seqs.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             mkdir -p {output_dir}/rep_set_align
@@ -670,7 +670,7 @@ elif marker_gene == "16S-GREENGENES":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_filter_alignment.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             mkdir -p {output_dir}/filtered_alignment
@@ -687,7 +687,7 @@ elif marker_gene == "16S-GREENGENES":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_make_phylogeny.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             echo "Running the Qiime Container - make_phylogeny.py: "
@@ -704,7 +704,7 @@ elif marker_gene == "16S-GREENGENES":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -727,7 +727,7 @@ elif marker_gene == "16S-RDP":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             echo "Running the Qiime Container - assign_taxonomy.py: "
@@ -747,7 +747,7 @@ elif marker_gene == "16S-RDP":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -772,7 +772,7 @@ elif marker_gene == "16S-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -799,7 +799,7 @@ elif marker_gene == "16S-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -822,7 +822,7 @@ elif marker_gene == "16S-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -850,7 +850,7 @@ elif marker_gene == "COI-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -877,7 +877,7 @@ elif marker_gene == "COI-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -900,7 +900,7 @@ elif marker_gene == "COI-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -928,7 +928,7 @@ elif marker_gene == "COI-BOLD":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_blast:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
             echo "Running the BLAST Container - blastn: "
@@ -948,7 +948,7 @@ elif marker_gene == "COI-BOLD":
         params:
             coibold_db = config['COI-BOLD-DB']
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         log:
             os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_taxon_table', file_name_raw + '.log')
         benchmark:
@@ -984,7 +984,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1011,7 +1011,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1032,7 +1032,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_tax_assignment.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample_ncbi
@@ -1053,7 +1053,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiimepipe_filter.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             cd {output_dir}
@@ -1075,7 +1075,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn_plants.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1102,7 +1102,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn_plants.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1126,7 +1126,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_usearch_global.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             cd {output_dir}
@@ -1152,7 +1152,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -1181,7 +1181,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiime:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
         shell:
             """
             echo "Running the Qiime Container - assign_taxonomy.py: "
@@ -1201,7 +1201,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output.abundance_file_dir}
@@ -1226,7 +1226,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1253,7 +1253,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1274,7 +1274,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_tax_assignment.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample_ncbi
@@ -1295,7 +1295,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_qiimepipe_filter.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             cd {output_dir}
@@ -1317,7 +1317,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn_fungi.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1344,7 +1344,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn_fungi.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1368,7 +1368,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_vsearch_usearch_global.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_vsearch:v2.29.1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_vsearch")
         shell:
             """
             cd {output_dir}
@@ -1392,7 +1392,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -1421,7 +1421,7 @@ elif marker_gene == "ALL-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1448,7 +1448,7 @@ elif marker_gene == "ALL-NCBI":
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
-                "docker://itvdsbioinfo/pimba_blast:latest"
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
             shell:
                 """
                 echo "Running the BLAST Container - blastn: "
@@ -1471,7 +1471,7 @@ elif marker_gene == "ALL-NCBI":
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
@@ -1499,7 +1499,7 @@ else:
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
-            "docker://itvdsbioinfo/pimba_blast:latest"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
             echo "Running the BLAST Container - blastn: "
@@ -1519,7 +1519,7 @@ else:
         params:
             db_dir = marker_gene
         singularity:
-            "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         log:
             os.path.join(current_path, 'results', '01-run', 'logs', 'qiimepipe_create_taxon_table', file_name_raw + '.log')
         benchmark:
@@ -1550,7 +1550,7 @@ rule convert_otu_table_to_biom:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_convert_otu_table_to_biom.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_biom:v2.1.10"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_biom")
     shell:
         """
         echo "Running the Biom-Format Container - convert: "
@@ -1570,7 +1570,7 @@ rule add_metadata_to_biom_table:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_add_metadata_to_biom_table.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_biom:v2.1.10"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_biom")
     shell:
         """
         echo "Running the Biom-Format Container"
@@ -1596,7 +1596,7 @@ rule summarize_biom_table:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "run_summarize_biom_table.txt")
     singularity:
-        "docker://itvdsbioinfo/pimba_biom:v2.1.10"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_biom")
     shell:
         """
         echo "Running the Biom-Format Container - summarize-table: "
@@ -1616,7 +1616,7 @@ if excel == 'yes':
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_r_curation.txt")
         singularity:
-            "docker://itvdsbioinfo/r_curation:v1"
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "r_curation")
         shell:
             """
             Rscript /app/main.R \

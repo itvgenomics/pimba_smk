@@ -37,7 +37,7 @@ rule run_fastx_barcode_splitter:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'fastx_barcode_splitter', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_fastxtoolkit:v0.0.14"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_fastxtoolkit")
     shell:
         """
         echo "Creating and running a fastxtoolkit Container: "
@@ -72,7 +72,7 @@ rule run_adapter_removal:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_adapterremoval")
     shell:
         """
         echo "Creating and running an AdapterRemoval Container: "
@@ -89,7 +89,7 @@ rule run_qiimepipe_strip:
         adapter = config["singleadapter"],
         barcodes_5end_fasta = config["barcodes_5end_fasta"]
     singularity:
-        "docker://itvdsbioinfo/pimba_qiimepipe:v2"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
     shell:
         """
         echo "Running the QiimePipe Container: "
@@ -111,7 +111,7 @@ rule run_adapter_removal_clipped:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_adapterremoval:v2.2.3"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_adapterremoval")
     shell:
         """
         echo "Creating and running an AdapterRemoval Container: "
@@ -129,7 +129,7 @@ rule run_prinseq_truncated:
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
     singularity:
-        "docker://itvdsbioinfo/pimba_prinseq:v0.20.4"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
     shell:
         """
         echo "Creating and running a Prinseq Container: "

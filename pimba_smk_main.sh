@@ -40,6 +40,9 @@ fi
 config_file=$(realpath "$config_file")
 workdir=$(realpath "$workdir")
 
+# Run script to fetch the Singularity images
+python $workdir/workflow/scripts/singularity.py --config $config_file
+
 # Extract necessary paths from the config file
 rawdatadir=$(grep '^rawdatadir:' "$config_file" | awk '{print $2}' | tr -d "'")
 raw_fastq_single=$(grep '^raw_fastq_single:' "$config_file" | awk '{print $2}' | tr -d "'")
