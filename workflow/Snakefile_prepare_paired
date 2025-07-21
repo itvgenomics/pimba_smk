@@ -124,19 +124,24 @@ rule run_prinseq:
     input:
         assembled = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}.assembled.fastq")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta"),
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta")
+    params:
+        num_threads = config["num_threads"]
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq", "{sample}.log")
     benchmark:
-        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq.txt")
-    singularity:
-        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseqpp.txt")
+    container:
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseqpp")
     shell:
         """
-        export LANG=C
-        export LC_ALL=C
-        prinseq-lite.pl -fastq {input.assembled} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled \
-        > {log} 2>&1
+        prinseq++ \
+            -fastq {input.assembled} \
+            -out_format 1 \
+            -threads {params.num_threads} \
+            -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled.fasta \
+            -out_bad {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled.bad.fasta \
+            > {log} 2>&1
         """
 
 rule run_relabel:
@@ -190,19 +195,24 @@ rule run_prinseq_singleton:
     input:
         assembled_singleton = os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}", "{sample}_withSingleton.fastq")
     output:
-        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.withSingleton.fasta"),
+        os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.withSingleton.fasta")
+    params:
+        num_threads = config["num_threads"]
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq_singleton", "{sample}.log")
     benchmark:
-        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseq_singleton.txt")
+        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseqpp_singleton.txt")
     singularity:
-        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseqpp")
     shell:
         """
-        export LANG=C
-        export LC_ALL=C
-        prinseq-lite.pl -fastq {input.assembled_singleton} -out_format 1 -seq_id Seq -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled.withSingleton \
-        > {log} 2>&1
+        prinseq++ \
+            -fastq {input.assembled_singleton} \
+            -out_format 1 \
+            -threads {params.num_threads} \
+            -out_good {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled.withSingleton.fasta \
+            -out_bad {current_path}/results/00-prepare/assemblies/{wildcards.sample}.assembled.withSingleton.bad.fasta \
+            > {log} 2>&1
         """
 
 rule run_relabel_singleton:

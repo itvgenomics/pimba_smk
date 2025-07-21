@@ -125,15 +125,21 @@ rule run_prinseq_truncated:
     output:
         good_fasta = os.path.join(current_path, "results", "00-prepare", "{output_name}.fasta").format(output_name=config["outputprepare"])
     params:
-        output_name = config["outputprepare"]
+        output_name = config["outputprepare"],
+        num_threads = config["num_threads"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
     singularity:
-        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseqpp")
     shell:
         """
         echo "Creating and running a Prinseq Container: "
-        prinseq-lite.pl -fastq {input.truncated_file} -out_format 1 -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name} > {log} 2>&1
-
+        prinseq++ \
+            -fastq {input.truncated_file} \
+            -out_format 1 \
+            -threads {params.num_threads} \
+            -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta \
+            -out_bad {current_path}/results/00-prepare/prepare_output/{params.output_name}.bad.fasta \
+            > {log} 2>&1
         mv {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta {current_path}/results/00-prepare/
         """

@@ -36,9 +36,9 @@ docker_images = [
     "itvdsbioinfo/pimba_biom:v2.1.10",
     "itvdsbioinfo/pimba_adapterremoval:v2.2.3",
     "itvdsbioinfo/pimba_pear:v0.9.10",
-    "itvdsbioinfo/pimba_prinseq:v0.20.4",
     "itvdsbioinfo/pimba_python_plot:latest",
     "itvdsbioinfo/pimba_phyloseq:v2",
+    "itvdsbioinfo/pimba_prinseqpp:v1",
     "itvdsbioinfo/r_curation:v1"
 ]
 

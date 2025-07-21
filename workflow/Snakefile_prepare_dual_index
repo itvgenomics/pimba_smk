@@ -102,15 +102,24 @@ rule run_prinseq:
         clipped_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_clipped.fastq")
     output:
         filtered_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_min50.fastq")
+    params:
+        num_threads = config["num_threads"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq', config["outputprepare"] + '_{sample}' + '.log')
     singularity:
-        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseqpp")
     shell:
         """
         echo "Creating and running a Prinseq Container: "
-        prinseq-lite.pl -fastq {input.clipped_file} -min_len 50 -out_good {current_path}/results/00-prepare/prepare_output/{wildcards.sample}_min50 > {log} 2>&1
+        prinseq++ \
+            -fastq {input.clipped_file} \
+            -min_len 50 \
+            -threads {params.num_threads} \
+            -out_good {current_path}/results/00-prepare/prepare_output/{wildcards.sample}_min50.fastq \
+            -out_bad {current_path}/results/00-prepare/prepare_output/{wildcards.sample}_min50.bad.fastq \
+            > {log} 2>&1
         rm {input.clipped_file}
+        rm {current_path}/results/00-prepare/prepare_output/{wildcards.sample}_min50.bad.fastq
         """
 
 rule run_fastx_reverse_complement_filtered:
@@ -185,17 +194,25 @@ rule run_prinseq_truncated:
     output:
         good_fasta = os.path.join(current_path, "results", "00-prepare", "{output_name}.fasta").format(output_name=config["outputprepare"])
     params:
-        output_name = config["outputprepare"]
+        output_name = config["outputprepare"],
+        num_threads = config["num_threads"]
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
     singularity:
-        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseq")
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseqpp")
     shell:
         """
         echo "Creating and running a Prinseq Container: "
-        prinseq-lite.pl -fastq {input.truncated_file} -out_format 1 -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name} > {log} 2>&1
+        prinseq++ \
+            -fastq {input.truncated_file} \
+            -out_format 1 \
+            -threads {params.num_threads} \
+            -out_good {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta \
+            -out_bad {current_path}/results/00-prepare/prepare_output/{params.output_name}.bad.fasta \
+            > {log} 2>&1
 
         mv {current_path}/results/00-prepare/prepare_output/{params.output_name}.fasta {current_path}/results/00-prepare
+        rm {current_path}/results/00-prepare/prepare_output/{params.output_name}.bad.fasta
         rm {current_path}/results/00-prepare/prepare_output/indexforbol_unmatched.fastq
         rm {current_path}/results/00-prepare/prepare_output/indexreveol_unmatched.fastq
         """
