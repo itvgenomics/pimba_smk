@@ -247,4 +247,6 @@ rule concatenate_and_rename_singletons:
         cat *_relabel_withSingleton.fasta > {params.outputname}_withSingleton.fasta
         mv {params.outputname}_withSingleton.fasta {current_path}/results/00-prepare/
         rm -r {current_path}/results/00-prepare/assemblies/
+        cd {current_path}/results/00-prepare/
+        tar -czf prepare_output.tar.gz prepare_output/ && rm -r prepare_output/
         """
