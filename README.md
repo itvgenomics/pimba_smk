@@ -56,9 +56,9 @@ For example:
 
 You also need to create a new conda environment and install Snakemake and Singularity by following these steps:
 
-`conda create -n snakemake_env -c bioconda -c conda-forge singularity=3.8.6 snakemake=7.32.4`
+`conda create -n pimba -c bioconda -c conda-forge singularity=3.8.6 snakemake=7.32.4`
 
-`conda activate snakemake_env`
+`conda activate pimba`
 
 ### C) Clone the GitHub Repository
 
