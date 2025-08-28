@@ -64,6 +64,13 @@ if [ "$prepare_mode" != "no" ]; then
             echo "ERROR: adapters file is not defined or does not exist."
             exit 1
         fi
+        # ---- FASTQ precheck: ensure filenames and records are valid before running Snakemake ----
+        echo 'Validating FASTQs under rawdatadir...'
+        if ! python3 $workdir/workflow/scripts/check_fastq.py "$rawdatadir"; then
+            echo 'ERROR: FASTQ validation failed; aborting pipeline.'
+            exit 1
+        fi
+        echo 'FASTQ validation passed.'
         echo "Running PIMBA in paired_end prepare mode"
         snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity \
             --configfile "$config_file" --cores "$threads" --directory "$workdir" \
