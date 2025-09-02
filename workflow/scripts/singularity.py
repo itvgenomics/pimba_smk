@@ -27,7 +27,7 @@ docker_images = [
     "metashot/itsx:1.1.2-1",
     "itvdsbioinfo/pimba_swarm:v3.1.0",
     "itvdsbioinfo/pimba_fastxtoolkit:v0.0.14",
-    "itvdsbioinfo/pimba_perl:v6",
+    "itvdsbioinfo/pimba_perl:v7",
     "itvdsbioinfo/pimba_vsearch:v2.29.1",
     "itvdsbioinfo/pimba_r:latest",
     "itvdsbioinfo/pimba_qiime:latest",

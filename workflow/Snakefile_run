@@ -366,6 +366,8 @@ rule run_bmp_renamer:
         formatted = os.path.join(output_dir, file_name_raw + '_noChim_formatted.fasta')
     output:
         renamed = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+    params:
+        strategy = strategy
     log:
         os.path.join(current_path, "results", "01-run", "logs", "bmp_renamer", file_name_raw + ".log")
     benchmark:
@@ -375,7 +377,7 @@ rule run_bmp_renamer:
     shell:
         """
         echo "Creating and running a Perl Container: "
-        perl /app/bmp-otuName.pl -i {input.formatted} -o {output.renamed} > {log} 2>&1
+        perl /app/bmp-otuName.pl -i {input.formatted} -o {output.renamed} -m {params.strategy} > {log} 2>&1
         """
 
 if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
