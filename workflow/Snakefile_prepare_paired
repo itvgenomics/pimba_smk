@@ -2,23 +2,36 @@
 
 import os
 import glob
+import re
+import sys
 
 current_path = os.getcwd()
-
-# Extract sample names and their suffixes from files with "_R1" in the raw data directory
 raw_data_dir = config["rawdatadir"]
-R1_files = glob.glob(os.path.join(raw_data_dir, '*_R1*'))
 
-# Create a dictionary to store the sample names and their suffixes
+# Only match files that truly contain "_R1" or ".R1" before something else (like extension)
+R1_files = [
+    f for f in glob.glob(os.path.join(raw_data_dir, '*'))
+    if re.search(r'[_\.]R1[^0-9]', os.path.basename(f))  # ensures "R1" not followed by another digit
+]
+
+if not R1_files:
+    sys.exit(f"ERROR: No '_R1' or '.R1' files found in '{raw_data_dir}'")
+
 sample_suffixes = {}
+
 for f in R1_files:
     basename = os.path.basename(f)
-    sample = basename.split('_R1')[0]
-    suffix = basename.split('_R1')[1]
-    sample_suffixes[sample] = suffix
 
-# Generate a list of samples
+    # Match sample name, separator, and suffix strictly
+    match = re.match(r'(.+?)([_\.])R1(.*)', basename)
+    if not match:
+        sys.exit(f"ERROR: File '{basename}' does not contain '_R1' or '.R1' pattern.")
+
+    sample, sep, suffix = match.groups()
+    sample_suffixes[sample] = (sep, suffix)
+
 SAMPLES = list(sample_suffixes.keys())
+
 
 rule all:
     input:
@@ -29,19 +42,33 @@ rule prepare_directories:
     input:
         full_path_raw = config["rawdatadir"]
     output:
-        r1_files = [os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R1/{sample}_R1{suffix}") for sample, suffix in sample_suffixes.items()],
-        r2_files = [os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R2/{sample}_R2{suffix}") for sample, suffix in sample_suffixes.items()]
+        r1_files = [os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R1/{sample}{sep}R1{suffix}") for sample, (sep, suffix) in sample_suffixes.items()],
+        r2_files = [os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R2/{sample}{sep}R2{suffix}") for sample, (sep, suffix) in sample_suffixes.items()]
     shell:
         """
         mkdir -p {current_path}/results/00-prepare/prepare_output/R1 {current_path}/results/00-prepare/prepare_output/R2
-        cp {input.full_path_raw}/*_R1* {current_path}/results/00-prepare/prepare_output/R1/
-        cp {input.full_path_raw}/*_R2* {current_path}/results/00-prepare/prepare_output/R2/
+
+        # Copy both _R1 and .R1 files
+        cp {input.full_path_raw}/*_R1* {current_path}/results/00-prepare/prepare_output/R1/ 2>/dev/null || true
+        cp {input.full_path_raw}/*.R1* {current_path}/results/00-prepare/prepare_output/R1/ 2>/dev/null || true
+
+        # Copy both _R2 and .R2 files
+        cp {input.full_path_raw}/*_R2* {current_path}/results/00-prepare/prepare_output/R2/ 2>/dev/null || true
+        cp {input.full_path_raw}/*.R2* {current_path}/results/00-prepare/prepare_output/R2/ 2>/dev/null || true
         """
 
 rule run_adapter_removal:
     input:
-        r1 = lambda wildcards: os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R1/{wildcards.sample}_R1{sample_suffixes[wildcards.sample]}"),
-        r2 = lambda wildcards: os.path.join(current_path, "results", "00-prepare", "prepare_output", f"R2/{wildcards.sample}_R2{sample_suffixes[wildcards.sample]}")
+        r1 = lambda wildcards: os.path.join(
+            current_path,
+            "results", "00-prepare", "prepare_output",
+            f"R1/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R1{sample_suffixes[wildcards.sample][1]}"
+        ),
+        r2 = lambda wildcards: os.path.join(
+            current_path,
+            "results", "00-prepare", "prepare_output",
+            f"R2/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R2{sample_suffixes[wildcards.sample][1]}"
+        )
     output:
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.discarded"),
         os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
@@ -62,11 +89,15 @@ rule run_adapter_removal:
     shell:
         """
         cd {current_path}/results/00-prepare/prepare_output/
-        AdapterRemoval --file1 {input.r1} --file2 {input.r2} --threads {params.num_threads} --mate-separator " " --adapter-list {params.adapters} \
-        --trimwindows 10 --minquality {params.min_phred} --minlength {params.min_length} --qualitymax 64 --basename {wildcards.sample}_good --mm 5 \
+        AdapterRemoval --file1 {input.r1} --file2 {input.r2} --threads {params.num_threads} \
+        --mate-separator " " --adapter-list {params.adapters} \
+        --trimwindows 10 --minquality {params.min_phred} --minlength {params.min_length} \
+        --qualitymax 64 --basename {wildcards.sample}_good --mm 5 \
         > {log} 2>&1
+
         rm {input.r1} {input.r2}
         """
+
 if config["merger"] == "pear":
     rule run_pear:
         input:

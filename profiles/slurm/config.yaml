@@ -1,7 +1,6 @@
 executor: slurm
 use-singularity: true
-singularity-args: "-B /data1/tiagoleao/pimba_smk:/mnt -B /data1/tiagoleao/pimba_smk/tmp:/tmp --pwd /mnt --no-home --writable"
-latency-wait: 10
+singularity-args: "-B /data1/tiagoleao/pimba_smk:/mnt -B /data1/tiagoleao/pimba_smk/tmp:/tmp --pwd /mnt --no-home"
 show-failed-logs: True
 keep-going: False
 printshellcmds: True
@@ -17,44 +16,44 @@ default_resources:
 set-threads:
   all: 1
   prepare_directories: 1
-  run_adapter_removal: 1
-  run_pear: 1
-  run_prinseq: 1
+  run_adapter_removal: 16
+  run_pear: 16
+  run_prinseq: 16
   run_relabel: 1
   concatenate_and_rename: 1
   concatenate_singletons: 1
-  run_prinseq_singleton: 1
+  run_prinseq_singleton: 16
   run_relabel_singleton: 1
   concatenate_and_rename_singletons: 1
-  run_itsx: 24
+  run_itsx: 16
   run_vsearch_derep_fulllength: 1
   run_vsearch_sort: 1
   run_vsearch_trim: 1
-  run_vsearch_otu_clustering: 1
+  run_vsearch_otu_clustering: 16
   run_vsearch_asv_fastx: 1
-  swarm_derep: 1
-  find_asvs_with_swarm: 1
+  swarm_derep: 16
+  find_asvs_with_swarm: 16
   run_vsearch_uchime_denovo: 1
   run_fastx_formatter: 1
   run_bmp_renamer: 1
-  run_vsearch_map: 1
-  run_makeblastdb_and_blastn: 1
+  run_vsearch_map: 16
+  run_makeblastdb_and_blastn: 16
   run_lulu: 1
-  run_qiime_assign_taxonomy: 24
-  run_qiime_align_seqs: 24
-  run_qiime_filter_alignment: 24
-  run_qiime_make_phylogeny: 24
+  run_qiime_assign_taxonomy: 1
+  run_qiime_align_seqs: 1
+  run_qiime_filter_alignment: 1
+  run_qiime_make_phylogeny: 1
   run_create_abundance_file: 1
-  run_blastn: 24
+  run_blastn: 16
   run_create_taxon_table: 1
-  run_blast_assign_taxonomy: 1
+  run_blast_assign_taxonomy: 16
   run_qiimepipe_create_taxon_table: 1
   run_qiimepipe_create_tax_assignment: 1
   run_qiimepipe_filter: 1
-  run_blastn_plants: 1
+  run_blastn_plants: 16
   run_vsearch_usearch_global: 1
   run_create_plants_taxon_table: 1
-  run_blastn_fungi: 1
+  run_blastn_fungi: 16
   run_create_fungi_taxon_table: 1
   convert_otu_table_to_biom: 1
   add_metadata_to_biom_table: 1
@@ -67,241 +66,241 @@ set-threads:
 set-resources:
   all:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   prepare_directories:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_adapter_removal:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_pear:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_prinseq:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_relabel:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   concatenate_and_rename:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   concatenate_singletons:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_prinseq_singleton:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_relabel_singleton:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   concatenate_and_rename_singletons:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_itsx:
     slurm_partition: high_gen
     mem_mb: 5000
-    runtime: 99999999
+    runtime: 4320
     nodes: 1
   run_vsearch_derep_fulllength:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_sort:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_trim:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_otu_clustering:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_asv_fastx:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   swarm_derep:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   find_asvs_with_swarm:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_uchime_denovo:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_fastx_formatter:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_bmp_renamer:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_map:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_makeblastdb_and_blastn:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_lulu:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_qiime_assign_taxonomy:
-    slurm_partition: high_gen
+    slurm_partition: medium_gen
     mem_mb: 5000
-    runtime: 99999999
+    runtime: 4320
     nodes: 1
   run_qiime_align_seqs:
-    slurm_partition: high_gen
+    slurm_partition: medium_gen
     mem_mb: 5000
-    runtime: 99999999
+    runtime: 4320
     nodes: 1
   run_qiime_filter_alignment:
-    slurm_partition: high_gen
+    slurm_partition: medium_gen
     mem_mb: 5000
-    runtime: 99999999
+    runtime: 4320
     nodes: 1
   run_qiime_make_phylogeny:
-    slurm_partition: high_gen
+    slurm_partition: medium_gen
     mem_mb: 5000
-    runtime: 99999999
+    runtime: 4320
     nodes: 1
   run_create_abundance_file:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_blastn:
     slurm_partition: high_gen
     mem_mb: 5000
-    runtime: 99999999
+    runtime: 4320
     nodes: 1
   run_create_taxon_table:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_blast_assign_taxonomy:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_qiimepipe_create_taxon_table:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_qiimepipe_create_tax_assignment:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_qiimepipe_filter:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_blastn_plants:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_vsearch_usearch_global:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_create_plants_taxon_table:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_blastn_fungi:
-    slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    slurm_partition: high_gen
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_create_fungi_taxon_table:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   convert_otu_table_to_biom:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   add_metadata_to_biom_table:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   summarize_biom_table:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   prepare_tax_assignments:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_plot_graphs:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   run_pvclust:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
   r_curation:
     slurm_partition: medium_gen
-    mem_mb: 1000
-    runtime: 99999999
+    mem_mb: 5000
+    runtime: 4320
     nodes: 1
