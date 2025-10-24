@@ -526,7 +526,6 @@ if marker_gene == "16S-SILVA":
             taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
         params:
             db_dir = config['16S-SILVA-DB'],
-            similarity_int = similarity_int,
             similarity_assign = config['assign_similarity']
         log:
             os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
@@ -538,8 +537,8 @@ if marker_gene == "16S-SILVA":
             """
             echo "Running the Qiime Container - assign_taxonomy.py: "
             assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
-            -t {params.db_dir}/taxonomy/16S_only/{params.similarity_int}/taxonomy_7_levels.txt \
-            -r {params.db_dir}/rep_set/rep_set_16S_only/{params.similarity_int}/silva_132_{params.similarity_int}_16S.fna \
+            -t {params.db_dir}/taxmap_slv_ssu_ref_nr_edited_138.2.txt \
+            -r {params.db_dir}/SILVA_138.2_SSURef_NR99_tax_silva_edited.fasta \
             --similarity={params.similarity_assign} > {log} 2>&1
             """
     rule run_qiime_align_seqs:
@@ -548,7 +547,6 @@ if marker_gene == "16S-SILVA":
         output:
             rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta')
         params:
-            similarity_int = similarity_int,
             db_dir = config['16S-SILVA-DB']
         log:
             os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
@@ -561,7 +559,7 @@ if marker_gene == "16S-SILVA":
             mkdir -p {output_dir}/rep_set_align
             echo "Running the Qiime Container - align_seqs.py: "
             align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
-            -t {params.db_dir}/rep_set_aligned/{params.similarity_int}/{params.similarity_int}_alignment.fna > {log} 2>&1
+            -t {params.db_dir}/SILVA_138.2_SSURef_NR99_tax_silva_edited.fasta > {log} 2>&1
             """
     rule run_qiime_filter_alignment:
         input:
