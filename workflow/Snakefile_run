@@ -559,7 +559,7 @@ if marker_gene == "16S-SILVA":
             mkdir -p {output_dir}/rep_set_align
             echo "Running the Qiime Container - align_seqs.py: "
             align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
-            -t {params.db_dir}/SILVA_138.2_SSURef_NR99_tax_silva_edited.fasta > {log} 2>&1
+            -t {params.db_dir}/SILVA_138.2_SSURef_NR99_tax_silva_edited_aligned.fasta > {log} 2>&1
             """
     rule run_qiime_filter_alignment:
         input:
