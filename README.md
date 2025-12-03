@@ -162,7 +162,7 @@ Depending on the database used, provide the full path to the files related to th
 
 The links for downloading the databases can be found here:
 
-- SILVA for 16S: https://www.arb-silva.de/no_cache/download/archive/qiime/
+- SILVA for 16S (version 138.2): https://zenodo.org/records/17793346
 - Greengenes for 16S: ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
 - RDP for 16S: https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/RDPClassifier_16S_trainsetNo18_QiimeFormat.zip/download
 - UNITE for fungal ITS: https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330
