@@ -163,9 +163,9 @@ Depending on the database used, provide the full path to the files related to th
 The links for downloading the databases can be found here:
 
 - SILVA for 16S (version 138.2): https://zenodo.org/records/17793346
-- Greengenes for 16S: ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
-- RDP for 16S: https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/RDPClassifier_16S_trainsetNo18_QiimeFormat.zip/download
-- UNITE for fungal ITS: https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330
+- Greengenes for 16S (version 13.8): ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
+- RDP for 16S (version 18): https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/RDPClassifier_16S_trainsetNo18_QiimeFormat.zip/download
+- UNITE for fungal ITS (from 2024): https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330
 - BOLD for COI: https://1drv.ms/u/c/21dad68eb08355ae/Qa5Vg7CO1toggCFAXAEAAAAAzFZG1bUqP8R1ag
 
 #### Inputs for the Plot Mode
