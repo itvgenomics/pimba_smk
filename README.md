@@ -166,7 +166,7 @@ The links for downloading the databases can be found here:
 - Greengenes for 16S (version 13.8): ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
 - RDP for 16S (version 18): https://sourceforge.net/projects/rdp-classifier/files/RDP_Classifier_TrainingData/RDPClassifier_16S_trainsetNo18_QiimeFormat.zip/download
 - UNITE for fungal ITS (from 2024): https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330
-- BOLD for COI: https://1drv.ms/u/c/21dad68eb08355ae/Qa5Vg7CO1toggCFAXAEAAAAAzFZG1bUqP8R1ag
+- BOLD for COI (from 2024): https://zenodo.org/records/18304758
 
 #### Inputs for the Plot Mode
 This section refers to generating plots for the processed results. To run PIMBA Plot, configure:
