@@ -31,7 +31,7 @@ docker_images = [
     "itvdsbioinfo/pimba_vsearch:v2.29.1",
     "itvdsbioinfo/pimba_r:latest",
     "itvdsbioinfo/pimba_qiime:latest",
-    "itvdsbioinfo/pimba_qiimepipe:v2",
+    "itvdsbioinfo/pimba_qiimepipe:v3",
     "itvdsbioinfo/pimba_blast:latest",
     "itvdsbioinfo/pimba_biom:v2.1.10",
     "itvdsbioinfo/pimba_adapterremoval:v2.2.3",

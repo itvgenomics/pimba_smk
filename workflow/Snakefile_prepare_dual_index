@@ -93,7 +93,7 @@ rule run_qiimepipe_strip:
     shell:
         """
         echo "Running the QiimePipe Container: "
-        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.index_file} {params.reverse_adapter} {params.barcodes_3end_fasta} Ex > {output.clipped_file}
+        python /qiimepipe/fastq_strip_barcode_relabel2.py {input.index_file} {params.reverse_adapter} {params.barcodes_3end_fasta} Ex > {output.clipped_file}
         rm {input.index_file}
         """
 
@@ -151,7 +151,7 @@ rule run_qiimepipe_strip_revclipped:
     shell:
         """
         echo "Running the QiimePipe Container: "
-        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.revclipped_file} {params.forward_adapter} {params.barcodes_5end_dir}/barcodes_{wildcards.sample}.fasta Ex > {output.fastq_sample}
+        python /qiimepipe/fastq_strip_barcode_relabel2.py {input.revclipped_file} {params.forward_adapter} {params.barcodes_5end_dir}/barcodes_{wildcards.sample}.fasta Ex > {output.fastq_sample}
         rm {input.revclipped_file}
         """
 

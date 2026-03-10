@@ -93,7 +93,7 @@ rule run_qiimepipe_strip:
     shell:
         """
         echo "Running the QiimePipe Container: "
-        python3.6 /qiimepipe/fastq_strip_barcode_relabel2.py {input.truncated_file} {params.adapter} {params.barcodes_5end_fasta} Seq > {output.clipped_file}
+        python /qiimepipe/fastq_strip_barcode_relabel2.py {input.truncated_file} {params.adapter} {params.barcodes_5end_fasta} Seq > {output.clipped_file}
         """
 
 rule run_adapter_removal_clipped:

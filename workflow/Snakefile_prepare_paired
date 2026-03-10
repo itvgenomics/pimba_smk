@@ -189,7 +189,7 @@ rule run_relabel:
     shell:
         """
         cd {current_path}/results/00-prepare/assemblies/
-        python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.fasta . \
+        python /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.fasta . \
         > {log} 2>&1
         mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_notSingleton.fasta
         """
@@ -260,7 +260,7 @@ rule run_relabel_singleton:
     shell:
         """
         cd {current_path}/results/00-prepare/assemblies/
-        python3.6 /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.withSingleton.fasta . \
+        python /qiimepipe/relabelReads-v2.py {wildcards.sample}.assembled.withSingleton.fasta . \
         > {log} 2>&1
         mv {wildcards.sample}_relabel.fasta {wildcards.sample}_relabel_withSingleton.fasta
         """

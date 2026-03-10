@@ -34,14 +34,7 @@ if excel == 'yes':
 
 # Conditionally include outputs if marker gene is 16S SILVA
 if marker_gene == "16S-SILVA":
-    files_for_all_rule.append(os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta'))
-    files_for_all_rule.append(os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta'))
-    files_for_all_rule.append(os.path.join(output_dir, 'rep_set.tre'))
     files_for_all_rule.append(os.path.join(output_dir, 'diversity_by_sample'))
-
-# Conditionally include outputs if marker gene is 16S GREENGENES
-if marker_gene == "16S-GREENGENES":
-    files_for_all_rule.append(os.path.join(output_dir, 'rep_set.tre'))
 
 # Conditionally include outputs if marker gene is 16S GREENGENES or ITS UNITE
 if marker_gene == "16S-GREENGENES" or marker_gene == "ITS-FUNGI-UNITE" or marker_gene == "16S-RDP":
@@ -519,241 +512,159 @@ if lulu == "yes":
                 """
 
 if marker_gene == "16S-SILVA":
-    rule run_qiime_assign_taxonomy:
+    rule run_blastn:
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
         output:
-            taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
         params:
-            db_dir = config['16S-SILVA-DB'],
-            similarity_assign = config['assign_similarity']
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            similarity_int_asg = similarity_int_asg,
+            coverage_int = coverage_int,
+            hits_per_subject = config['hits_per_subject'],
+            evalue = config['e_value'],
+            BLAST_DB = config['16S-SILVA-DB'],
+            threads = config['num_threads']
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
+            os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
-            echo "Running the Qiime Container - assign_taxonomy.py: "
-            assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
-            -t {params.db_dir}/taxmap_slv_ssu_ref_nr_edited_138.2.txt \
-            -r {params.db_dir}/SILVA_138.2_SSURef_NR99_tax_silva_edited.fasta \
-            --similarity={params.similarity_assign} > {log} 2>&1
+            echo "Running the BLAST Container - blastn: "
+            cd {output_dir}
+            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
+                {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
-    rule run_qiime_align_seqs:
+    rule run_create_taxon_table:
         input:
-            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log'),
+            txt_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
         output:
-            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta')
-        params:
-            db_dir = config['16S-SILVA-DB']
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
-        benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_align_seqs.txt")
-        singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
-        shell:
-            """
-            mkdir -p {output_dir}/rep_set_align
-            echo "Running the Qiime Container - align_seqs.py: "
-            align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
-            -t {params.db_dir}/SILVA_138.2_SSURef_NR99_tax_silva_edited_aligned.fasta > {log} 2>&1
-            """
-    rule run_qiime_filter_alignment:
-        input:
-            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta')
-        output:
-            filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_filter_alignment", file_name_raw + ".log")
-        benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_filter_alignment.txt")
-        singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
-        shell:
-            """
-            mkdir -p {output_dir}/filtered_alignment
-
-            echo "Running the Qiime Container - filter_alignment.py: "
-            filter_alignment.py -i {input.rep_set_align} -o {output_dir}/filtered_alignment > {log} 2>&1
-            """
-    rule run_qiime_make_phylogeny:
-        input:
-            filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
-        output:
-            reference_tree = os.path.join(output_dir, 'rep_set.tre')
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_make_phylogeny", file_name_raw + ".log")
-        benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_make_phylogeny.txt")
-        singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
-        shell:
-            """
-            echo "Running the Qiime Container - make_phylogeny.py: "
-            make_phylogeny.py -i {input.filtered_alignment} -o {output.reference_tree} > {log} 2>&1
-            """
-    rule run_create_abundance_file:
-        input:
             tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
-            otu_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
-        output:
+            taxon_red_flagged = os.path.join(output_dir, 'output', file_name_raw + '_taxon_red_flagged.txt'),
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
+        params:
+            BLAST_DB = config['16S-SILVA-DB']
         log:
-            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
+            os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
-            mkdir -p {output.abundance_file_dir}
-            cd {output.abundance_file_dir}
-            echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            mkdir -p {output_dir}/diversity_by_sample
+            mkdir -p {output_dir}/output
+            cd {output_dir}/diversity_by_sample
+            echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
+            python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
+            {input.txt_table} {params.BLAST_DB}/taxmap_slv_ssu_ref_nr_edited_138.2.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "16S-GREENGENES":
-    rule run_qiime_assign_taxonomy:
+    rule run_blastn:
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
         output:
-            taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
         params:
-            db_dir = config['16S-GREENGENES-DB'],
-            similarity_int = similarity_int,
-            similarity_assign = config['assign_similarity']
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            similarity_int_asg = similarity_int_asg,
+            coverage_int = coverage_int,
+            hits_per_subject = config['hits_per_subject'],
+            evalue = config['e_value'],
+            BLAST_DB = config['16S-GREENGENES-DB'],
+            threads = config['num_threads']
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
+            os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
-            echo "Running the Qiime Container - assign_taxonomy.py: "
-            assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
-            -t {params.db_dir}/taxonomy/{params.similarity_int}_otu_taxonomy.txt \
-            -r {params.db_dir}/rep_set/{params.similarity_int}_otus.fasta \
-            --similarity={params.similarity_assign} > {log} 2>&1
+            echo "Running the BLAST Container - blastn: "
+            cd {output_dir}
+            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
+                {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
-    rule run_qiime_align_seqs:
+    rule run_create_taxon_table:
         input:
-            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta'),
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log'),
+            txt_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
         output:
-            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta'),
-        params:
-            similarity_int = similarity_int,
-            db_dir = config['16S-GREENGENES-DB']
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_align_seqs", file_name_raw + ".log")
-        benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_align_seqs.txt")
-        singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
-        shell:
-            """
-            mkdir -p {output_dir}/rep_set_align
-            echo "Running the Qiime Container - align_seqs.py: "
-            align_seqs.py -i {input.fasta_file} -o {output_dir}/rep_set_align \
-            -t {params.db_dir}/rep_set_aligned/{params.similarity_int}_otus.fasta > {log} 2>&1
-            """
-    rule run_qiime_filter_alignment:
-        input:
-            rep_set_align = os.path.join(output_dir, 'rep_set_align', file_name_raw + '_otus_aligned.fasta') if strategy == "otu" else os.path.join(output_dir, 'rep_set_align', file_name_raw + '_asvs_aligned.fasta'),
-        output:
-            filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_filter_alignment", file_name_raw + ".log")
-        benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_filter_alignment.txt")
-        singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
-        shell:
-            """
-            mkdir -p {output_dir}/filtered_alignment
-            echo "Running the Qiime Container - filter_alignment.py: "
-            filter_alignment.py -i {input.rep_set_align} -o {output_dir}/filtered_alignment > {log} 2>&1
-            """
-    rule run_qiime_make_phylogeny:
-        input:
-            filtered_alignment = os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_otus_aligned_pfiltered.fasta') if strategy == "otu" else os.path.join(output_dir, 'filtered_alignment', file_name_raw + '_asvs_aligned_pfiltered.fasta')
-        output:
-            phylogeny_tree = os.path.join(output_dir, 'rep_set.tre')
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_make_phylogeny", file_name_raw + ".log")
-        benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_make_phylogeny.txt")
-        singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
-        shell:
-            """
-            echo "Running the Qiime Container - make_phylogeny.py: "
-            make_phylogeny.py -i {input.filtered_alignment} -o {output.phylogeny_tree} > {log} 2>&1
-            """
-    rule run_create_abundance_file:
-        input:
             tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
-            otu_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
-        output:
+            taxon_red_flagged = os.path.join(output_dir, 'output', file_name_raw + '_taxon_red_flagged.txt'),
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
+        params:
+            BLAST_DB = config['16S-GREENGENES-DB']
         log:
-            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
+            os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
-            mkdir -p {output.abundance_file_dir}
-            cd {output.abundance_file_dir}
-            echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            mkdir -p {output_dir}/diversity_by_sample
+            mkdir -p {output_dir}/output
+            cd {output_dir}/diversity_by_sample
+            echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
+            python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
+            {input.txt_table} {params.BLAST_DB}/97_otu_taxonomy.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "16S-RDP":
-    rule run_qiime_assign_taxonomy:
+    rule run_blastn:
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
         output:
-            taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
         params:
-            db_dir = config['16S-RDP-DB'],
-            similarity_assign = config['assign_similarity']
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            similarity_int_asg = similarity_int_asg,
+            coverage_int = coverage_int,
+            hits_per_subject = config['hits_per_subject'],
+            evalue = config['e_value'],
+            BLAST_DB = config['16S-RDP-DB'],
+            threads = config['num_threads']
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
+            os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
-            echo "Running the Qiime Container - assign_taxonomy.py: "
-            assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
-            -t {params.db_dir}/*.txt \
-            -r {params.db_dir}/*.fa \
-            --similarity={params.similarity_assign} > {log} 2>&1
+            echo "Running the BLAST Container - blastn: "
+            cd {output_dir}
+            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fa -num_threads {params.threads} -perc_identity \
+                {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
-    rule run_create_abundance_file:
+    rule run_create_taxon_table:
         input:
-            tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
-            otu_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log'),
+            txt_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
         output:
+            tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
+            taxon_red_flagged = os.path.join(output_dir, 'output', file_name_raw + '_taxon_red_flagged.txt'),
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
+        params:
+            BLAST_DB = config['16S-RDP-DB']
         log:
-            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
+            os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
-            mkdir -p {output.abundance_file_dir}
-            cd {output.abundance_file_dir}
-            echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            mkdir -p {output_dir}/diversity_by_sample
+            mkdir -p {output_dir}/output
+            cd {output_dir}/diversity_by_sample
+            echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
+            python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
+            {input.txt_table} {params.BLAST_DB}/Ref_taxonomy.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "16S-NCBI":
@@ -828,7 +739,7 @@ elif marker_gene == "16S-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
+            python /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -906,7 +817,7 @@ elif marker_gene == "COI-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
+            python /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -956,16 +867,12 @@ elif marker_gene == "COI-BOLD":
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
+            mkdir -p {output_dir}/output
             cd {output_dir}/diversity_by_sample
 
             echo "Running the QiimePipe Container - createTaxonTable_singleFile_flex.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.table} {params.coibold_db}/*_tax.txt > {log} 2>&1
-
-            cd {output_dir}
-            mkdir -p output
-            mv *_otus_tax_assignments.txt {output.tax_assignments}
-            mv *_taxon_red_flagged.txt {output.taxon_red_flagged}
+            python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
+            {input.table} {params.coibold_db}/*_tax.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1 
             """
 
 elif marker_gene == "ITS-PLANTS-NCBI":
@@ -1039,7 +946,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             cd {output_dir}/diversity_by_sample_ncbi
 
             echo "Running the QiimePipe Container - create_otuTaxAssignment.py: "
-            python3.6 /qiimepipe/create_otuTaxAssignment.py {input.blast_log} \
+            python /qiimepipe/create_otuTaxAssignment.py {input.blast_log} \
             {input.txt_table} {output.tax_assignments} > {log} 2>&1
             """
     rule run_qiimepipe_filter:
@@ -1058,7 +965,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             """
             cd {output_dir}
             echo "Running the QiimePipe Container - filterOTUs.py: "
-            python3.6 /qiimepipe/filterOTUs.py {input.fasta_file} {input.tax_assignments} > {log} 2>&1
+            python /qiimepipe/filterOTUs.py {input.fasta_file} {input.tax_assignments} > {log} 2>&1
             """
     if remote == 'yes':
         rule run_blastn_plants:
@@ -1158,7 +1065,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_plants_log} {input.plants_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
+            python /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_plants_log} {input.plants_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -1167,47 +1074,55 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             """
 
 elif marker_gene == "ITS-FUNGI-UNITE":
-    rule run_qiime_assign_taxonomy:
+    rule run_blastn:
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
         output:
-            taxonomy = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt')
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log')
         params:
-            db_dir = config['ITS-FUNGI-UNITE-DB'],
-            similarity_int = similarity_int,
-            similarity_assign = config['assign_similarity']
-        log:
-            os.path.join(current_path, "results", "01-run", "logs", "qiime_assign_taxonomy", file_name_raw + ".log")
+            similarity_int_asg = similarity_int_asg,
+            coverage_int = coverage_int,
+            hits_per_subject = config['hits_per_subject'],
+            evalue = config['e_value'],
+            BLAST_DB = config['ITS-FUNGI-UNITE-DB'],
+            threads = config['num_threads']
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_qiime_assign_taxonomy.txt")
+            os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
-            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiime")
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
         shell:
             """
-            echo "Running the Qiime Container - assign_taxonomy.py: "
-            assign_taxonomy.py -i {input.fasta_file} -o {output_dir}/output/ \
-            -t {params.db_dir}/*{params.similarity_int}*.txt \
-            -r {params.db_dir}/*{params.similarity_int}*.fasta \
-            --similarity={params.similarity_assign} > {log} 2>&1
+            echo "Running the BLAST Container - blastn: "
+            cd {output_dir}
+            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
+                {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
+                -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
+                -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
             """
-    rule run_create_abundance_file:
+    rule run_create_taxon_table:
         input:
-            tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
-            otu_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
+            blast_log = os.path.join(output_dir, file_name_raw + '_blast_ncbi.log'),
+            txt_table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt')
         output:
+            tax_assignments = os.path.join(output_dir, 'output', file_name_raw + '_otus_tax_assignments.txt') if strategy == "otu" else os.path.join(output_dir, 'output', file_name_raw + '_asvs_tax_assignments.txt'),
+            taxon_red_flagged = os.path.join(output_dir, 'output', file_name_raw + '_taxon_red_flagged.txt'),
             abundance_file_dir = directory(os.path.join(output_dir, 'diversity_by_sample'))
+        params:
+            BLAST_DB = config['ITS-FUNGI-UNITE-DB']
         log:
-            os.path.join(current_path, "results", "01-run", "logs", "create_abundance_file", file_name_raw + ".log")
+            os.path.join(current_path, "results", "01-run", "logs", "create_taxon_table", file_name_raw + ".log")
         benchmark:
-            os.path.join(current_path, "results", "benchmark", "run_create_abundance_file.txt")
+            os.path.join(current_path, "results", "benchmark", "run_create_taxon_table.txt")
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_qiimepipe")
         shell:
             """
-            mkdir -p {output.abundance_file_dir}
-            cd {output.abundance_file_dir}
-            echo "Running the QiimePipe Container - createAbundanceFile.py: "
-            python3.6 /qiimepipe/createAbundanceFile.py {input.tax_assignments} {input.otu_table} > {log} 2>&1
+            mkdir -p {output_dir}/diversity_by_sample
+            mkdir -p {output_dir}/output
+            cd {output_dir}/diversity_by_sample
+            echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
+            python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
+            {input.txt_table} {params.BLAST_DB}/*.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "ITS-FUNGI-NCBI":
@@ -1281,7 +1196,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             cd {output_dir}/diversity_by_sample_ncbi
 
             echo "Running the QiimePipe Container - create_otuTaxAssignment.py: "
-            python3.6 /qiimepipe/create_otuTaxAssignment.py {input.blast_log} \
+            python /qiimepipe/create_otuTaxAssignment.py {input.blast_log} \
             {input.txt_table} {output.tax_assignments} > {log} 2>&1
             """
     rule run_qiimepipe_filter:
@@ -1300,7 +1215,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             """
             cd {output_dir}
             echo "Running the QiimePipe Container - filterOTUs.py: "
-            python3.6 /qiimepipe/filterOTUs.py {input.fasta_file} {input.tax_assignments} > {log} 2>&1
+            python /qiimepipe/filterOTUs.py {input.fasta_file} {input.tax_assignments} > {log} 2>&1
             """
     if remote == 'yes':
         rule run_blastn_fungi:
@@ -1398,7 +1313,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_fungi_log} {input.fungi_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
+            python /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_fungi_log} {input.fungi_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -1477,7 +1392,7 @@ elif marker_gene == "ALL-NCBI":
             mkdir -p {output_dir}/diversity_by_sample
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
+            python /qiimepipe/createTaxonTable_singleFile_smk.py {input.blast_log} {input.txt_table} {params.taxdump}/rankedlineage.dmp {params.taxdump}/merged.dmp > {log} 2>&1
             cd ../
             mkdir -p {output_dir}/output
             mv *_otus_tax_assignments.txt {output.tax_assignments}
@@ -1527,16 +1442,12 @@ else:
         shell:
             """
             mkdir -p {output_dir}/diversity_by_sample
+            mkdir -p {output_dir}/output
             cd {output_dir}/diversity_by_sample
 
             echo "Running the QiimePipe Container - createTaxonTable_singleFile_flex.py: "
-            python3.6 /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.table} {params.db_dir}/*_tax.txt > {log} 2>&1
-
-            cd {output_dir}
-            mkdir -p output
-            mv *_otus_tax_assignments.txt {output.tax_assignments}
-            mv *_taxon_red_flagged.txt {output.taxon_red_flagged}
+            python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
+            {input.table} {params.db_dir}/*_tax.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 rule convert_otu_table_to_biom:
