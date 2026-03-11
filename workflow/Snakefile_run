@@ -20,6 +20,7 @@ ITS = config['ITS']
 NCBI_DB = config['NCBI-DB']
 remote = config['remote']
 excel = config['create_excel']
+blast_type = config['blast_type']
 
 # Define the list of files for the `all` rule
 files_for_all_rule = [
@@ -532,7 +533,7 @@ if marker_gene == "16S-SILVA":
             """
             echo "Running the BLAST Container - blastn: "
             cd {output_dir}
-            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
+            blastn -query {input.fasta_file} -task {blast_type} -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                 -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -584,7 +585,7 @@ elif marker_gene == "16S-GREENGENES":
             """
             echo "Running the BLAST Container - blastn: "
             cd {output_dir}
-            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
+            blastn -query {input.fasta_file} -task {blast_type} -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                 -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -636,7 +637,7 @@ elif marker_gene == "16S-RDP":
             """
             echo "Running the BLAST Container - blastn: "
             cd {output_dir}
-            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fa -num_threads {params.threads} -perc_identity \
+            blastn -query {input.fasta_file} -task {blast_type} -db {params.BLAST_DB}/*.fa -num_threads {params.threads} -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                 -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -688,7 +689,7 @@ elif marker_gene == "16S-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -715,7 +716,7 @@ elif marker_gene == "16S-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -766,7 +767,7 @@ elif marker_gene == "COI-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -793,7 +794,7 @@ elif marker_gene == "COI-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -843,7 +844,7 @@ elif marker_gene == "COI-BOLD":
         shell:
             """
             echo "Running the BLAST Container - blastn: "
-            blastn -query {input.fasta_file} -task megablast -db {params.coibold_db}/*.fasta \
+            blastn -query {input.fasta_file} -task {blast_type} -db {params.coibold_db}/*.fasta \
             -perc_identity {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} \
             -max_hsps {params.hits_per_subject} -max_target_seqs {params.hits_per_subject} \
             -evalue {params.e_value} -parse_deflines -num_threads {params.threads} \
@@ -896,7 +897,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -923,7 +924,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -987,7 +988,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.filtered_fasta} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.filtered_fasta} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_plants_log}
@@ -1014,7 +1015,7 @@ elif marker_gene == "ITS-PLANTS-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.filtered_fasta} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.filtered_fasta} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_plants_log}
@@ -1094,7 +1095,7 @@ elif marker_gene == "ITS-FUNGI-UNITE":
             """
             echo "Running the BLAST Container - blastn: "
             cd {output_dir}
-            blastn -query {input.fasta_file} -task megablast -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
+            blastn -query {input.fasta_file} -task {blast_type} -db {params.BLAST_DB}/*.fasta -num_threads {params.threads} -perc_identity \
                 {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                 -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                 -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -1146,7 +1147,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -1173,7 +1174,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -1237,7 +1238,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.filtered_fasta} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.filtered_fasta} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_fungi_log}
@@ -1264,7 +1265,7 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.filtered_fasta} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.filtered_fasta} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_fungi_log}
@@ -1341,7 +1342,7 @@ elif marker_gene == "ALL-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.db_type} -remote -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.db_type} -remote -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -1368,7 +1369,7 @@ elif marker_gene == "ALL-NCBI":
                 """
                 echo "Running the BLAST Container - blastn: "
                 cd {output_dir}
-                blastn -query {input.fasta_file} -task megablast -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
+                blastn -query {input.fasta_file} -task {blast_type} -db {params.NCBI_DB}/{params.db_type} -num_threads {params.threads} -perc_identity \
                     {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} -max_hsps {params.hits_per_subject} \
                     -max_target_seqs {params.hits_per_subject} -evalue {params.evalue} \
                     -outfmt "6 qseqid sscinames sseqid staxids stitle pident qcovs evalue" > {output.blast_log}
@@ -1418,7 +1419,7 @@ else:
         shell:
             """
             echo "Running the BLAST Container - blastn: "
-            blastn -query {input.fasta_file} -task megablast -db {params.db_dir}/*.fasta \
+            blastn -query {input.fasta_file} -task {blast_type} -db {params.db_dir}/*.fasta \
             -perc_identity {params.similarity_int_asg} -qcov_hsp_perc {params.coverage_int} \
             -max_hsps {params.hits_per_subject} -max_target_seqs {params.hits_per_subject} \
             -evalue {params.e_value} -num_threads {params.threads} \

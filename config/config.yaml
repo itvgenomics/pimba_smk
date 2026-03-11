@@ -49,6 +49,7 @@ ITS: 'no'
 remote: 'yes'
 db_type: 'nt'
 create_excel: 'yes'
+blast_type: 'megablast'
 
 # database files
 16S-SILVA-DB: ''
