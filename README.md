@@ -249,6 +249,15 @@ To run this mode, complete the config_tax.yaml file. This configuration uses the
 | fasta_file | FASTA file containing the sequences of the OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otus.fasta. |
 | raw_reads | FASTA file containing the sequences of processed reads from PIMBA Prepare. For example, the default output from PIMBA Prepare is located at /results/00-prepare/AllSamples.fasta. |
 
+After configuring the config_tax.yaml file, run PIMBA Tax with the following command:
+
+`bash pimba_smk_tax.sh -r 16S-RDP -t 8 -c config/config_tax.yaml -d .`
+
+- "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene.
+- "-t": number of processors.
+- "-c": the path to the config file.
+- "-d": the path to the working directory.
+
 ## References
 
 1. Bolyen, Evan, Jai Ram Rideout, Matthew R. Dillon, Nicholas A. Bokulich, Christian C. Abnet, Gabriel A. Al-Ghalith, Harriet Alexander, et al. 2019. “Reproducible, Interactive, Scalable and Extensible Microbiome Data Science Using QIIME 2.” Nature Biotechnology 37 (8): 852–57.
