@@ -151,7 +151,8 @@ After configuring the "prepare" mode according to the type of read being used, c
 | ITS                  | Set to 'yes' if the reads are ITS.                                                               |
 | remote | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
 | db_type | Define the NCBI BLAST database, for example, nt, core_nt and so on. |
-| create_excel | If set to 'yes', PIMBA will create an excel sheet for manual curation, flagging inconsistent OTUs/ASVs. The default is 'yes' |
+| create_excel | If set to 'yes', PIMBA will create an excel sheet for manual curation, flagging inconsistent OTUs/ASVs. The default is 'yes'. |
+| blast_type | Define the type of BLAST to be used, default is megablast. Blastn-short is another option. |
 
 #### Database paths
 Depending on the database used, provide the full path to the files related to that database. Snakemake will only use the path specified in the "marker_gene" option from the previous item, so only the specified marker gene needs to be configured. Additionally, for runs including the NCBI database, the taxdump folder needs to be downloaded and the full path needs to be included in the config file. Use the following commands to download and uncompress the taxdump folder:
@@ -186,13 +187,6 @@ This section is optional and refers to generating a tree with unclassified OTUs 
 | reference-alignment | Reference alignment in FASTA format. Needs to contain the same sequences (by name) as the reference tree. |
 | taxonomy-file | File containing a tab-separated list of reference taxon with full taxonomic string assignments to the names in the reference tree file (see example below). |
 | datatype | Type of data, 'nt' for DNA, 'aa' for protein. |
-
-~~~
-EF635241.1_Pseudoalteromonas_sp._BSw20683	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
-MT634734.1_Pseudoalteromonas_sp._strain_GAMAL14_SWC	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
-MT634729.1_Pseudoalteromonas_sp._strain_GAMAL3_SWC	Bacteria;Pseudomonadati;Pseudomonadota;Gammaproteobacteria;Alteromonadales;Pseudoalteromonadaceae;Pseudoalteromonas;unclassifiedPseudoalteromonas
-...
-~~~
 
 The output ".jplace" file containing the tree with the OTUs placed can be found at `/results/03-placed/no_clustering/placed/` and it can be visualized using iTOL (https://itol.embl.de/).
 
@@ -243,6 +237,17 @@ After that, you need is to set the /path/to/your/database/ in the config variabl
 ## Manual curation
 
 This mode is optional but recommended. If create_excel is set to 'yes' in the config.yaml file, PIMBA will create an excel sheet to flag inconsistent OTU/ASV records. Instructions for manual curation can be found in the `manual_curation_guide.pdf`.
+
+## PIMBA Tax
+
+This mode is recommended for reanalyzing the same OTUs/ASVs using a different database for taxonomic assignment, while preserving sequence IDs and enabling comparisons across multiple databases.
+To run this mode, complete the config_tax.yaml file. This configuration uses the same parameters as the PIMBA Run mode, with the addition of the following:
+
+| Parameter | Description |
+| ----------- | ----------- |
+| txt_table | Table containing the abundances of OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otu_table.txt. |
+| fasta_file | FASTA file containing the sequences of the OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otus.fasta. |
+| raw_reads | FASTA file containing the sequences of processed reads from PIMBA Prepare. For example, the default output from PIMBA Prepare is located at /results/00-prepare/AllSamples.fasta. |
 
 ## References
 
