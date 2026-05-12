@@ -561,7 +561,7 @@ if marker_gene == "16S-SILVA":
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
             python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.txt_table} {params.BLAST_DB}/taxmap_slv_ssu_ref_nr_edited_138.2.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
+            {input.txt_table} {params.BLAST_DB}/*.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "16S-GREENGENES":
@@ -613,7 +613,7 @@ elif marker_gene == "16S-GREENGENES":
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
             python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.txt_table} {params.BLAST_DB}/97_otu_taxonomy.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
+            {input.txt_table} {params.BLAST_DB}/*.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "16S-RDP":
@@ -665,7 +665,7 @@ elif marker_gene == "16S-RDP":
             cd {output_dir}/diversity_by_sample
             echo "Running the QiimePipe Container - createTaxonTable_singleFile.py: "
             python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.txt_table} {params.BLAST_DB}/Ref_taxonomy.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
+            {input.txt_table} {params.BLAST_DB}/*.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 elif marker_gene == "16S-NCBI":
@@ -873,7 +873,7 @@ elif marker_gene == "COI-BOLD":
 
             echo "Running the QiimePipe Container - createTaxonTable_singleFile_flex.py: "
             python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.table} {params.coibold_db}/*_tax.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1 
+            {input.table} {params.coibold_db}/*.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1 
             """
 
 elif marker_gene == "ITS-PLANTS-NCBI":
