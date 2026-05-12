@@ -1448,7 +1448,7 @@ else:
 
             echo "Running the QiimePipe Container - createTaxonTable_singleFile_flex.py: "
             python /qiimepipe/createTaxonTable_singleFile_flex.py {input.blast_log} \
-            {input.table} {params.db_dir}/*_tax.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
+            {input.table} {params.db_dir}/*.txt {output.tax_assignments} {output.taxon_red_flagged} > {log} 2>&1
             """
 
 rule convert_otu_table_to_biom:
