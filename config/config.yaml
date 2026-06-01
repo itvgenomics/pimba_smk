@@ -1,7 +1,7 @@
 # config.yaml
 
 # singularity folder
-sif_dir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/sif_bits/'
+sif_dir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/sif_files/'
 
 # number of threads
 num_threads: 8
