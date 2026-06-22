@@ -98,6 +98,11 @@ def check_fastq_content(p: Path, max_examples: int = 10) -> Dict[str, Union[int,
                         f'record {n_records}: sequence length {len(s)} != quality length {len(q)}; header: {header_clean}'
                     )
 
+    if n_records == 0:
+        raise RuntimeError(
+            f'NO FASTQ RECORDS DETECTED in file {p}\n'
+            f'The file is empty, it does not contain FASTQ records.'
+        )
     return {
         'records': n_records,
         'length_mismatches': n_len_mismatch,

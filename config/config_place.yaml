@@ -50,7 +50,7 @@ settings:
   # Valid values: "epa-ng"
   placement-tool: "epa-ng"
 
-  outdir: "results/03-place/"
+  outdir: "results/04-place/"
 
 # =================================================================================================
 #     Tool Parameters
