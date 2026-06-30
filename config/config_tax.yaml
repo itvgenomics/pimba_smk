@@ -35,3 +35,6 @@ COI-BOLD-DB: ''
 NCBI-DB: ''
 ITS-FUNGI-UNITE-DB: ''
 taxdump: ''
+
+# pimba curate
+mode: 'single'
