@@ -308,6 +308,17 @@ combine_tax_otu <- function(otu_file, fasta_file,
     sep = "\t"
   )
   
+  # -----------------------------
+  # Normalize UnitID from newer BOLD logs
+  # Old format:
+  #   OTU12345
+  # New format:
+  #   gb|OTU12345|
+  # Convert both to:
+  #   OTU12345
+  # -----------------------------
+  hits[[1]] <- sub("^.*\\|(OTU[0-9]+)\\|?$", "\\1", hits[[1]])
+  
   if (ncol(hits) >= 8) {
     
     colnames(hits)[1:8] <- c(

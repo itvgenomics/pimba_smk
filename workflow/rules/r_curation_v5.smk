@@ -23,7 +23,7 @@ db_label = (
     "CUSTOM"
 )
 
-output_dir = os.path.join(current_path, "results", "03-curate", config["outputrun"] + "_" + db_label + "_Curate")
+output_dir = os.path.join(current_path, "results", "02-curate", config["outputrun"] + "_" + db_label + "_Curate")
 if not os.path.exists(os.path.dirname(output_dir)):
     os.makedirs(os.path.dirname(output_dir))
 
