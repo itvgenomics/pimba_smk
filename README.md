@@ -234,9 +234,154 @@ After that, you need is to set the /path/to/your/database/ in the config variabl
 
 `bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -l no -t 8 -c config/config.yaml -d .`
 
-## Manual curation
+## PIMBA Curate
 
-This mode is optional but recommended. If create_excel is set to 'yes' in the config.yaml file, PIMBA will create an excel sheet to flag inconsistent OTU/ASV records. Instructions for manual curation can be found in the `manual_curation_guide.pdf`.
+**PIMBA Curate** is a module of **PIMBA 3.0** developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.
+
+The module supports both **OTU** and **ASV** workflows and automatically detects the input type from sequence identifiers. It also supports both **single-hit** and **multi-hit** taxonomic assignment modes.
+
+---
+
+### Supported databases
+
+Database selection is controlled through the `marker_gene` parameter in the `config.yaml` file.
+
+Built-in databases are specified as:
+
+```yaml
+marker_gene: "COI-BOLD"
+marker_gene: "16S-RDP"
+marker_gene: "16S-GREENGENES"
+marker_gene: "16S-SILVA"
+marker_gene: "ITS-FUNGI-UNITE"
+marker_gene: "NCBI"
+```
+
+Any other value is interpreted as a path to a custom reference database:
+
+```yaml
+marker_gene: "/path/to/custom_reference_directory"
+```
+
+Custom databases must contain exactly one reference taxonomy file (`*.txt`) and are parsed using the same taxonomy format adopted for the BOLD database.
+
+---
+
+### Configuration
+
+The following database paths must be defined in `config.yaml`:
+
+```yaml
+COI-BOLD-DB: "/path/to/BOLD_database"
+16S-RDP-DB: "/path/to/RDP_database"
+16S-GREENGENES-DB: "/path/to/Greengenes_database"
+16S-SILVA-DB: "/path/to/SILVA_database"
+ITS-FUNGI-UNITE-DB: "/path/to/UNITE_database"
+NCBI-DB: "/path/to/NCBI_database"
+taxdump: "/path/to/taxdump_database"
+```
+
+PIMBA Curate introduces the following configuration parameters:
+
+```yaml
+ncbi_taxizedb: "/path/to/local_taxizedb_cache"
+
+mode: "single"
+# or
+mode: "multi"
+```
+
+The `ncbi_taxizedb` parameter specifies the local SQLite database used by **taxizedb** during species validation and is required regardless of the selected reference database.
+
+The `mode` parameter defines how BLAST hits are imported into the curation workflow:
+
+- **single** retains only the highest-scoring BLAST hit for each sequence.
+- **multi** retains all recovered BLAST hits for each sequence. This option is only available when `hits_per_subject` is greater than `1` in the main PIMBA `config.yaml`.
+
+---
+
+### Running PIMBA Curate
+
+```bash
+bash pimba_smk_curate.sh -t 8 -c config/config.yaml -d .
+```
+
+Long options are also supported:
+
+```bash
+bash pimba_smk_curate.sh -threads 8 -config config/config.yaml -directory .
+```
+
+To unlock a previous interrupted execution:
+
+```bash
+bash pimba_smk_curate.sh -t 8 -c config/config.yaml -d . -u
+```
+
+---
+
+### Outputs
+
+Curated results are written to:
+
+```text
+results/02-curate/<outputrun>_<DATABASE>_Curate/
+```
+
+Each execution generates:
+
+```text
+benchmark/ | logs/ | r_curation_singleSeq.done | r_curation_multiSeq.done
+```
+
+The main output is an Excel workbook containing two worksheets:
+
+| Worksheet | Description |
+|-----------|-------------|
+| `raw_data_with_seqs` | Original taxonomic assignments merged with representative sequences and read abundance data. |
+| `filtered_data_with_flags` | Curated taxonomic assignments with validation flags and species validation results. |
+
+### Validation categories
+
+The `filtered_data_with_flags` worksheet includes a **Validation** column that reports the validation status of the **Species** column only.
+
+| Validation | Description |
+|------------|-------------|
+| `Empty Species Field` | No species epithet was available after the cleaning and standardization steps. |
+| `Format Issue` | The species name did not conform to the expected taxonomic format (e.g., multiple words, invalid characters, or other formatting inconsistencies). |
+| `Format Validated` | The species name passed all internal formatting and consistency checks but was not validated against the local NCBI Taxonomy database. |
+| `Format and DB Validated` | The species name passed all formatting checks and was successfully validated against the local NCBI Taxonomy database using **taxizedb**. |
+
+---
+
+### Workflow
+
+PIMBA Curate performs the following steps:
+
+1. Selects the active reference database.
+2. Resolves the corresponding reference taxonomy.
+3. Reads the abundance table, representative sequences and BLAST hits.
+4. Detects OTU or ASV input automatically.
+5. Standardizes BLAST identifiers.
+6. Retrieves only taxonomy entries corresponding to matched reference IDs.
+7. Parses the selected reference database.
+8. Applies single-hit or multi-hit taxonomic assignment.
+9. Merges taxonomy, abundance data and representative sequences.
+10. Cleans and validates species names.
+11. Performs species validation using the local NCBI Taxonomy database through **taxizedb**.
+12. Exports curated Excel files for downstream manual inspection.
+
+---
+
+### Supported databases
+
+- COI-BOLD
+- 16S-RDP
+- 16S-GREENGENES
+- 16S-SILVA
+- ITS-FUNGI-UNITE
+- NCBI
+- CUSTOM
 
 ## PIMBA Tax
 
