@@ -92,7 +92,7 @@ WORKDIR=$(realpath "$WORKDIR")
 # Helper functions
 # --------------------------------
 clean_path() {
-    echo "$1" | tr -d '\r' | xargs
+    echo "${1:-}" | tr -d '\r' | xargs
 }
 
 read_yaml_value() {
@@ -105,7 +105,23 @@ read_yaml_value() {
         tr -d '"' | \
         tr -d "'" | \
         tr -d '\r' | \
-        xargs
+        xargs || true
+}
+
+require_directory() {
+    local DIR="$1"
+    local LABEL="$2"
+
+    if [ -z "${DIR:-}" ]; then
+        echo "ERROR: $LABEL is empty in config." >&2
+        exit 1
+    fi
+
+    if [ ! -d "$DIR" ]; then
+        echo "ERROR: $LABEL directory not found:" >&2
+        echo "$DIR" >&2
+        exit 1
+    fi
 }
 
 detect_single_txt() {
@@ -149,24 +165,20 @@ write_resolved_config() {
 }
 
 # --------------------------------
-# Developer-defined reference directories
-# These are not exposed to the user config.
-# Only developers should edit these paths.
-# Each directory must contain exactly one .txt taxonomy file.
+# Read database directories from config
+# These paths are user-defined in config.yaml.
+# Each non-NCBI database directory must contain exactly one .txt taxonomy file.
 # --------------------------------
-BOLD="/mnt/area/gen/scratch/C0570/metabarcoding_databases/bold/BOLD"
-RDP="/mnt/area/gen/scratch/C0570/metabarcoding_databases/rdp"
-SILVA="/mnt/gen/opt/databases/metabarcoding_db/SILVA_138"
-UNITE="/mnt/area/gen/scratch/C0570/metabarcoding_databases/unite"
-GREENGENES="/mnt/area/gen/scratch/C0570/metabarcoding_databases/greengenes"
-NCBI_DB="/mnt/area/gen/scratch/C0570/metabarcoding_databases/ncbi"
+BOLD=$(clean_path "$(read_yaml_value "COI-BOLD-DB" "$CONFIG")")
+RDP=$(clean_path "$(read_yaml_value "16S-RDP-DB" "$CONFIG")")
+SILVA=$(clean_path "$(read_yaml_value "16S-SILVA-DB" "$CONFIG")")
+UNITE=$(clean_path "$(read_yaml_value "ITS-FUNGI-UNITE-DB" "$CONFIG")")
+GREENGENES=$(clean_path "$(read_yaml_value "16S-GREENGENES-DB" "$CONFIG")")
+NCBI_DB=$(clean_path "$(read_yaml_value "NCBI-DB" "$CONFIG")")
 
-BOLD=$(clean_path "$BOLD")
-RDP=$(clean_path "$RDP")
-SILVA=$(clean_path "$SILVA")
-UNITE=$(clean_path "$UNITE")
-GREENGENES=$(clean_path "$GREENGENES")
-NCBI_DB=$(clean_path "$NCBI_DB")
+# Local NCBI taxizedb cache used by parsing_taxa.
+# This is intentionally separate from NCBI-DB.
+NCBI_TAXIZEDB=$(clean_path "$(read_yaml_value "ncbi_taxizedb" "$CONFIG")")
 
 # --------------------------------
 # Read marker_gene
@@ -174,7 +186,7 @@ NCBI_DB=$(clean_path "$NCBI_DB")
 # Default databases use names such as COI-BOLD or 16S-RDP.
 # Any non-default value is treated as a custom reference directory.
 # --------------------------------
-MARKER_GENE=$(read_yaml_value "marker_gene" "$CONFIG")
+MARKER_GENE=$(clean_path "$(read_yaml_value "marker_gene" "$CONFIG")")
 
 if [ -z "${MARKER_GENE:-}" ]; then
     echo "ERROR: marker_gene not found or empty in config."
@@ -191,6 +203,7 @@ case "$MARKER_GENE" in
     "COI-BOLD")
         DB_FORMAT="COI-BOLD-DB"
         DB_DIR="$BOLD"
+        require_directory "$DB_DIR" "COI-BOLD-DB"
         REF_FILE=$(detect_single_txt "$DB_DIR")
         DB_BIND="-B $DB_DIR:$DB_DIR"
         export PIMBA_BOLD_REF_FILE="$REF_FILE"
@@ -199,6 +212,7 @@ case "$MARKER_GENE" in
     "16S-RDP")
         DB_FORMAT="16S-RDP-DB"
         DB_DIR="$RDP"
+        require_directory "$DB_DIR" "16S-RDP-DB"
         REF_FILE=$(detect_single_txt "$DB_DIR")
         DB_BIND="-B $DB_DIR:$DB_DIR"
         export PIMBA_RDP_REF_FILE="$REF_FILE"
@@ -207,6 +221,7 @@ case "$MARKER_GENE" in
     "16S-GREENGENES")
         DB_FORMAT="16S-GREENGENES-DB"
         DB_DIR="$GREENGENES"
+        require_directory "$DB_DIR" "16S-GREENGENES-DB"
         REF_FILE=$(detect_single_txt "$DB_DIR")
         DB_BIND="-B $DB_DIR:$DB_DIR"
         export PIMBA_GREENGENES_REF_FILE="$REF_FILE"
@@ -215,6 +230,7 @@ case "$MARKER_GENE" in
     "16S-SILVA")
         DB_FORMAT="16S-SILVA-DB"
         DB_DIR="$SILVA"
+        require_directory "$DB_DIR" "16S-SILVA-DB"
         REF_FILE=$(detect_single_txt "$DB_DIR")
         DB_BIND="-B $DB_DIR:$DB_DIR"
         export PIMBA_SILVA_REF_FILE="$REF_FILE"
@@ -223,6 +239,7 @@ case "$MARKER_GENE" in
     "ITS-FUNGI-UNITE")
         DB_FORMAT="ITS-FUNGI-UNITE-DB"
         DB_DIR="$UNITE"
+        require_directory "$DB_DIR" "ITS-FUNGI-UNITE-DB"
         REF_FILE=$(detect_single_txt "$DB_DIR")
         DB_BIND="-B $DB_DIR:$DB_DIR"
         export PIMBA_UNITE_REF_FILE="$REF_FILE"
@@ -230,14 +247,21 @@ case "$MARKER_GENE" in
 
     "NCBI")
         DB_FORMAT="NCBI-DB"
-        DB_DIR="$NCBI_DB"
-        DB_BIND="-B $DB_DIR:/ncbi_db"
-        export PIMBA_NCBI_DB_DIR="/ncbi_db"
+
+        if [ -n "${NCBI_DB:-}" ]; then
+            require_directory "$NCBI_DB" "NCBI-DB"
+            DB_BIND="-B $NCBI_DB:$NCBI_DB"
+            export PIMBA_NCBI_DB_DIR="$NCBI_DB"
+        else
+            DB_BIND=""
+            export PIMBA_NCBI_DB_DIR="NA"
+        fi
         ;;
 
     *)
         DB_FORMAT="CUSTOM"
         DB_DIR=$(realpath "$MARKER_GENE")
+        require_directory "$DB_DIR" "custom marker_gene"
         REF_FILE=$(detect_single_txt "$DB_DIR")
         DB_BIND="-B $DB_DIR:$DB_DIR"
 
@@ -254,6 +278,8 @@ echo "Internal database format: $DB_FORMAT"
 if [ "$DB_FORMAT" != "NCBI-DB" ]; then
     echo "Reference directory: $DB_DIR"
     echo "Detected taxonomy file: $REF_FILE"
+else
+    echo "NCBI-DB path: ${NCBI_DB:-NA}"
 fi
 
 if [ "$DB_FORMAT" = "CUSTOM" ]; then
@@ -263,13 +289,17 @@ fi
 # --------------------------------
 # NCBI taxizedb cache bind
 # Always mounted because parsing_taxa may validate species against NCBI.
-# Avoid duplicating the NCBI bind when marker_gene itself is NCBI.
+# This uses ncbi_taxizedb, not NCBI-DB.
 # --------------------------------
-if [ "$DB_FORMAT" = "NCBI-DB" ]; then
-    NCBI_BIND=""
-else
-    NCBI_BIND="-B $NCBI_DB:/ncbi_db"
+if [ -z "${NCBI_TAXIZEDB:-}" ]; then
+    echo "ERROR: ncbi_taxizedb not found or empty in config."
+    echo "This path is required because parsing_taxa validates species against the local NCBI taxizedb cache."
+    exit 1
 fi
+
+require_directory "$NCBI_TAXIZEDB" "ncbi_taxizedb"
+
+NCBI_BIND="-B $NCBI_TAXIZEDB:/ncbi_db"
 
 # --------------------------------
 # Run Snakemake
