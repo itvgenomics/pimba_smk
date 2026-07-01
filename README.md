@@ -291,7 +291,7 @@ mode: "single"
 mode: "multi"
 ```
 
-The `ncbi_taxizedb` parameter specifies the local SQLite database used by **taxizedb** during species validation and is required regardless of the selected reference database.
+The `ncbi_taxizedb` parameter specifies the local SQLite database used by **taxizedb** during species validation and is required regardless of the selected reference database. A pre-built version of this database, prepared specifically for PIMBA Curate, is available on [Zenodo](https://zenodo.org/records/21109830).
 
 The `mode` parameter defines how BLAST hits are imported into the curation workflow:
 
