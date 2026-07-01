@@ -1,10 +1,10 @@
 # PIMBA v3.0 in Snakemake - User Guide
 
-Authors: Tiago Ferreira Leão, Renato R. M. Oliveira
+Authors: Tiago Ferreira Leão, Fabricio dos Anjos Santa Rosa, Renato R. M. Oliveira
 
 Document Version: 1.3
 
-Date: 23/05/2025
+Date: 01/07/2026
 
 ## Description
 <p align="center">
