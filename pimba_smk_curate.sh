@@ -28,7 +28,7 @@ show_help() {
     echo "  marker_gene: '16S-GREENGENES'"
     echo "  marker_gene: '16S-SILVA'"
     echo "  marker_gene: 'ITS-FUNGI-UNITE'"
-    echo "  marker_gene: 'NCBI'"
+    echo "  marker_gene: 'COI-NCBI'"
     echo "  marker_gene: '/path/to/custom_reference_folder'"
     echo ""
     exit 0
@@ -183,7 +183,7 @@ NCBI_TAXIZEDB=$(clean_path "$(read_yaml_value "ncbi_taxizedb" "$CONFIG")")
 # --------------------------------
 # Read marker_gene
 # marker_gene controls database selection.
-# Default databases use names such as COI-BOLD or 16S-RDP.
+# Default databases use names such as COI-BOLD, 16S-RDP or COI-NCBI.
 # Any non-default value is treated as a custom reference directory.
 # --------------------------------
 MARKER_GENE=$(clean_path "$(read_yaml_value "marker_gene" "$CONFIG")")
@@ -245,7 +245,7 @@ case "$MARKER_GENE" in
         export PIMBA_UNITE_REF_FILE="$REF_FILE"
         ;;
 
-    "NCBI")
+    "COI-NCBI")
         DB_FORMAT="NCBI-DB"
 
         if [ -n "${NCBI_DB:-}" ]; then
