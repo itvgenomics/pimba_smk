@@ -1265,7 +1265,7 @@ parse_ncbi <- function(df) {
   
   message("Fetching NCBI taxonomy for ", nrow(df), " unique accessions...")
   
-  # Função para obter taxid do accession (adaptada do refDB_Blast)
+  # Função para obter taxid do accession
   get_taxid <- function(accession) {
     tryCatch({
       # Se já for um taxid numérico, usar diretamente
@@ -1273,12 +1273,87 @@ parse_ncbi <- function(df) {
         return(accession)
       }
       
-      # Caso contrário, buscar do nuccore
-      summary <- rentrez::entrez_summary(db = "nuccore", id = accession)
+      # Caso contrário, buscar taxid no nuccore
+      summary <- rentrez::entrez_summary(
+        db = "nuccore",
+        id = accession
+      )
+      
       return(summary$taxid)
+      
     }, error = function(e) {
       message("Error fetching taxid for ", accession, ": ", e$message)
       return(NA)
+    })
+  }
+  
+  # Fallback online: buscar classificação diretamente no NCBI Taxonomy
+  get_taxonomy_from_ncbi_online <- function(taxid) {
+    
+    tryCatch({
+      
+      xml <- rentrez::entrez_fetch(
+        db = "taxonomy",
+        id = taxid,
+        rettype = "xml",
+        parsed = FALSE
+      )
+      
+      doc <- xml2::read_xml(xml)
+      
+      taxon_nodes <- xml2::xml_find_all(
+        doc,
+        ".//LineageEx/Taxon"
+      )
+      
+      lineage_df <- data.frame(
+        name = xml2::xml_text(
+          xml2::xml_find_first(taxon_nodes, "ScientificName")
+        ),
+        rank = xml2::xml_text(
+          xml2::xml_find_first(taxon_nodes, "Rank")
+        ),
+        id = xml2::xml_text(
+          xml2::xml_find_first(taxon_nodes, "TaxId")
+        ),
+        stringsAsFactors = FALSE
+      )
+      
+      current_name <- xml2::xml_text(
+        xml2::xml_find_first(doc, ".//Taxon/ScientificName")
+      )
+      
+      current_rank <- xml2::xml_text(
+        xml2::xml_find_first(doc, ".//Taxon/Rank")
+      )
+      
+      current_id <- xml2::xml_text(
+        xml2::xml_find_first(doc, ".//Taxon/TaxId")
+      )
+      
+      tax_data <- dplyr::bind_rows(
+        lineage_df,
+        data.frame(
+          name = current_name,
+          rank = current_rank,
+          id = current_id,
+          stringsAsFactors = FALSE
+        )
+      )
+      
+      tax_data <- tax_data %>%
+        dplyr::filter(
+          !is.na(name),
+          !is.na(rank),
+          name != "",
+          rank != ""
+        )
+      
+      return(tax_data)
+      
+    }, error = function(e) {
+      message("Online NCBI taxonomy fallback failed for taxid ", taxid, ": ", e$message)
+      return(data.frame(name = NA, rank = NA, id = NA))
     })
   }
   
@@ -1299,26 +1374,56 @@ parse_ncbi <- function(df) {
   
   message("Getting taxonomic classification for ", nrow(accession_taxid), " taxids...")
   
-  # Obter classificação taxonômica completa (igual ao refDB_Blast)
-  tax_classification <- taxizedb::classification(accession_taxid$taxid, db = "ncbi")
+  # Primeiro tenta classificação offline no NCBI.sql via taxizedb
+  tax_classification <- taxizedb::classification(
+    accession_taxid$taxid,
+    db = "ncbi"
+  )
   
-  # Processar classificação (adaptado do refDB_Blast)
+  # Processar classificação
   taxonomy_list <- list()
   
   for (i in seq_along(tax_classification)) {
+    
     accession <- accession_taxid$Accession[i]
+    taxid <- accession_taxid$taxid[i]
     tax_data <- tax_classification[[i]]
     
-    # Garantir que é data.frame (igual ao refDB_Blast)
+    # Se taxizedb não encontrar, usar fallback online no NCBI Taxonomy
+    if (!inherits(tax_data, "data.frame")) {
+      
+      message(
+        "TaxID ",
+        taxid,
+        " not found in local NCBI.sql for ",
+        accession,
+        ". Trying online NCBI Taxonomy..."
+      )
+      
+      tax_data <- get_taxonomy_from_ncbi_online(taxid)
+    }
+    
+    # Garantir que é data.frame
     if (!inherits(tax_data, "data.frame")) {
       tax_data <- data.frame(name = NA, rank = NA, id = NA)
     }
     
-    # Filtrar apenas ranks padrão (igual ao refDB_Blast)
+    # Filtrar apenas ranks padrão
     tax_data <- tax_data %>%
-      dplyr::filter(rank %in% c("kingdom", "phylum", "class", "order", "family", "genus", "species"))
+      dplyr::filter(
+        rank %in% c(
+          "kingdom",
+          "phylum",
+          "class",
+          "order",
+          "family",
+          "genus",
+          "species"
+        )
+      )
     
     if (nrow(tax_data) > 0) {
+      
       # Criar vetor nomeado com os ranks
       tax_vector <- setNames(tax_data$name, tax_data$rank)
       
@@ -1343,7 +1448,7 @@ parse_ncbi <- function(df) {
   
   ref_tax <- dplyr::bind_rows(taxonomy_list)
   
-  # Extrair epíteto específico da espécie (última palavra)
+  # Extrair epíteto específico da espécie
   ref_tax <- ref_tax %>%
     dplyr::mutate(
       Species = dplyr::case_when(
@@ -1356,10 +1461,13 @@ parse_ncbi <- function(df) {
   # Substituir NA por vazio
   ref_tax <- ref_tax %>%
     dplyr::mutate(
-      dplyr::across(Kingdom:Species, ~ ifelse(is.na(.) | . == "", "", .))
+      dplyr::across(
+        Kingdom:Species,
+        ~ ifelse(is.na(.) | . == "", "", .)
+      )
     )
   
-  # Construir taxonomy string no formato padrão (7 níveis)
+  # Construir taxonomy string no formato padrão
   ref_tax <- ref_tax %>%
     dplyr::mutate(
       Taxonomy = paste0(
