@@ -34,7 +34,7 @@ default_ref_files <- list(
 # ---------------------------
 required_packages <- c(
   "dplyr", "tidyr", "openxlsx", "readxl", "data.table",
-  "stringr", "taxizedb", "ggplot2"
+  "stringr", "taxizedb", "ggplot2", "rentrez"
 )
 
 sapply(required_packages, require, character.only = TRUE)
