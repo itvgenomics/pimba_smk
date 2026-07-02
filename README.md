@@ -1,10 +1,62 @@
 # PIMBA v3.0 in Snakemake - User Guide
 
-Authors: Tiago Ferreira Leão, Fabricio dos Anjos Santa Rosa, Renato R. M. Oliveira
+**Authors:** Tiago Ferreira Leão, Fabricio dos Anjos Santa Rosa, Renato R. M. Oliveira
 
-Document Version: 1.3
+**Version:** 1.3
 
-Date: 01/07/2026
+**Last updated:** July 2026
+
+<p align="center">
+<img src="figures/PIMBA.png" alt="PIMBA Logo" width="50%">
+</p>
+
+## Table of Contents
+
+- [Description](#description)
+- [How to Cite?](#how-to-cite)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+  - [A) Anaconda](#a-anaconda)
+  - [B) Snakemake](#b-snakemake)
+  - [C) Clone the GitHub Repository](#c-clone-the-github-repository)
+- [How to Run PIMBA v3.0 in Snakemake?](#how-to-run-pimba-v30-in-snakemake)
+  - [A) Configure the config.yaml File](#a-configure-the-configyaml-file)
+    - [General options for all modes](#general-options-for-all-modes)
+    - [General options for the Prepare Mode](#general-options-for-the-prepare-mode)
+    - [Inputs to run paired-end reads](#inputs-to-run-paired-end-reads)
+    - [Inputs for single end and single index reads](#inputs-for-single-end-and-single-index-reads)
+    - [Inputs for single end and dual index reads](#inputs-for-single-end-and-dual-index-reads)
+    - [Inputs for the Run Mode](#inputs-for-the-run-mode)
+    - [Database paths](#database-paths)
+    - [Inputs for the Plot Mode](#inputs-for-the-plot-mode)
+    - [Inputs for the Place Mode](#inputs-for-the-place-mode)
+  - [B) Run the "pimba_smk_main.sh" file](#b-run-the-pimba_smk_mainsh-file)
+    - [Example of testing](#example-of-testing)
+    - [Unlocking the working directory](#unlocking-the-working-directory)
+- [Configure your personalized database](#configure-your-personalized-database)
+- [PIMBA Tax](#pimba-tax)
+- [PIMBA Curate](#pimba-curate)
+  - [Supported databases](#supported-databases)
+  - [Configuration](#configuration)
+  - [Running PIMBA Curate](#running-pimba-curate)
+  - [Outputs](#outputs)
+  - [Validation categories](#validation-categories)
+  - [Workflow](#workflow)
+- [References](#references)
+
+## Overview
+
+PIMBA (**PI**peline for **M**eta**B**arcoding **A**nalysis) is an open-source Snakemake workflow for DNA metabarcoding analyses. The pipeline supports both OTU- and ASV-based strategies, multiple reference databases, custom reference libraries, and automated downstream analyses within a modular and reproducible workflow.
+
+PIMBA v3.0 is organized into four independent modules:
+
+- **PIMBA Prepare** — preprocessing, demultiplexing and quality filtering of sequencing reads.
+- **PIMBA Run** — OTU/ASV inference, taxonomic assignment and abundance table generation.
+- **PIMBA Tax** — taxonomic reassignment of existing OTU/ASV datasets using alternative reference databases.
+- **PIMBA Curate** — automated taxonomic curation and validation of BLAST assignments.
+- **PIMBA Plot** — generation of graphical summaries from PIMBA outputs, including formatted taxonomic assignment tables, diversity plots and sample clustering analyses.
+
+This guide describes the installation, configuration and execution of all modules available in the PIMBA v3.0 Snakemake workflow.
 
 ## Description
 <p align="center">
@@ -234,6 +286,26 @@ After that, you need is to set the /path/to/your/database/ in the config variabl
 
 `bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -l no -t 8 -c config/config.yaml -d .`
 
+## PIMBA Tax
+
+This mode is recommended for reanalyzing the same OTUs/ASVs using a different database for taxonomic assignment, while preserving sequence IDs and enabling comparisons across multiple databases.
+To run this mode, complete the config_tax.yaml file. This configuration uses the same parameters as the PIMBA Run mode, with the addition of the following:
+
+| Parameter | Description |
+| ----------- | ----------- |
+| txt_table | Table containing the abundances of OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otu_table.txt. |
+| fasta_file | FASTA file containing the sequences of the OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otus.fasta. |
+| raw_reads | FASTA file containing the sequences of processed reads from PIMBA Prepare. For example, the default output from PIMBA Prepare is located at /results/00-prepare/AllSamples.fasta. |
+
+After configuring the config_tax.yaml file, run PIMBA Tax with the following command:
+
+`bash pimba_smk_tax.sh -r 16S-RDP -t 8 -c config/config_tax.yaml -d .`
+
+- "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene.
+- "-t": number of processors.
+- "-c": the path to the config file.
+- "-d": the path to the working directory.
+
 ## PIMBA Curate
 
 **PIMBA Curate** is a module of **PIMBA 3.0** developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.
@@ -382,26 +454,6 @@ PIMBA Curate performs the following steps:
 - ITS-FUNGI-UNITE
 - NCBI
 - CUSTOM
-
-## PIMBA Tax
-
-This mode is recommended for reanalyzing the same OTUs/ASVs using a different database for taxonomic assignment, while preserving sequence IDs and enabling comparisons across multiple databases.
-To run this mode, complete the config_tax.yaml file. This configuration uses the same parameters as the PIMBA Run mode, with the addition of the following:
-
-| Parameter | Description |
-| ----------- | ----------- |
-| txt_table | Table containing the abundances of OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otu_table.txt. |
-| fasta_file | FASTA file containing the sequences of the OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otus.fasta. |
-| raw_reads | FASTA file containing the sequences of processed reads from PIMBA Prepare. For example, the default output from PIMBA Prepare is located at /results/00-prepare/AllSamples.fasta. |
-
-After configuring the config_tax.yaml file, run PIMBA Tax with the following command:
-
-`bash pimba_smk_tax.sh -r 16S-RDP -t 8 -c config/config_tax.yaml -d .`
-
-- "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene.
-- "-t": number of processors.
-- "-c": the path to the config file.
-- "-d": the path to the working directory.
 
 ## References
 
