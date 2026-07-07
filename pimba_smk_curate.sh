@@ -28,7 +28,11 @@ show_help() {
     echo "  marker_gene: '16S-GREENGENES'"
     echo "  marker_gene: '16S-SILVA'"
     echo "  marker_gene: 'ITS-FUNGI-UNITE'"
+    echo "  marker_gene: '16S-NCBI'"
     echo "  marker_gene: 'COI-NCBI'"
+    echo "  marker_gene: 'ITS-PLANTS-NCBI'"
+    echo "  marker_gene: 'ITS-FUNGI-NCBI'"
+    echo "  marker_gene: 'ALL-NCBI'"
     echo "  marker_gene: '/path/to/custom_reference_folder'"
     echo ""
     exit 0
@@ -245,7 +249,7 @@ case "$MARKER_GENE" in
         export PIMBA_UNITE_REF_FILE="$REF_FILE"
         ;;
 
-    "COI-NCBI")
+    "16S-NCBI"|"COI-NCBI"|"ITS-PLANTS-NCBI"|"ITS-FUNGI-NCBI"|"ALL-NCBI")
         DB_FORMAT="NCBI-DB"
 
         if [ -n "${NCBI_DB:-}" ]; then
@@ -256,6 +260,8 @@ case "$MARKER_GENE" in
             DB_BIND=""
             export PIMBA_NCBI_DB_DIR="NA"
         fi
+
+        export PIMBA_NCBI_MARKER_GENE="$MARKER_GENE"
         ;;
 
     *)
