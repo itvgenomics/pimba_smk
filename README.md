@@ -95,14 +95,13 @@
 
 ## 1.1. Overview
 
-<p align="justify">PIMBA (**PI**peline for **M**eta**B**arcoding **A**nalysis) is an open-source Snakemake workflow for DNA metabarcoding analyses. The pipeline supports both OTU- and ASV-based strategies, multiple reference databases, custom reference libraries, and automated downstream analyses within a modular and reproducible workflow.</p>
+<p align="justify"><strong>PIMBA</strong> (<strong>PI</strong>peline for <strong>M</strong>eta<strong>B</strong>arcoding <strong>A</strong>nalysis) is an open-source Snakemake workflow for DNA metabarcoding analyses. The pipeline supports both OTU- and ASV-based strategies, multiple reference databases, custom reference libraries, and automated downstream analyses within a modular and reproducible workflow.</p>
 
-PIMBA v3.0 is organized into four independent modules:
+PIMBA v3.0 is organized into three independent modules:
 
-- **PIMBA Prepare** — preprocessing, demultiplexing and quality filtering of sequencing reads.
-- **PIMBA Run** — OTU/ASV inference, taxonomic assignment and abundance table generation.
-- **PIMBA Tax** — taxonomic reassignment of existing OTU/ASV datasets using alternative reference databases.
-- **PIMBA Curate** — automated taxonomic curation and validation of BLAST assignments.
+- <p align="justify"><strong>PIMBA Main Workflow</strong> — complete metabarcoding analysis workflow, including read preprocessing (<strong>Prepare</strong>), OTU/ASV inference and taxonomic assignment (<strong>Run</strong>), downstream visualization (<strong>Plot</strong>), and phylogenetic placement of unclassified sequences (<strong>Place</strong>).</p>
+- **PIMBA Tax** — taxonomic reassignment of existing OTU/ASV datasets using alternative reference databases while preserving sequence identities.
+- **PIMBA Curate** — automated taxonomic curation, standardization, and validation of BLAST-based taxonomic assignments.
 
 
 This guide describes the installation, configuration and execution of all modules available in the PIMBA v3.0 Snakemake workflow.
@@ -197,7 +196,7 @@ You should observe the following files within the cloned directory:
 
 ## 3.1. Configuration
 
-<p align="justify"> The config.yaml file (inside the config folder) is the general configuration file. It should contain parameters such as the maximum number of processors, adapter sequences, input file paths, etc. Open the file in a text editor and make the following modifications. **Note: Use full paths; partial paths will not work in this version.**</p>
+<p align="justify">The <code>config.yaml</code> file (located in the <code>config</code> directory) is the main configuration file for the PIMBA Main Workflow. It contains the parameters required to execute the pipeline, including the number of processors, adapter sequences, input file paths, and other workflow settings. Open the file in a text editor and modify the parameters as needed. <strong>Note:</strong> Always use absolute (full) paths, as relative paths are not supported in the current version.</p>
 
 ### 3.1.1. General options
 
@@ -272,7 +271,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | `blast_type` | Define the type of BLAST to be used, default is megablast. Blastn-short is another option. |
 
 ### 3.1.4. Database paths
-<p align="justify">Provide the full path to the reference database(s) in `config.yaml`. Only the database selected through the `marker_gene` parameter will be used during the analysis. Additionally, for analyses using the NCBI database, the NCBI taxonomy dump (`taxdump`) must also be downloaded and its directory specified in the configuration file.</p>
+<p align="justify">Provide the full path to the reference database(s) in <code>config.yaml</code>. Only the database selected through the <code>marker_gene</code> parameter will be used during the analysis. Additionally, for analyses using the NCBI database, the NCBI taxonomy dump (<code>taxdump</code>) must also be downloaded and its directory specified in the configuration file.</p>
 
 Download the latest NCBI taxonomy dump:
 
@@ -316,7 +315,7 @@ This section refers to generating plots for the processed results. To run PIMBA 
 <p align="justify">The output <code>.jplace</code> file containing the phylogenetic placement of unclassified OTUs/ASVs is written to <code>/results/03-placed/no_clustering/placed/</code>. The resulting tree can be visualized interactively using <a href="https://itol.embl.de/"><strong>iTOL</strong></a>.</p>
 
 ## 3.2. Running the workflow
-The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
+The <code>pimba_smk_main.sh</code> file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
 
 - "-p": PIMBA preparation mode; choose between "paired_end", "single_index", "dual_index", or "no".
 - <p align="justify">"-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene. To skip, indicate "no".</p>
@@ -327,7 +326,7 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-d": the path to the working directory.
 
 ### 3.2.1. Example
-<p align="justify">Use the files provided in the `test_data` directory to test the workflow. Before running the example, update the required paths in `config.yaml`, including the path to the BOLD reference database.</p>
+<p align="justify">Use the files provided in the <code>test_data</code> directory to test the workflow. Before running the example, update the required paths in <code>config.yaml</code>, including the path to the BOLD reference database.</p>
 
 ```bash
 bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d .
@@ -401,9 +400,9 @@ bash pimba_smk_tax.sh -r 16S-RDP -t 8 -c config/config_tax.yaml -d .
 
 # 5. PIMBA Curate
 
-<p align="justify">**PIMBA Curate** is a module of **PIMBA 3.0** developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.</p>
+<p align="justify"><strong>PIMBA Curate</strong> is a module of <strong>PIMBA 3.0</strong> developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.</p>
 
-<p align="justify">The module supports both **OTU** and **ASV** workflows and automatically detects the input type from sequence identifiers. It also supports both **single-hit** and **multi-hit** taxonomic assignment modes.</p>
+<p align="justify">The module supports both <strong>OTU</strong> and <strong>ASV</strong> workflows and automatically detects the input type from sequence identifiers. It also supports both <strong>single-hit</strong> and <strong>multi-hit</strong> taxonomic assignment modes.</p>
 
 ## 5.1. Supported databases
 
@@ -413,11 +412,19 @@ Built-in databases are specified as:
 
 ```yaml
 marker_gene: "COI-BOLD"
-marker_gene: "16S-RDP"
-marker_gene: "16S-GREENGENES"
+marker_gene: "COI-NCBI"
+
 marker_gene: "16S-SILVA"
+marker_gene: "16S-GREENGENES"
+marker_gene: "16S-RDP"
+marker_gene: "16S-NCBI"
+
 marker_gene: "ITS-FUNGI-UNITE"
-marker_gene: "NCBI"
+marker_gene: "ITS-FUNGI-NCBI"
+marker_gene: "ITS-PLANTS-NCBI"
+
+# To search across all NCBI-supported markers
+marker_gene: "ALL-NCBI"
 ```
 
 Any other value is interpreted as a path to a custom reference database:
@@ -456,8 +463,8 @@ mode: "multi"
 
 The `mode` parameter defines how BLAST hits are imported into the curation workflow:
 
-- **single** retains only the highest-scoring BLAST hit for each sequence.
-- <p align="justify">**multi** retains all recovered BLAST hits for each sequence. This option is only available when `hits_per_subject` is greater than `1` in the main PIMBA `config.yaml`.</p>
+- **single:** Retains only the highest-scoring BLAST hit for each sequence.
+- <p align="justify"><strong>multi:</strong> Retains all recovered BLAST hits for each sequence. This option is only available when <code>hits_per_subject</code> is greater than <code>1</code> in the main PIMBA <code>config.yaml</code>.</p>
 
 ## 5.3. Running PIMBA Curate
 
