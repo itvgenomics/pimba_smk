@@ -9,6 +9,8 @@
   <img src="figures/PIMBA.png" alt="PIMBA Logo" width="50%">
 </p>
 
+---
+
 ## Authors
 
 **Tiago Ferreira Leão** - [ResearchGate](https://www.researchgate.net/profile/Tiago-Leao-3) | [LinkedIn](https://linkedin.com/in/tiago-leão-69565a4a) | <tiago.leao@pq.itv.org>
@@ -16,6 +18,8 @@
 **Fabricio dos Anjos Santa Rosa** - [ResearchGate](https://www.researchgate.net/profile/Fabricio-Rosa) | [LinkedIn](https://linkedin.com/in/fabricio-dos-anjos-santa-rosa-b3a9771b9) | <fabricio.rosa@pq.itv.org>
 
 **Renato R. M. Oliveira** - [ResearchGate](https://www.researchgate.net/profile/Renato-Oliveira-17) | [LinkedIn](https://linkedin.com/in/reinator) | <Renato.Oliveira8@itv.org>
+
+---
 
 ## Table of Contents
 
@@ -85,11 +89,13 @@
 
 6. [References](#6-references)
 
+---
+
 # 1. Introduction
 
 ## 1.1. Overview
 
-PIMBA (**PI**peline for **M**eta**B**arcoding **A**nalysis) is an open-source Snakemake workflow for DNA metabarcoding analyses. The pipeline supports both OTU- and ASV-based strategies, multiple reference databases, custom reference libraries, and automated downstream analyses within a modular and reproducible workflow.
+<p align="justify">PIMBA (**PI**peline for **M**eta**B**arcoding **A**nalysis) is an open-source Snakemake workflow for DNA metabarcoding analyses. The pipeline supports both OTU- and ASV-based strategies, multiple reference databases, custom reference libraries, and automated downstream analyses within a modular and reproducible workflow.</p>
 
 PIMBA v3.0 is organized into four independent modules:
 
@@ -103,7 +109,7 @@ This guide describes the installation, configuration and execution of all module
 
 ## 1.2. Description
 
-PIMBA (Pipeline for MetaBarcoding Analysis) (Oliveira et al. 2021) is a tool for metabarcoding analysis that allows users to create their own database, overcoming limitations of other similar tools. PIMBA adapts the Qiime/BMP pipeline (Bolyen et al. 2019)(Pylro et al. 2014) for OTU clustering and includes optional OTU corrections using the LULU algorithm (Frøslev et al. 2017). It supports paired and unpaired reads (with single or double indexing options) and enables ASV inference using Swarm (Mahé et al. 2021). PIMBA provides preliminary abundance and diversity analyses automatically. This pipeline is written in Snakemake (Köster and Rahmann 2012), a workflow management system designed to streamline the execution of complex data analysis pipelines, offering significant advantages over traditional bash scripts. Snakemake provides a structured and modular approach that enhances the readability and manageability of the pipeline. This guide will help you install and run PIMBA using Snakemake.
+<p align="justify">PIMBA (Pipeline for MetaBarcoding Analysis) (Oliveira et al. 2021) is a tool for metabarcoding analysis that allows users to create their own database, overcoming limitations of other similar tools. PIMBA adapts the Qiime/BMP pipeline (Bolyen et al. 2019)(Pylro et al. 2014) for OTU clustering and includes optional OTU corrections using the LULU algorithm (Frøslev et al. 2017). It supports paired and unpaired reads (with single or double indexing options) and enables ASV inference using Swarm (Mahé et al. 2021). PIMBA provides preliminary abundance and diversity analyses automatically. This pipeline is written in Snakemake (Köster and Rahmann 2012), a workflow management system designed to streamline the execution of complex data analysis pipelines, offering significant advantages over traditional bash scripts. Snakemake provides a structured and modular approach that enhances the readability and manageability of the pipeline. This guide will help you install and run PIMBA using Snakemake.</p>
 
 ## 1.3. How to Cite?
 
@@ -116,15 +122,18 @@ OLIVEIRA, R. R. M. et al. PIMBA: A PIpeline for MetaBarcoding Analysis. Advances
 ~~~
 OLIVEIRA, RENATO RENISON MOREIRA; SILVA, R. L. ; NUNES, GISELE LOPES ; OLIVEIRA, GUILHERME .PIMBA: a PIpeline for MetaBarcoding Analysis. In: Stadler P.F., Walter M.E.M.T., Hernandez-Rosales M., Brigido M.M.. (Org.).Advances in Bioinformatics and Computational Biology. 1ed. Switzerland: Springer, 2021, v. 13063, p. 106-116
 ~~~
+
+---
+
 # 2. Installation
 
 ## 2.1. Prerequisites
 
 Before installing the software, make sure you have the following:
 
-- A Linux-based operating system (e.g., Ubuntu, CentOS, Fedora) or Windows WSL (Windows Subsystem for Linux)
-- Python (version 3.5 or later) installed on your system
-- Git
+- A Linux-based operating system (e.g., Ubuntu, CentOS, Fedora) or Windows WSL (Windows Subsystem for Linux);
+- Python (version 3.5 or later) installed on your system;
+- Git.
 
 ## 2.2. Anaconda
 
@@ -174,25 +183,28 @@ cd pimba_smk
 ```
 
 You should observe the following files within the cloned directory:
-- Config: Directory containing the file config.yaml where all analysis parameters will be configured. For a standard user, this is the only file that needs to be modified (more instructions on how to modify it will follow);
+- <p align="justify">Config: Directory containing the file config.yaml where all analysis parameters will be configured. For a standard user, this is the only file that needs to be modified (more instructions on how to modify it will follow);</p>
+
 - Resources: Directory with resources needed to run PIMBA, such as the adapters.txt file containing adapter sequences;
 - Workflow: Directory with Snakemake scripts to run PIMBA;
 - Test_data: Directory with data to test the algorithm;
 - README.md: User guide similar to this document;
 - pimba_smk_main.sh: Main script to run PIMBA after correctly editing the config.yaml file.
 
+---
+
 # 3. PIMBA 3.0 - Main Workflow
 
 ## 3.1. Configuration
 
-The config.yaml file (inside the config folder) is the general configuration file. It should contain parameters such as the maximum number of processors, adapter sequences, input file paths, etc. Open the file in a text editor and make the following modifications. **Note: Use full paths; partial paths will not work in this version.**
+<p align="justify"> The config.yaml file (inside the config folder) is the general configuration file. It should contain parameters such as the maximum number of processors, adapter sequences, input file paths, etc. Open the file in a text editor and make the following modifications. **Note: Use full paths; partial paths will not work in this version.**</p>
 
 ### 3.1.1. General options
 
 | Parameter | Description |
 | --------- | ----------- |
-| `num_threads` | The `num_threads` option indicates the maximum number of processors to be used for tasks that allow parallelization. |
-| `sif_dir` | Directory used to store the Singularity image files required by the pipeline. If the images are already present, they will not be downloaded again. |
+| `num_threads` |  <p align="justify">The `num_threads` option indicates the maximum number of processors to be used for tasks that allow parallelization.</p> |
+| `sif_dir` |  <p align="justify">Directory used to store the Singularity image files required by the pipeline. If the images are already present, they will not be downloaded again.</p> |
 
 ### 3.1.2. Prepare Mode
 If the user wishes to run the "prepare" mode to prepare the reads for the "run" mode, edit the following options:
@@ -201,7 +213,7 @@ If the user wishes to run the "prepare" mode to prepare the reads for the "run" 
 | --------- | ----------- |
 | `minlength` | The minimum length of a read after quality filtering. |
 | `minphred` | The minimum PHRED score for quality filtering. |
-| `outputprepare` | The name of the output file to be created in FASTA format. The `.fasta` extension is included automatically. |
+| `outputprepare` |  <p align="justify">The name of the output file to be created in FASTA format. The `.fasta` extension is included automatically.</p> |
 
 #### 3.1.2.1. Paired-end reads
 If the user wishes to run PIMBA for paired-end reads, it is necessary to configure:
@@ -234,7 +246,7 @@ If the user has unpaired reads and a dual index, the following options need to b
 | `barcodes_3end_txt` | Path to the barcode file used as an index at the 3' end of the reads. |
 | `barcodes_3end_rev` | Path to the reverse complement of the `barcodes_3end_txt`. |
 | `barcodes_3end_fasta` | Path to the FASTA file for the `barcodes_3end_txt`. |
-| `barcodes_5end_dir` | Path to the directory containing all the `barcodes.fasta` and `barcodes.txt` files used at the 5' end of the reads. Each 3' barcode should have a corresponding FASTA and TXT file with all the associated 5' barcodes. |
+| `barcodes_5end_dir` | <p align="justify">Path to the directory containing all the `barcodes.fasta` and `barcodes.txt` files used at the 5' end of the reads. Each 3' barcode should have a corresponding FASTA and TXT file with all the associated 5' barcodes.</p> |
 | `forward_adapter` | Forward primer sequence. |
 | `reverse_adapter` | Reverse primer sequence. |
 
@@ -244,23 +256,23 @@ After configuring the "prepare" mode according to the type of read being used, c
 | Parameter | Description |
 | --------- | ----------- |
 | `outputrun` | Name of the output folder to be generated. |
-| `strategy` | Analysis strategy to be used. Can be "otu" or "asv". If "otu", PIMBA uses vsearch. If "asv", swarm is used. |
+| `strategy` | <p align="justify">Analysis strategy to be used. Can be "otu" or "asv". If "otu", PIMBA uses vsearch. If "asv", swarm is used.</p> |
 | `otu_similarity` | Percentage of similarity used in OTU clustering. The default is 0.97. |
 | `assign_similarity` | Percentage of similarity used in taxonomy assignment. The default is 0.9. |
 | `mincoverage` | Minimum coverage for alignment. The default is 0.9. |
 | `otu_length` | Minimum length for trimming reads. If the value is 0, no reads will be trimmed. |
 | `hits_per_subject` | If 1, choose the best hit. If > 1, choose by majority. The default is 1. |
-| `marker_gene` | Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, COI-NCBI, COI-BOLD, ITS-PLANTS-NCBI, ITS-FUNGI-UNITE, ITS-FUNGI-NCBI, or ALL-NCBI. |
+| `marker_gene` | <p align="justify">Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, COI-NCBI, COI-BOLD, ITS-PLANTS-NCBI, ITS-FUNGI-UNITE, ITS-FUNGI-NCBI, or ALL-NCBI.</p> |
 | `e_value` | Expected value (e-value) used by BLAST. The default is 0.001. |
-| `lulu` | If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU). |
+| `lulu` | <p align="justify">If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU).</p> |
 | `ITS` | Set to 'yes' if the reads are ITS. |
 | `remote` | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
 | `db_type` | Define the NCBI BLAST database, for example, nt, core_nt and so on. |
-| `create_excel` | If set to 'yes', PIMBA will create an excel sheet for manual curation, flagging inconsistent OTUs/ASVs. The default is 'yes'. |
+| `create_excel` | <p align="justify">If set to 'yes', PIMBA will create an excel sheet for manual curation, flagging inconsistent OTUs/ASVs. The default is 'yes'.</p> |
 | `blast_type` | Define the type of BLAST to be used, default is megablast. Blastn-short is another option. |
 
 ### 3.1.4. Database paths
-Provide the full path to the reference database(s) in `config.yaml`. Only the database selected through the `marker_gene` parameter will be used during the analysis. Additionally, for analyses using the NCBI database, the NCBI taxonomy dump (`taxdump`) must also be downloaded and its directory specified in the configuration file.
+<p align="justify">Provide the full path to the reference database(s) in `config.yaml`. Only the database selected through the `marker_gene` parameter will be used during the analysis. Additionally, for analyses using the NCBI database, the NCBI taxonomy dump (`taxdump`) must also be downloaded and its directory specified in the configuration file.</p>
 
 Download the latest NCBI taxonomy dump:
 
@@ -291,23 +303,23 @@ This section refers to generating plots for the processed results. To run PIMBA 
 | `group_by` | Metadata column used to group samples during plotting. Set to `False` to disable sample grouping. |
 
 ### 3.1.6. Place Mode
-This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with these parameters (the remaining parameters can be left as default):
+<p align="justify">This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with these parameters (the remaining parameters can be left as default):</p>
 
 | Parameter | Description |
 | --------- | ----------- |
-| `samples` | List of input FASTA files containing unclassified OTUs/ASVs to be placed. A single file or multiple files can be provided. |
+| `samples` | <p align="justify">List of input FASTA files containing unclassified OTUs/ASVs to be placed. A single file or multiple files can be provided.</p> |
 | `reference-tree` | Reference phylogenetic tree in Newick format. |
-| `reference-alignment` | Reference sequence alignment in FASTA format. Sequence names must match those in the reference tree. |
-| `taxonomy-file` | Tab-delimited file containing the complete taxonomic assignment for each reference sequence in the tree (see example below). |
-| `datatype` | Sequence type: `nt` for nucleotide sequences or `aa` for amino acid sequences. |
+| `reference-alignment` | <p align="justify">Reference sequence alignment in FASTA format. Sequence names must match those in the reference tree.</p> |
+| `taxonomy-file` | <p align="justify">Tab-delimited file containing the complete taxonomic assignment for each reference sequence in the tree (see example below).</p> |
+| `datatype` | <p align="justify">Sequence type: `nt` for nucleotide sequences or `aa` for amino acid sequences.</p> |
 
-The output ".jplace" file containing the tree with the OTUs placed can be found at `/results/03-placed/no_clustering/placed/` and it can be visualized using [**iTOL**](https://itol.embl.de/).
+<p align="justify">The output <code>.jplace</code> file containing the phylogenetic placement of unclassified OTUs/ASVs is written to <code>/results/03-placed/no_clustering/placed/</code>. The resulting tree can be visualized interactively using <a href="https://itol.embl.de/"><strong>iTOL</strong></a>.</p>
 
 ## 3.2. Running the workflow
 The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
 
 - "-p": PIMBA preparation mode; choose between "paired_end", "single_index", "dual_index", or "no".
-- "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene. To skip, indicate "no".
+- <p align="justify">"-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene. To skip, indicate "no".</p>
 - "-g": PIMBA plotting mode; choose between "yes" or "no".
 - "-l": PIMBA Place mode (for phylogenetic placement of unclassified OTUs); choose between "yes" or "no".
 - "-t": number of processors.
@@ -315,21 +327,21 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-d": the path to the working directory.
 
 ### 3.2.1. Example
-Use the files provided in the `test_data` directory to test the workflow. Before running the example, update the required paths in `config.yaml`, including the path to the BOLD reference database.
+<p align="justify">Use the files provided in the `test_data` directory to test the workflow. Before running the example, update the required paths in `config.yaml`, including the path to the BOLD reference database.</p>
 
 ```bash
 bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d .
 ```
 
 ### 3.2.2. Unlocking the working directory
-If a Snakemake execution is interrupted, the working directory becomes locked. To remove the lock, rerun the command using the `-u` option and then execute the pipeline again without this flag.
+<p align="justify">If a Snakemake execution is interrupted, the working directory becomes locked. To remove the lock, rerun the command using the `-u` option and then execute the pipeline again without this flag.</p>
 
 ```bash
 bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d . -u
 ```
 
 ## 3.3. Custom databases
-Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
+<p align="justify">Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: <code>/path/to/your/database/</code>.</p> 
 
 Example of the FASTA file:
 <p align="center">
@@ -353,22 +365,26 @@ Next, build a local BLAST database from your FASTA file:
 makeblastdb -in <your_fasta.fasta> -dbtype nucl -parse_seqids
 ```
 
-Finally, set the path to your custom database in the `marker_gene` parameter of `config.yaml` and run PIMBA using the database directory as the `-r` argument:
+<p align="justify">Finally, set the path to your custom database in the `marker_gene` parameter of `config.yaml` and run PIMBA using the database directory as the `-r` argument:</p>
 
 ```bash
 bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -l no -t 8 -c config/config.yaml -d .
 ```
 
+---
+
 # 4. PIMBA Tax
 
-This mode is recommended for reanalyzing the same OTUs/ASVs using a different database for taxonomic assignment, while preserving sequence IDs and enabling comparisons across multiple databases.
+<p align="justify">This mode is recommended for reanalyzing the same OTUs/ASVs using a different database for taxonomic assignment, while preserving sequence IDs and enabling comparisons across multiple databases.</p>
+
 To run this mode, complete the config_tax.yaml file. This configuration uses the same parameters as the PIMBA Run mode, with the addition of the following:
+
 
 | Parameter | Description |
 | ----------- | ----------- |
-| txt_table | Table containing the abundances of OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otu_table.txt. |
-| fasta_file | FASTA file containing the sequences of the OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otus.fasta. |
-| raw_reads | FASTA file containing the sequences of processed reads from PIMBA Prepare. For example, the default output from PIMBA Prepare is located at /results/00-prepare/AllSamples.fasta. |
+| txt_table | <p align="justify">Table containing the abundances of OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otu_table.txt.</p> |
+| fasta_file | <p align="justify">FASTA file containing the sequences of the OTUs/ASVs. For example, the default output from PIMBA Run is located at /results/01-run/AllSamples_97clust90assign/AllSamples_otus.fasta.</p> |
+| raw_reads | <p align="justify">FASTA file containing the sequences of processed reads from PIMBA Prepare. For example, the default output from PIMBA Prepare is located at /results/00-prepare/AllSamples.fasta.</p> |
 
 After configuring the config_tax.yaml file, run PIMBA Tax with the following command:
 
@@ -376,18 +392,18 @@ After configuring the config_tax.yaml file, run PIMBA Tax with the following com
 bash pimba_smk_tax.sh -r 16S-RDP -t 8 -c config/config_tax.yaml -d .
 ```
 
-- "-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene.
+- <p align="justify">"-r": PIMBA execution mode; specify the name of the marker gene (and consequently the database) to be used, choosing from 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, ITS-FUNGI-NCBI, ITS-FUNGI-UNITE, ITS-PLANTS-NCBI, or COI-NCBI. For a custom database, include the path to the directory where the database is stored instead of the marker gene.</p>
 - "-t": number of processors.
 - "-c": the path to the config file.
 - "-d": the path to the working directory.
 
+---
+
 # 5. PIMBA Curate
 
-**PIMBA Curate** is a module of **PIMBA 3.0** developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.
+<p align="justify">**PIMBA Curate** is a module of **PIMBA 3.0** developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.</p>
 
-The module supports both **OTU** and **ASV** workflows and automatically detects the input type from sequence identifiers. It also supports both **single-hit** and **multi-hit** taxonomic assignment modes.
-
----
+<p align="justify">The module supports both **OTU** and **ASV** workflows and automatically detects the input type from sequence identifiers. It also supports both **single-hit** and **multi-hit** taxonomic assignment modes.</p>
 
 ## 5.1. Supported databases
 
@@ -410,9 +426,7 @@ Any other value is interpreted as a path to a custom reference database:
 marker_gene: "/path/to/custom_reference_directory"
 ```
 
-Custom databases must contain exactly one reference taxonomy file (`*.txt`) and are parsed using the same taxonomy format adopted for the BOLD database.
-
----
+<p align="justify">Custom databases must contain exactly one reference taxonomy file (`*.txt`) and are parsed using the same taxonomy format adopted for the BOLD database.</p>
 
 ## 5.2. Configuration
 
@@ -438,14 +452,12 @@ mode: "single"
 mode: "multi"
 ```
 
-The `ncbi_taxizedb` parameter specifies the local SQLite database used by **taxizedb** during species validation and is required regardless of the selected reference database. A pre-built version of this database, prepared specifically for PIMBA Curate, is available on [Zenodo](https://zenodo.org/records/21109830).
+<p align="justify">The <code>ncbi_taxizedb</code> parameter specifies the local SQLite database used by <strong>taxizedb</strong> during species validation and is required regardless of the selected reference database. A pre-built version of this database, prepared specifically for PIMBA Curate, is available on <a href="https://zenodo.org/records/21109830">Zenodo</a>.</p>
 
 The `mode` parameter defines how BLAST hits are imported into the curation workflow:
 
 - **single** retains only the highest-scoring BLAST hit for each sequence.
-- **multi** retains all recovered BLAST hits for each sequence. This option is only available when `hits_per_subject` is greater than `1` in the main PIMBA `config.yaml`.
-
----
+- <p align="justify">**multi** retains all recovered BLAST hits for each sequence. This option is only available when `hits_per_subject` is greater than `1` in the main PIMBA `config.yaml`.</p>
 
 ## 5.3. Running PIMBA Curate
 
@@ -464,8 +476,6 @@ To unlock a previous interrupted execution:
 ```bash
 bash pimba_smk_curate.sh -t 8 -c config/config.yaml -d . -u
 ```
-
----
 
 ## 5.4. Outputs
 
@@ -494,12 +504,10 @@ The `filtered_data_with_flags` worksheet includes a **Validation** column that r
 
 | Validation | Description |
 |------------|-------------|
-| `Empty Species Field` | No species epithet was available after the cleaning and standardization steps. |
-| `Format Issue` | The species name did not conform to the expected taxonomic format (e.g., multiple words, invalid characters, or other formatting inconsistencies). |
-| `Format Validated` | The species name passed all internal formatting and consistency checks but was not validated against the local NCBI Taxonomy database. |
-| `Format and DB Validated` | The species name passed all formatting checks and was successfully validated against the local NCBI Taxonomy database using **taxizedb**. |
-
----
+| `Empty Species Field` | <p align="justify">No species epithet was available after the cleaning and standardization steps.</p> |
+| `Format Issue` | <p align="justify">The species name did not conform to the expected taxonomic format (e.g., multiple words, invalid characters, or other formatting inconsistencies).</p> |
+| `Format Validated` | <p align="justify">The species name passed all internal formatting and consistency checks but was not validated against the local NCBI Taxonomy database.</p> |
+| `Format and DB Validated` | <p align="justify">The species name passed all formatting checks and was successfully validated against the local NCBI Taxonomy database using **taxizedb**.</p> |
 
 ## 5.6. Workflow
 
@@ -520,21 +528,16 @@ PIMBA Curate performs the following steps:
 
 ---
 
-### Supported databases
-
-- COI-BOLD
-- 16S-RDP
-- 16S-GREENGENES
-- 16S-SILVA
-- ITS-FUNGI-UNITE
-- NCBI
-- CUSTOM
-
 # 6. References
 
-1. Bolyen, Evan, Jai Ram Rideout, Matthew R. Dillon, Nicholas A. Bokulich, Christian C. Abnet, Gabriel A. Al-Ghalith, Harriet Alexander, et al. 2019. “Reproducible, Interactive, Scalable and Extensible Microbiome Data Science Using QIIME 2.” Nature Biotechnology 37 (8): 852–57.
-2. Frøslev, Tobias Guldberg, Rasmus Kjøller, Hans Henrik Bruun, Rasmus Ejrnæs, Ane Kirstine Brunbjerg, Carlotta Pietroni, and Anders Johannes Hansen. 2017. “Algorithm for Post-Clustering Curation of DNA Amplicon Data Yields Reliable Biodiversity Estimates.” Nature Communications 8 (1): 1188.
-3. Köster, Johannes, and Sven Rahmann. 2012. “Snakemake--a Scalable Bioinformatics Workflow Engine.” Bioinformatics (Oxford, England) 28 (19): 2520–22.
-4. Mahé, Frédéric, Lucas Czech, Alexandros Stamatakis, Christopher Quince, Colomban de Vargas, Micah Dunthorn, and Torbjørn Rognes. 2021. “Swarm v3: Towards Tera-Scale Amplicon Clustering.” Bioinformatics (Oxford, England) 38 (1): 267–69.
-5. Oliveira, Renato R. M., Raíssa Silva, Gisele L. Nunes, and Guilherme Oliveira. 2021. “PIMBA: A PIpeline for MetaBarcoding Analysis.” Advances in Bioinformatics and Computational Biology, 106–16.
-6. Pylro, Victor S., Luiz Fernando W. Roesch, Daniel K. Morais, Ian M. Clark, Penny R. Hirsch, and Marcos R. Tótola. 2014. “Data Analysis for 16S Microbial Profiling from Different Benchtop Sequencing Platforms.” Journal of Microbiological Methods 107 (December):30–37.
+<p align="justify">1. <a href="https://www.nature.com/articles/s41587-019-0209-9">Bolyen, Evan, Jai Ram Rideout, Matthew R. Dillon, Nicholas A. Bokulich, Christian C. Abnet, Gabriel A. Al-Ghalith, Harriet Alexander, et al. 2019. “Reproducible, Interactive, Scalable and Extensible Microbiome Data Science Using QIIME 2.” <i>Nature Biotechnology</i> 37 (8): 852–857.</a></p>
+
+<p align="justify">2. <a href="https://www.nature.com/articles/s41467-017-01312-x">Frøslev, Tobias Guldberg, Rasmus Kjøller, Hans Henrik Bruun, Rasmus Ejrnæs, Ane Kirstine Brunbjerg, Carlotta Pietroni, and Anders Johannes Hansen. 2017. “Algorithm for Post-Clustering Curation of DNA Amplicon Data Yields Reliable Biodiversity Estimates.” <i>Nature Communications</i> 8 (1): 1188.</a></p>
+
+<p align="justify">3. <a href="https://academic.oup.com/bioinformatics/article/28/19/2520/290322?login=false">Köster, Johannes, and Sven Rahmann. 2012. “Snakemake—A Scalable Bioinformatics Workflow Engine.” <i>Bioinformatics</i> 28 (19): 2520–2522.</a></p>
+
+<p align="justify">4. <a href="https://academic.oup.com/bioinformatics/article/38/1/267/6318385?login=false">Mahé, Frédéric, Lucas Czech, Alexandros Stamatakis, Christopher Quince, Colomban de Vargas, Micah Dunthorn, and Torbjørn Rognes. 2021. “Swarm v3: Towards Tera-Scale Amplicon Clustering.” <i>Bioinformatics</i> 38 (1): 267–269.</a></p>
+
+<p align="justify">5. <a href="https://link.springer.com/chapter/10.1007/978-3-030-91814-9_10">Oliveira, Renato R. M., Raíssa Silva, Gisele L. Nunes, and Guilherme Oliveira. 2021. “PIMBA: A PIpeline for MetaBarcoding Analysis.” In <i>Advances in Bioinformatics and Computational Biology</i>, 106–116. Springer.</a></p>
+
+<p align="justify">6. <a href="https://www.sciencedirect.com/science/article/pii/S0167701214002528">Pylro, Victor S., Luiz Fernando W. Roesch, Daniel K. Morais, Ian M. Clark, Penny R. Hirsch, and Marcos R. Tótola. 2014. “Data Analysis for 16S Microbial Profiling from Different Benchtop Sequencing Platforms.” <i>Journal of Microbiological Methods</i> 107: 30–37.</a></p>
