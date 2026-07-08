@@ -19,40 +19,75 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Description](#description)
-- [How to Cite?](#how-to-cite)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [A) Anaconda](#a-anaconda)
-  - [B) Snakemake](#b-snakemake)
-  - [C) Clone the GitHub Repository](#c-clone-the-github-repository)
-- [How to Run PIMBA v3.0 in Snakemake?](#how-to-run-pimba-v30-in-snakemake)
-  - [A) Configure the config.yaml File](#a-configure-the-configyaml-file)
-    - [General options for all modes](#general-options-for-all-modes)
-    - [General options for the Prepare Mode](#general-options-for-the-prepare-mode)
-    - [Inputs to run paired-end reads](#inputs-to-run-paired-end-reads)
-    - [Inputs for single end and single index reads](#inputs-for-single-end-and-single-index-reads)
-    - [Inputs for single end and dual index reads](#inputs-for-single-end-and-dual-index-reads)
-    - [Inputs for the Run Mode](#inputs-for-the-run-mode)
-    - [Database paths](#database-paths)
-    - [Inputs for the Plot Mode](#inputs-for-the-plot-mode)
-    - [Inputs for the Place Mode](#inputs-for-the-place-mode)
-  - [B) Run the "pimba_smk_main.sh" file](#b-run-the-pimba_smk_mainsh-file)
-    - [Example of testing](#example-of-testing)
-    - [Unlocking the working directory](#unlocking-the-working-directory)
-- [Configure your personalized database](#configure-your-personalized-database)
-- [PIMBA Tax](#pimba-tax)
-- [PIMBA Curate](#pimba-curate)
-  - [Supported databases](#supported-databases)
-  - [Configuration](#configuration)
-  - [Running PIMBA Curate](#running-pimba-curate)
-  - [Outputs](#outputs)
-  - [Validation categories](#validation-categories)
-  - [Workflow](#workflow)
-- [References](#references)
+1. [Introduction](#1-introduction)
+   
+   1.1. [Overview](#11-overview)
 
-## Overview
+   1.2. [Description](#12-description)
+
+   1.3. [How to Cite?](#13-how-to-cite)
+
+2. [Installation](#2-installation)
+
+   2.1. [Prerequisites](#21-prerequisites)
+
+   2.2. [Anaconda](#22-anaconda)
+
+   2.3. [Snakemake](#23-snakemake)
+
+   2.4. [Clone the GitHub Repository](#24-clone-the-github-repository)
+
+3. [PIMBA 3.0 - Main Workflow](#3-pimba-30---main-workflow)
+
+   3.1. [Configuration](#31-configuration)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.1.1. [General options](#311-general-options)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.1.2. [Prepare Mode](#312-prepare-mode)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.2.1. [Paired-end reads](#3121-paired-end-reads)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.2.2. [Single-end and single-index reads](#3122-single-end-and-single-index-reads)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.2.3. [Single-end and dual-index reads](#3123-single-end-and-dual-index-reads)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.1.3. [Run Mode](#313-run-mode)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.1.4. [Database paths](#314-database-paths)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.1.5. [Plot Mode](#315-plot-mode)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.1.6. [Place Mode](#316-place-mode)
+
+   3.2. [Running the workflow](#32-running-the-workflow)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.2.1. [Example](#321-example)
+
+   &nbsp;&nbsp;&nbsp;&nbsp;3.2.2. [Unlocking the working directory](#322-unlocking-the-working-directory)
+
+   3.3. [Custom databases](#33-custom-databases)
+
+4. [PIMBA Tax](#4-pimba-tax)
+
+5. [PIMBA Curate](#5-pimba-curate)
+
+   5.1. [Supported databases](#51-supported-databases)
+
+   5.2. [Configuration](#52-configuration)
+
+   5.3. [Running PIMBA Curate](#53-running-pimba-curate)
+
+   5.4. [Outputs](#54-outputs)
+
+   5.5. [Validation categories](#55-validation-categories)
+
+   5.6. [Workflow](#56-workflow)
+
+6. [References](#6-references)
+
+# 1. Introduction
+
+## 1.1. Overview
 
 PIMBA (**PI**peline for **M**eta**B**arcoding **A**nalysis) is an open-source Snakemake workflow for DNA metabarcoding analyses. The pipeline supports both OTU- and ASV-based strategies, multiple reference databases, custom reference libraries, and automated downstream analyses within a modular and reproducible workflow.
 
@@ -66,11 +101,11 @@ PIMBA v3.0 is organized into four independent modules:
 
 This guide describes the installation, configuration and execution of all modules available in the PIMBA v3.0 Snakemake workflow.
 
-## Description
+## 1.2. Description
 
 PIMBA (Pipeline for MetaBarcoding Analysis) (Oliveira et al. 2021) is a tool for metabarcoding analysis that allows users to create their own database, overcoming limitations of other similar tools. PIMBA adapts the Qiime/BMP pipeline (Bolyen et al. 2019)(Pylro et al. 2014) for OTU clustering and includes optional OTU corrections using the LULU algorithm (Frøslev et al. 2017). It supports paired and unpaired reads (with single or double indexing options) and enables ASV inference using Swarm (Mahé et al. 2021). PIMBA provides preliminary abundance and diversity analyses automatically. This pipeline is written in Snakemake (Köster and Rahmann 2012), a workflow management system designed to streamline the execution of complex data analysis pipelines, offering significant advantages over traditional bash scripts. Snakemake provides a structured and modular approach that enhances the readability and manageability of the pipeline. This guide will help you install and run PIMBA using Snakemake.
 
-## How to Cite?
+## 1.3. How to Cite?
 
 The peer-reviewed publication describing PIMBA is available in [**Oliveira et al. (2021)**](https://doi.org/10.1007/978-3-030-91814-9_10).
 
@@ -81,8 +116,9 @@ OLIVEIRA, R. R. M. et al. PIMBA: A PIpeline for MetaBarcoding Analysis. Advances
 ~~~
 OLIVEIRA, RENATO RENISON MOREIRA; SILVA, R. L. ; NUNES, GISELE LOPES ; OLIVEIRA, GUILHERME .PIMBA: a PIpeline for MetaBarcoding Analysis. In: Stadler P.F., Walter M.E.M.T., Hernandez-Rosales M., Brigido M.M.. (Org.).Advances in Bioinformatics and Computational Biology. 1ed. Switzerland: Springer, 2021, v. 13063, p. 106-116
 ~~~
+# 2. Installation
 
-## Prerequisites
+## 2.1. Prerequisites
 
 Before installing the software, make sure you have the following:
 
@@ -90,9 +126,7 @@ Before installing the software, make sure you have the following:
 - Python (version 3.5 or later) installed on your system
 - Git
 
-## Installation
-
-### A) Anaconda
+## 2.2. Anaconda
 
 To run Snakemake, you need to install Anaconda by following these steps:
 
@@ -113,7 +147,7 @@ bash Anaconda3-2024.10.1-latest-Linux-x86_64.sh
 4. To apply the changes, close and reopen the terminal window;
 5. Test your installation. In the terminal window, run the command `conda list`. A list of installed packages will appear if the installation was successful.
 
-### B) Snakemake
+## 2.3. Snakemake
 
 You also need to create a new conda environment and install Snakemake and Singularity by following these steps:
 
@@ -125,7 +159,7 @@ conda create -n pimba -c bioconda -c conda-forge singularity=3.8.6 snakemake=7.3
 conda activate pimba
 ```
 
-### C) Clone the GitHub Repository
+## 2.4. Clone the GitHub Repository
 
 Clone the PIMBA Snakemake repository:
 
@@ -147,20 +181,20 @@ You should observe the following files within the cloned directory:
 - README.md: User guide similar to this document;
 - pimba_smk_main.sh: Main script to run PIMBA after correctly editing the config.yaml file.
 
-## How to Run PIMBA v3.0 in Snakemake?
+# 3. PIMBA 3.0 - Main Workflow
 
-### A) Configure the config.yaml File
+## 3.1. Configuration
 
 The config.yaml file (inside the config folder) is the general configuration file. It should contain parameters such as the maximum number of processors, adapter sequences, input file paths, etc. Open the file in a text editor and make the following modifications. **Note: Use full paths; partial paths will not work in this version.**
 
-#### General options for all modes
+### 3.1.1. General options
 
 | Parameter | Description |
 | --------- | ----------- |
 | `num_threads` | The `num_threads` option indicates the maximum number of processors to be used for tasks that allow parallelization. |
 | `sif_dir` | Directory used to store the Singularity image files required by the pipeline. If the images are already present, they will not be downloaded again. |
 
-#### General options for the Prepare Mode
+### 3.1.2. Prepare Mode
 If the user wishes to run the "prepare" mode to prepare the reads for the "run" mode, edit the following options:
 
 | Parameter | Description |
@@ -169,7 +203,7 @@ If the user wishes to run the "prepare" mode to prepare the reads for the "run" 
 | `minphred` | The minimum PHRED score for quality filtering. |
 | `outputprepare` | The name of the output file to be created in FASTA format. The `.fasta` extension is included automatically. |
 
-#### Inputs to run paired-end reads
+#### 3.1.2.1. Paired-end reads
 If the user wishes to run PIMBA for paired-end reads, it is necessary to configure:
 
 | Parameter | Description |
@@ -180,7 +214,7 @@ If the user wishes to run PIMBA for paired-end reads, it is necessary to configu
 | `minsim` | Minimum similarity to merge paired reads (only for OverlapPER). Default is 0.9 (90%) similarity. |
 | `merger` | Select the paired read merger between `"pear"` (PEAR) and `"overlapper"` (OverlapPER). |
 
-#### Inputs for single end and single index reads
+#### 3.1.2.2. Single-end and single-index reads
 If the user has unpaired reads containing a single index, the following options need to be configured:
 
 | Parameter | Description |
@@ -191,7 +225,7 @@ If the user has unpaired reads containing a single index, the following options 
 | `singleadapter` | Adapter sequence found in the reads. |
 | `barcodes_5end_fasta` | Path to the FASTA file for the `barcodes_5end_txt`. |
 
-#### Inputs for single end and dual index reads
+#### 3.1.2.3. Single-end and dual-index reads
 If the user has unpaired reads and a dual index, the following options need to be configured:
 
 | Parameter | Description |
@@ -204,7 +238,7 @@ If the user has unpaired reads and a dual index, the following options need to b
 | `forward_adapter` | Forward primer sequence. |
 | `reverse_adapter` | Reverse primer sequence. |
 
-#### Inputs for the Run Mode
+### 3.1.3. Run Mode
 After configuring the "prepare" mode according to the type of read being used, configure the inputs for the "run" mode according to the parameters below.
 
 | Parameter | Description |
@@ -225,8 +259,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | `create_excel` | If set to 'yes', PIMBA will create an excel sheet for manual curation, flagging inconsistent OTUs/ASVs. The default is 'yes'. |
 | `blast_type` | Define the type of BLAST to be used, default is megablast. Blastn-short is another option. |
 
-#### Database paths
-
+### 3.1.4. Database paths
 Provide the full path to the reference database(s) in `config.yaml`. Only the database selected through the `marker_gene` parameter will be used during the analysis. Additionally, for analyses using the NCBI database, the NCBI taxonomy dump (`taxdump`) must also be downloaded and its directory specified in the configuration file.
 
 Download the latest NCBI taxonomy dump:
@@ -249,7 +282,7 @@ The reference databases can be downloaded from the following sources:
 - [**UNITE**](https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330) for fungal ITS (2024 release);
 - [**BOLD**](https://zenodo.org/records/18304758) for COI (2024 release).
 
-#### Inputs for the Plot Mode
+### 3.1.5. Plot Mode
 This section refers to generating plots for the processed results. To run PIMBA Plot, configure:
 
 | Parameter | Description |
@@ -257,7 +290,7 @@ This section refers to generating plots for the processed results. To run PIMBA 
 | `metadata` | Path to the sample metadata file. |
 | `group_by` | Metadata column used to group samples during plotting. Set to `False` to disable sample grouping. |
 
-#### Inputs for the Place Mode
+### 3.1.6. Place Mode
 This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with these parameters (the remaining parameters can be left as default):
 
 | Parameter | Description |
@@ -270,7 +303,7 @@ This section is optional and refers to generating a tree with unclassified OTUs 
 
 The output ".jplace" file containing the tree with the OTUs placed can be found at `/results/03-placed/no_clustering/placed/` and it can be visualized using [**iTOL**](https://itol.embl.de/).
 
-### B) Run the "pimba_smk_main.sh" file
+## 3.2. Running the workflow
 The "pimba_smk_main.sh" file is the main bash script that runs all the steps of the pipeline in Snakemake. This file takes the following parameters as input:
 
 - "-p": PIMBA preparation mode; choose between "paired_end", "single_index", "dual_index", or "no".
@@ -281,23 +314,21 @@ The "pimba_smk_main.sh" file is the main bash script that runs all the steps of 
 - "-c": the path to the config file.
 - "-d": the path to the working directory.
 
-#### Example of testing
-
+### 3.2.1. Example
 Use the files provided in the `test_data` directory to test the workflow. Before running the example, update the required paths in `config.yaml`, including the path to the BOLD reference database.
 
 ```bash
 bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d .
 ```
 
-#### Unlocking the working directory
-
+### 3.2.2. Unlocking the working directory
 If a Snakemake execution is interrupted, the working directory becomes locked. To remove the lock, rerun the command using the `-u` option and then execute the pipeline again without this flag.
 
 ```bash
 bash pimba_smk_main.sh -p paired_end -r COI-BOLD -g yes -l no -t 8 -c config/config.yaml -d . -u
 ```
 
-## Configure your personalized database
+## 3.3. Custom databases
 Suppose you want to use a personalized database. In that case, you will only need a fasta file with the reference sequences and their identification, and a two-column tax.txt file with the sequence ID and the full taxonomy written for every reference sequence in the fasta file. Put them in the same directory, e.g.: /path/to/your/database/. 
 
 Example of the FASTA file:
@@ -328,7 +359,7 @@ Finally, set the path to your custom database in the `marker_gene` parameter of 
 bash pimba_smk_main.sh -p paired_end -r /path/to/your/database/ -g yes -l no -t 8 -c config/config.yaml -d .
 ```
 
-## PIMBA Tax
+# 4. PIMBA Tax
 
 This mode is recommended for reanalyzing the same OTUs/ASVs using a different database for taxonomic assignment, while preserving sequence IDs and enabling comparisons across multiple databases.
 To run this mode, complete the config_tax.yaml file. This configuration uses the same parameters as the PIMBA Run mode, with the addition of the following:
@@ -350,7 +381,7 @@ bash pimba_smk_tax.sh -r 16S-RDP -t 8 -c config/config_tax.yaml -d .
 - "-c": the path to the config file.
 - "-d": the path to the working directory.
 
-## PIMBA Curate
+# 5. PIMBA Curate
 
 **PIMBA Curate** is a module of **PIMBA 3.0** developed to standardize, validate, and curate taxonomic assignments generated after the BLAST-based identification step. The workflow integrates OTU/ASV abundance tables, representative sequences, BLAST results, and reference taxonomy databases into a standardized output suitable for downstream analyses and manual taxonomic validation.
 
@@ -358,7 +389,7 @@ The module supports both **OTU** and **ASV** workflows and automatically detects
 
 ---
 
-### Supported databases
+## 5.1. Supported databases
 
 Database selection is controlled through the `marker_gene` parameter in the `config.yaml` file.
 
@@ -383,7 +414,7 @@ Custom databases must contain exactly one reference taxonomy file (`*.txt`) and 
 
 ---
 
-### Configuration
+## 5.2. Configuration
 
 The following database paths must be defined in `config.yaml`:
 
@@ -416,7 +447,7 @@ The `mode` parameter defines how BLAST hits are imported into the curation workf
 
 ---
 
-### Running PIMBA Curate
+## 5.3. Running PIMBA Curate
 
 ```bash
 bash pimba_smk_curate.sh -t 8 -c config/config.yaml -d .
@@ -436,7 +467,7 @@ bash pimba_smk_curate.sh -t 8 -c config/config.yaml -d . -u
 
 ---
 
-### Outputs
+## 5.4. Outputs
 
 Curated results are written to:
 
@@ -457,7 +488,7 @@ The main output is an Excel workbook containing two worksheets:
 | `raw_data_with_seqs` | Original taxonomic assignments merged with representative sequences and read abundance data. |
 | `filtered_data_with_flags` | Curated taxonomic assignments with validation flags and species validation results. |
 
-### Validation categories
+## 5.5. Validation categories
 
 The `filtered_data_with_flags` worksheet includes a **Validation** column that reports the validation status of the **Species** column only.
 
@@ -470,7 +501,7 @@ The `filtered_data_with_flags` worksheet includes a **Validation** column that r
 
 ---
 
-### Workflow
+## 5.6. Workflow
 
 PIMBA Curate performs the following steps:
 
@@ -499,7 +530,7 @@ PIMBA Curate performs the following steps:
 - NCBI
 - CUSTOM
 
-## References
+# 6. References
 
 1. Bolyen, Evan, Jai Ram Rideout, Matthew R. Dillon, Nicholas A. Bokulich, Christian C. Abnet, Gabriel A. Al-Ghalith, Harriet Alexander, et al. 2019. “Reproducible, Interactive, Scalable and Extensible Microbiome Data Science Using QIIME 2.” Nature Biotechnology 37 (8): 852–57.
 2. Frøslev, Tobias Guldberg, Rasmus Kjøller, Hans Henrik Bruun, Rasmus Ejrnæs, Ane Kirstine Brunbjerg, Carlotta Pietroni, and Anders Johannes Hansen. 2017. “Algorithm for Post-Clustering Curation of DNA Amplicon Data Yields Reliable Biodiversity Estimates.” Nature Communications 8 (1): 1188.
