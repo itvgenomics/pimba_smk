@@ -100,7 +100,9 @@
 PIMBA v3.0 is organized into three independent modules:
 
 - <p align="justify"><strong>PIMBA Main Workflow</strong> — complete metabarcoding analysis workflow, including read preprocessing (<strong>Prepare</strong>), OTU/ASV inference and taxonomic assignment (<strong>Run</strong>), downstream visualization (<strong>Plot</strong>), and phylogenetic placement of unclassified sequences (<strong>Place</strong>).</p>
+
 - <p align="justify"><strong>PIMBA Tax</strong> — taxonomic reassignment of existing OTU/ASV datasets using alternative reference databases while preserving sequence identities.
+
 - **PIMBA Curate** — automated taxonomic curation, standardization, and validation of BLAST-based taxonomic assignments.
 
 
