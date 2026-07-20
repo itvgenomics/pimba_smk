@@ -35,3 +35,7 @@ COI-BOLD-DB: ''
 NCBI-DB: ''
 ITS-FUNGI-UNITE-DB: ''
 taxdump: ''
+
+# pimba curate
+ncbi_taxizedb: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/ncbi'
+mode: 'single'

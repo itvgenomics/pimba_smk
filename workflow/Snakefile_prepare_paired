@@ -80,6 +80,8 @@ rule run_adapter_removal:
         num_threads = config["num_threads"],
         min_phred = config["minphred"],
         min_length = config["minlength"]
+    threads:
+        int(config["num_threads"])
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "adapter_removal", "{sample}.log")
     benchmark:
@@ -111,6 +113,8 @@ if config["merger"] == "pear":
         params:
             num_threads = config["num_threads"],
             minoverlap = config["minoverlap"]
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "00-prepare", "logs", "pear", "{sample}.log")
         benchmark:
@@ -158,11 +162,13 @@ rule run_prinseq:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.fasta")
     params:
         num_threads = config["num_threads"]
+    threads:
+        int(config["num_threads"])
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq", "{sample}.log")
     benchmark:
         os.path.join(current_path, "results", "benchmark", "{sample}_prepare_prinseqpp.txt")
-    container:
+    singularity:
         "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_prinseqpp")
     shell:
         """
@@ -229,6 +235,8 @@ rule run_prinseq_singleton:
         os.path.join(current_path, "results", "00-prepare", "assemblies", "{sample}.assembled.withSingleton.fasta")
     params:
         num_threads = config["num_threads"]
+    threads:
+        int(config["num_threads"])
     log:
         os.path.join(current_path, "results", "00-prepare", "logs", "prinseq_singleton", "{sample}.log")
     benchmark:

@@ -75,6 +75,8 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-FUNGI-UNITE":
             os.path.join(current_path, "results", "benchmark", "run_itsx.txt")
         params:
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "itsx")
         shell:
@@ -114,6 +116,8 @@ elif marker_gene == "ITS-PLANTS-NCBI":
             os.path.join(current_path, "results", "benchmark", "run_itsx.txt")
         params:
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "itsx")
         shell:
@@ -153,6 +157,8 @@ elif ITS == 'yes':
             os.path.join(current_path, "results", "benchmark", "run_itsx.txt")
         params:
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         singularity:
             "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "itsx")
         shell:
@@ -249,6 +255,8 @@ if strategy == "otu":
         params:
             similarity = config['otu_similarity'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "01-run", "logs", "vsearch_otu_clustering", file_name_raw + ".log")
         benchmark:
@@ -268,8 +276,6 @@ if strategy == "asv":
             trimmed = os.path.join(output_dir, file_name_raw + '_trimmed.fasta')
         output:
             trimmed_noN = os.path.join(output_dir, file_name_raw + '_trimmed_noN.fasta')
-        params:
-            threads = config['num_threads']
         log:
             os.path.join(current_path, "results", "01-run", "logs", "vsearch_asv_fastx", file_name_raw + ".log")
         benchmark:
@@ -288,6 +294,8 @@ if strategy == "asv":
             derep = os.path.join(output_dir, file_name_raw + '_trimmed_noN_derep.fasta')
         params:
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "01-run", "logs", "swarm_derep", file_name_raw + ".log")
         benchmark:
@@ -306,6 +314,8 @@ if strategy == "asv":
             asvs = os.path.join(output_dir, file_name_raw + '_asvs1.fasta')
         params:
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "01-run", "logs", "find_asvs_with_swarm", file_name_raw + ".log")
         benchmark:
@@ -385,6 +395,8 @@ if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
         params:
             similarity = config['otu_similarity'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
         benchmark:
@@ -413,6 +425,8 @@ else:
         params:
             similarity = config['otu_similarity'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "01-run", "logs", "vsearch_map", file_name_raw + ".log")
         benchmark:
@@ -439,6 +453,8 @@ if lulu == "yes":
             match_list = os.path.join(output_dir, 'lulu_output', 'match_list.txt')
         params:
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         log:
             os.path.join(current_path, "results", "01-run", "logs", "makeblastdb_blastn", file_name_raw + ".log")
         benchmark:
@@ -525,6 +541,8 @@ if marker_gene == "16S-SILVA":
             evalue = config['e_value'],
             BLAST_DB = config['16S-SILVA-DB'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
@@ -577,6 +595,8 @@ elif marker_gene == "16S-GREENGENES":
             evalue = config['e_value'],
             BLAST_DB = config['16S-GREENGENES-DB'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
@@ -629,6 +649,8 @@ elif marker_gene == "16S-RDP":
             evalue = config['e_value'],
             BLAST_DB = config['16S-RDP-DB'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
@@ -708,6 +730,8 @@ elif marker_gene == "16S-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
@@ -786,6 +810,8 @@ elif marker_gene == "COI-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
@@ -837,6 +863,8 @@ elif marker_gene == "COI-BOLD":
             hits_per_subject = config['hits_per_subject'],
             e_value = config['e_value'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
@@ -916,6 +944,8 @@ elif marker_gene == "ITS-PLANTS-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
@@ -1007,6 +1037,8 @@ elif marker_gene == "ITS-PLANTS-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn_plants.txt")
             singularity:
@@ -1087,6 +1119,8 @@ elif marker_gene == "ITS-FUNGI-UNITE":
             evalue = config['e_value'],
             BLAST_DB = config['ITS-FUNGI-UNITE-DB'],
             threads = config['num_threads']
+        threads:
+                int(config["num_threads"])
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:
@@ -1166,6 +1200,8 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
@@ -1257,6 +1293,8 @@ elif marker_gene == "ITS-FUNGI-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn_fungi.txt")
             singularity:
@@ -1361,6 +1399,8 @@ elif marker_gene == "ALL-NCBI":
                 NCBI_DB = NCBI_DB,
                 threads = config['num_threads'],
                 db_type = config['db_type']
+            threads:
+                int(config["num_threads"])
             benchmark:
                 os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
             singularity:
@@ -1412,6 +1452,8 @@ else:
             hits_per_subject = config['hits_per_subject'],
             e_value = config['e_value'],
             threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
         benchmark:
             os.path.join(current_path, "results", "benchmark", "run_blastn.txt")
         singularity:

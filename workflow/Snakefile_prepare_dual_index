@@ -104,6 +104,8 @@ rule run_prinseq:
         filtered_file = os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_min50.fastq")
     params:
         num_threads = config["num_threads"]
+    threads:
+        int(config["num_threads"])
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq', config["outputprepare"] + '_{sample}' + '.log')
     singularity:
@@ -177,6 +179,8 @@ rule run_adapter_removal:
         minphred = config["minphred"],
         minlength = config["minlength"],
         output_name = config["outputprepare"]
+    threads:
+        int(config["num_threads"])
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'adapter_removal', config["outputprepare"] + '.log')
     singularity:
@@ -196,6 +200,8 @@ rule run_prinseq_truncated:
     params:
         output_name = config["outputprepare"],
         num_threads = config["num_threads"]
+    threads:
+        int(config["num_threads"])
     log:
         os.path.join(current_path, 'results', '00-prepare', 'logs', 'prinseq_truncated', config["outputprepare"] + '.log')
     singularity:
