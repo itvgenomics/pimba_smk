@@ -206,6 +206,8 @@ You should observe the following files within the cloned directory:
 | --------- | ----------- |
 | `num_threads` |  <p align="justify">The `num_threads` option indicates the maximum number of processors to be used for tasks that allow parallelization.</p> |
 | `sif_dir` |  <p align="justify">Directory used to store the Singularity image files required by the pipeline. If the images are already present, they will not be downloaded again.</p> |
+| `cache_dir` |  <p align="justify">Directory used for the Singularity cache. This option is useful for controlling where Singularity stores reusable cached data.</p> |
+| `temp_dir` |  <p align="justify">Directory used for temporary files created during container operations. This directory should have sufficient free disk space. Prefer a local Linux filesystem or fast scratch filesystem when possible. Under WSL, operations inside '/mnt/c/' may be slower (or not permitted) than operations inside the Linux filesystem.</p> |
 
 ### 3.1.2. Prepare Mode
 If the user wishes to run the "prepare" mode to prepare the reads for the "run" mode, edit the following options:
