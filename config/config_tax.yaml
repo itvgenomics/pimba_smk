@@ -1,43 +1,399 @@
-# config.yaml
+# ==============================================================================
+# PIMBA v3.0 — PIMBA Tax configuration file
+# ==============================================================================
+#
+# PIMBA Tax is designed to reassign taxonomy to an existing OTU or ASV dataset
+# using a different reference database while preserving the original sequence
+# identifiers and abundance information.
+#
+# This is useful when:
+#   - comparing assignments produced by different reference databases;
+#   - updating taxonomy without rerunning read preprocessing or clustering;
+#   - testing alternative identity, coverage, or BLAST settings;
+#   - preserving identical OTU/ASV identifiers across database comparisons.
+#
+# IMPORTANT:
+#   1. Use absolute paths for all input files and database directories.
+#   2. Keep path strings inside quotes.
+#   3. Values such as 'yes' and 'no' are quoted deliberately.
+#   4. The OTU/ASV table, representative FASTA, and processed-read FASTA must
+#      correspond to the same original PIMBA analysis.
+#   5. The sequence identifiers in 'fasta_file' must match those in 'txt_table'.
+#   6. This commented file preserves every value from the original config.
+#
+# PIMBA Tax is normally launched with a command similar to:
+#
+# bash pimba_smk_tax.sh \
+#   -r 16S-RDP \
+#   -t 8 \
+#   -c config/config_tax.yaml \
+#   -d .
+#
+# The value passed with '-r' should agree with 'marker_gene' for a built-in
+# reference database. For a custom database, use the custom database directory
+# where required by the launcher and configuration.
+# ==============================================================================
 
-# singularity folder
+
+# ==============================================================================
+# SINGULARITY STORAGE
+# ==============================================================================
+#
+# PIMBA Tax runs software inside Singularity container images. These directories
+# should be writable and should have sufficient free disk space.
+#
+# On shared servers, a fast local scratch filesystem is generally preferable for
+# cache and temporary files. Under WSL, paths inside '/mnt/c/' may be slower than
+# equivalent paths inside the native Linux filesystem.
+# ------------------------------------------------------------------------------
+
+# Directory in which PIMBA stores its final Singularity Image Format (.sif)
+# files. Existing images can be reused, so they do not need to be downloaded
+# again for every run.
+#
+# Use an absolute path to a writable directory.
 sif_dir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/sif_files/'
+
+# Directory used for the Singularity cache.
+#
+# The cache may contain downloaded OCI layers and intermediate image content.
+# It can grow considerably during image downloads or conversions. 
+# This option is useful for controlling where Singularity stores reusable 
+# cached data.
 cache_dir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/singularity/'
+
+# Directory used for temporary files created during container operations.
+#
+# This directory should have sufficient free disk space. Prefer a local Linux
+# filesystem or fast scratch filesystem when possible. Under WSL, operations
+# inside '/mnt/c/' may be slower than operations inside the Linux filesystem.
 temp_dir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/tmp/'
 
-# number of threads
+
+# ==============================================================================
+# COMPUTATIONAL RESOURCES
+# ==============================================================================
+
+# Maximum number of CPU threads available to tasks that support parallel
+# execution.
+#
+# This value should normally agree with the '-t' value passed to
+# 'pimba_smk_tax.sh'. Do not request more threads than are available on the
+# workstation or allocated by the cluster scheduler.
 num_threads: 8
 
-# pimba tax
+
+# ==============================================================================
+# PIMBA TAX — REQUIRED EXISTING DATASET INPUTS
+# ==============================================================================
+#
+# PIMBA Tax does not generate new OTUs or ASVs. Instead, it reuses:
+#   1. an existing OTU/ASV abundance table;
+#   2. the corresponding representative sequences;
+#   3. the processed reads from the original PIMBA Prepare run.
+#
+# These three files should originate from the same dataset and analysis.
+# ------------------------------------------------------------------------------
+
+# Existing OTU/ASV abundance table.
+#
+# The standard PIMBA Run abundance-table output as a file under:
+#   results/01-run/<outputrun>/
+#
+# For an ASV workflow, the table commonly contains one row per ASV and one
+# abundance column per sample.
+#
+# Verify that:
+#   - the file exists;
+#   - the delimiter and header match the workflow expectations;
+#   - OTU/ASV identifiers match those in 'fasta_file';
+#   - sample names are unchanged from the original run.
 txt_table: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/results/01-run/AllSamples_97clust90assign/AllSamples_asv_table.txt'
+
+# FASTA file containing one representative sequence for every OTU or ASV in
+# 'txt_table'.
+#
+# Sequence headers should contain the OTU/ASV identifiers exactly as they appear
+# in the abundance table. Avoid adding descriptions to headers unless the
+# workflow explicitly supports them.
 fasta_file: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/results/01-run/AllSamples_97clust90assign/AllSamples_asvs.fasta'
+
+# FASTA file containing the processed reads generated by PIMBA Prepare.
+#
+# The standard location is:
+#   results/00-prepare/<outputprepare>.fasta
+#
+# PIMBA Tax can use these reads to reconstruct or retain abundance relationships
+# while applying the new taxonomic assignment.
 raw_reads: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/results/00-prepare/AllSamples.fasta'
+
+
+# ==============================================================================
+# DATASET AND OUTPUT NAMING
+# ==============================================================================
+
+# Base name of the processed-read FASTA generated during the original Prepare
+# run.
+#
+# Do not include the '.fasta' extension. This should agree with the basename of
+# 'raw_reads'. With the current setting, the expected processed-read file is:
+#   AllSamples.fasta
 outputprepare: 'AllSamples'
+
+# Name of the output directory or analysis prefix created by this PIMBA Tax run.
+#
+# Use a name that clearly distinguishes the new reference database or threshold
+# settings from the original analysis.
+#
+# The suffix '_RDP' identifies that this reassignment uses the RDP database.
+# Note that the retained '97clust90assign' label describes clustering and
+# assignment thresholds in the name; ensure it still accurately reflects the
+# settings below.
 outputrun: 'AllSamples_97clust90assign_RDP'
+
+
+# ==============================================================================
+# ORIGINAL SEQUENCE-INFERENCE STRATEGY
+# ==============================================================================
+#
+# This setting should describe the existing dataset supplied above. PIMBA Tax
+# should preserve whether the identifiers represent OTUs or ASVs.
+# ------------------------------------------------------------------------------
+
+# Type of sequence units in the existing abundance table and FASTA file.
+#
+# Accepted values:
+#   'otu' — clustered Operational Taxonomic Units
+#   'asv' — Amplicon Sequence Variants generated with Swarm in PIMBA
+#
+# The current input filenames use 'asv', which is consistent with this value.
 strategy: 'asv'
+
+# OTU sequence-identity threshold.
+#
+# Expressed as a fraction:
+#   0.97 = 97% sequence identity
+#
+# This setting is mainly relevant to OTU workflows. Because 'strategy' is 'asv',
+# the workflow may retain it only for naming, compatibility, or shared rules.
 otu_similarity: 0.97
+
+
+# ==============================================================================
+# TAXONOMIC ASSIGNMENT FILTERS
+# ==============================================================================
+
+# Minimum sequence identity required to accept a taxonomic assignment.
+#
+# Expressed as a fraction:
+#   0.9 = 90% identity
+#
+# Lower thresholds recover more assignments but may produce less precise
+# taxonomy. Appropriate thresholds depend on the marker, reference database,
+# taxonomic rank, sequence length, and study objectives.
 assign_similarity: 0.9
+
+# Minimum fraction of the query sequence that must be covered by the reference
+# alignment.
+#
+# Expressed as a fraction:
+#   0.9 = 90% query coverage
+#
+# This helps reject short local matches that meet the identity threshold but do
+# not cover enough of the representative sequence.
 mincoverage: 0.9
+
+# Sequence-length threshold or trimming length used by shared PIMBA Run/Tax
+# rules.
+#
+# A value of 0 disables length-based trimming.
+# The current value is 200 nucleotides.
+#
+# Because PIMBA Tax uses already inferred representative sequences, inspect the
+# workflow rules before changing this value if preserving the exact input
+# sequences is essential.
 otu_length: 200
+
+# Number of BLAST/reference hits retained per query.
+#
+#   1   -> retain only the best hit
+#   > 1 -> retain multiple hits for majority or consensus-based interpretation
+#
+# The current value retains up to five hits. This permits evaluation of
+# taxonomic agreement among several high-ranking references.
+#
+# The separate PIMBA Curate parameter 'mode' is currently 'single'. Therefore,
+# if Curate is run later with the same config, it will retain only the highest-
+# scoring hit even though PIMBA Tax generated up to five hits. Change Curate
+# 'mode' to 'multi' only when multi-hit curation is desired.
 hits_per_subject: 5
+
+
+# ==============================================================================
+# REFERENCE DATABASE SELECTION
+# ==============================================================================
+
+# Marker gene and reference database used for the new taxonomic assignment.
+#
+# Built-in values documented by PIMBA include:
+#   '16S-SILVA'
+#   '16S-GREENGENES'
+#   '16S-RDP'
+#   '16S-NCBI'
+#   'COI-NCBI'
+#   'COI-BOLD'
+#   'ITS-PLANTS-NCBI'
+#   'ITS-FUNGI-UNITE'
+#   'ITS-FUNGI-NCBI'
+#   'ALL-NCBI'
+#
+# A custom database directory may also be used.
+#
+# The current analysis reassigns the existing ASVs against the RDP 16S
+# reference database. The '-r' argument supplied to 'pimba_smk_tax.sh' should
+# therefore also be '16S-RDP'.
 marker_gene: '16S-RDP'
+
+# BLAST expectation-value threshold.
+#
+# Smaller values are more stringent. The default is 0.001.
+# This filter is used together with sequence identity and coverage thresholds.
 e_value: 0.001
+
+# Enable or disable LULU curation.
+#
+# Accepted values:
+#   'yes' — apply LULU-based removal of likely erroneous OTUs/ASVs
+#   'no'  — do not apply LULU
+#
+# For database-comparison analyses, keeping this set to 'no' helps ensure that
+# the same OTU/ASV set is preserved across reassignment runs.
 lulu: 'no'
+
+# Indicate whether the marker is ITS.
+#
+# Accepted values:
+#   'yes' — enable ITS-specific processing
+#   'no'  — skip ITS-specific processing
+#
+# The current marker is 16S, so 'no' is appropriate.
 ITS: 'no'
+
+# Select remote or local BLAST behavior.
+#
+# Accepted values:
+#   'yes' — use NCBI remote BLAST
+#   'no'  — use a local reference database
+#
+# The selected database is '16S-RDP', which uses the local path configured under
+# '16S-RDP-DB'. Therefore this parameter is expected to be irrelevant or ignored
+# for the active run. If the implementation applies it globally, 'no' would be
+# the logically consistent setting for RDP. The original value is preserved.
 remote: 'yes'
+
+# Name of the NCBI nucleotide BLAST database.
+#
+# Examples:
+#   'nt'
+#   'core_nt'
+#
+# This field is relevant to NCBI-backed marker choices and is generally ignored
+# for RDP, SILVA, Greengenes, UNITE, and BOLD.
 db_type: 'nt'
-create_excel: 'no'
+
+# BLAST nucleotide-search task.
+#
+# Common values:
+#   'megablast'    — optimized for highly similar nucleotide sequences
+#   'blastn-short' — intended for short nucleotide queries
+#
+# 'megablast' is appropriate when representative sequences are expected to be
+# relatively similar to entries in the selected reference database.
 blast_type: 'megablast'
 
-# database files
+
+# ==============================================================================
+# REFERENCE DATABASE PATHS
+# ==============================================================================
+#
+# Only the directory associated with 'marker_gene' should be needed for the
+# active PIMBA Tax run. Other paths may remain empty.
+#
+# Each local reference directory must contain the FASTA and taxonomy
+# index files expected by the corresponding PIMBA workflow rules.
+# ------------------------------------------------------------------------------
+
+# SILVA 16S database directory.
+# Used when marker_gene is '16S-SILVA'.
 16S-SILVA-DB: ''
+
+# BOLD COI database directory.
+# Used when marker_gene is 'COI-BOLD'.
 COI-BOLD-DB: ''
+
+# Greengenes 16S database directory.
+# Used when marker_gene is '16S-GREENGENES'.
 16S-GREENGENES-DB: ''
+
+# RDP 16S database directory.
+#
+# This is the active database path because marker_gene is '16S-RDP'.
 16S-RDP-DB: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/RDP/'
+
+# Local NCBI BLAST database directory.
+#
+# Used for local analyses with NCBI-backed marker settings such as:
+#   '16S-NCBI'
+#   'COI-NCBI'
+#   'ITS-PLANTS-NCBI'
+#   'ITS-FUNGI-NCBI'
+#   'ALL-NCBI'
+#
+# It is not required for the active RDP analysis.
 NCBI-DB: ''
+
+# UNITE fungal ITS database directory.
+# Used when marker_gene is 'ITS-FUNGI-UNITE'.
 ITS-FUNGI-UNITE-DB: ''
+
+# Directory containing the extracted NCBI taxonomy dump.
+#
+# This is required for NCBI-based taxonomic processing. It is generally not
+# required for a direct RDP assignment unless a later validation step depends
+# on NCBI taxonomy resources.
 taxdump: ''
 
-# pimba curate
+
+# ==============================================================================
+# OPTIONAL PIMBA CURATE SETTINGS
+# ==============================================================================
+#
+# These parameters are not part of the core PIMBA Tax reassignment itself.
+# They are included because the same configuration can subsequently be used by
+# PIMBA Curate to standardize and validate the resulting taxonomy.
+#
+# PIMBA Curate is run separately, for example:
+#
+# bash pimba_smk_curate.sh -t 8 -c config/config_tax.yaml -d .
+# ------------------------------------------------------------------------------
+
+# Path to the local SQLite taxonomy database used by the R package 'taxizedb'
+# for species-name validation.
+#
+# A PIMBA-compatible prebuilt database is available through
+# the Zenodo resource linked in the README.
+#
+# Path for the database containing directory.
 ncbi_taxizedb: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/ncbi'
-mode: 'single'
+
+# BLAST-hit import mode used by PIMBA Curate.
+#
+# Accepted values:
+#   'single' — retain only the highest-scoring hit for each OTU/ASV
+#   'multi'  — retain all recovered hits
+#
+# 'multi' is available only when 'hits_per_subject' is greater than 1.
+# The current combination is consistent:
+#   hits_per_subject: 5
+#   mode: 'multi'
+mode: 'multi'
