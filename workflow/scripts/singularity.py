@@ -39,7 +39,8 @@ docker_images = [
     "itvdsbioinfo/pimba_python_plot:latest",
     "itvdsbioinfo/pimba_phyloseq:v2",
     "itvdsbioinfo/pimba_prinseqpp:v1",
-    "itvdsbioinfo/r_curation:v6"
+    "itvdsbioinfo/r_curation:v6",
+    "itvdsbioinfo/pimba_mumu:v1.1.4"
 ]
 
 sif_dir = read_yaml(args.config)

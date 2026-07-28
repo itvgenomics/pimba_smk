@@ -325,15 +325,17 @@ marker_gene: 'COI-BOLD'
 # 'assign_similarity' and 'mincoverage'.
 e_value: 0.001
 
-# Enable or disable LULU post-clustering curation.
+# Select the post-clustering curation method.
 #
 # Accepted values:
-#   'yes' — run LULU to identify and remove likely erroneous OTUs/ASVs
-#   'no'  — retain the original OTU/ASV set
+# 'no'   — retain the original OTU/ASV set without post-clustering curation
+# 'lulu' — run LULU to identify and remove likely erroneous OTUs/ASVs
+# 'mumu' — run MUMU to identify and remove likely erroneous OTUs/ASVs
 #
-# LULU can reduce artefactual diversity, but its ecological assumptions and
-# thresholds should be appropriate for the dataset.
-lulu: 'no'
+# Both LULU and MUMU can reduce artefactual diversity by curating the inferred
+# OTU/ASV table. The selected method should be appropriate for the dataset,
+# marker gene, and downstream ecological analyses.
+curator: 'no'
 
 # Indicate whether the amplicons represent the ITS marker.
 #

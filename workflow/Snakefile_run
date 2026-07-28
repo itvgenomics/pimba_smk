@@ -15,7 +15,7 @@ coverage_int = floor(config['mincoverage'] * 100)
 similarity_int_asg = floor(config['assign_similarity'] * 100)
 strategy = config['strategy']
 marker_gene = config['marker_gene']
-lulu = config['lulu']
+curator = config['curator']
 ITS = config['ITS']
 NCBI_DB = config['NCBI-DB']
 remote = config['remote']
@@ -49,9 +49,14 @@ if marker_gene == "ITS-FUNGI-NCBI":
     files_for_all_rule.append(os.path.join(output_dir, file_name_raw + '_otu_table_fungi.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_fungi.txt'))
 
 # Conditionally include outputs if lulu is set to on
-if lulu == 'yes':
+if curator == 'lulu':
     files_for_all_rule.append(os.path.join(output_dir, 'lulu_output', 'match_list.txt'))
     files_for_all_rule.append(os.path.join(output_dir, 'lulu_output', file_name_raw + '_otu_table_lulu.txt') if strategy == "otu" else os.path.join(output_dir, 'lulu_output', file_name_raw + '_asv_table_lulu.txt'))
+
+# Conditionally include outputs if mumu is set to on
+if curator == 'mumu':
+    files_for_all_rule.append(os.path.join(output_dir, 'mumu_output', 'match_list.txt'),)
+    files_for_all_rule.append(os.path.join(output_dir, 'mumu_output', file_name_raw + '_otu_table_mumu.txt') if strategy == "otu" else os.path.join(output_dir, 'mumu_output', file_name_raw + '_asv_table_mumu.txt'))
 
 # Rules
 rule all:
@@ -439,7 +444,7 @@ else:
             rm -f {output.table_txt}.raw
             """
 
-if lulu == "yes":
+if curator == "lulu":
     rule run_makeblastdb_and_blastn:
         input:
             fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
@@ -521,6 +526,90 @@ if lulu == "yes":
 
                 cp {input.table} {params.old_table}
                 cp {output.lulu_table} {input.table}
+                """
+
+if curator == "mumu":
+    rule run_makeblastdb_and_blastn:
+        input:
+            fasta_file = os.path.join(output_dir, file_name_raw + '_otus.fasta') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asvs.fasta')
+        output:
+            blast_db = os.path.join(output_dir, 'mumu_output', file_name_raw + '_otus.fasta.nsq'),
+            match_list = os.path.join(output_dir, 'mumu_output', 'match_list.txt')
+        params:
+            threads = config['num_threads']
+        threads:
+            int(config["num_threads"])
+        log:
+            os.path.join(current_path, "results", "01-run", "logs", "makeblastdb_blastn", file_name_raw + ".log")
+        benchmark:
+            os.path.join(current_path, "results", "benchmark", "run_makeblastdb_blastn.txt")
+        singularity:
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_blast")
+        shell:
+            """
+            mkdir -p {output_dir}/mumu_output
+            echo "Running the BLAST Container - makeblastdb: "
+            makeblastdb -in {input.fasta_file} -out {output_dir}/mumu_output/{file_name_raw}_otus.fasta \
+            -parse_seqids -dbtype nucl > {log} 2>&1
+
+            echo "Running the BLAST Container - blastn: "
+            blastn -db {output_dir}/mumu_output/{file_name_raw}_otus.fasta -outfmt "6 qseqid sseqid pident" \
+            -out {output_dir}/mumu_output/match_list.txt -num_threads {params.threads} \
+            -qcov_hsp_perc 80 -perc_identity 84 -query {input.fasta_file} >> {log} 2>&1
+            """
+    if marker_gene == "ITS-FUNGI-NCBI" or marker_gene == "ITS-PLANTS-NCBI":
+        rule run_mumu:
+            input:
+                table = os.path.join(output_dir, file_name_raw + '_pre_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_pre_asv_table.txt'),
+                match_list = os.path.join(output_dir, 'mumu_output', 'match_list.txt')
+            output:
+                mumu_table = os.path.join(output_dir, 'mumu_output', file_name_raw + '_otu_table_mumu.txt') if strategy == "otu" else os.path.join(output_dir, 'mumu_output', file_name_raw + '_asv_table_mumu.txt'),
+                mumu_log = os.path.join(output_dir, 'mumu_output', 'log_mumu.txt' )
+            params:
+                old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
+            log:
+                os.path.join(current_path, "results", "01-run", "logs", "mumu", file_name_raw + ".log")
+            benchmark:
+                os.path.join(current_path, "results", "benchmark", "run_mumu.txt")
+            singularity:
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_mumu")
+            shell:
+                """
+                echo "Running the R Container - mumu: "
+                mumu --otu_table {input.table} --match_list {input.match_list} --log {output.mumu_log} --new_otu_table {output.mumu_table} > {log} 2>&1
+
+                sed -i -e 's/"X//g' {output.mumu_table}
+                sed -i -e 's/"//g' {output.mumu_table}
+
+                cp {input.table} {params.old_table}
+                cp {output.mumu_table} {input.table}
+                """
+    else:
+        rule run_mumu:
+            input:
+                table = os.path.join(output_dir, file_name_raw + '_otu_table.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table.txt'),
+                match_list = os.path.join(output_dir, 'mumu_output', 'match_list.txt')
+            output:
+                mumu_table = os.path.join(output_dir, 'mumu_output', file_name_raw + '_otu_table_mumu.txt') if strategy == "otu" else os.path.join(output_dir, 'mumu_output', file_name_raw + '_asv_table_mumu.txt'),
+                mumu_log = os.path.join(output_dir, 'mumu_output', 'log_mumu.txt' )
+            params:
+                old_table = os.path.join(output_dir, file_name_raw + '_otu_table_old.txt') if strategy == "otu" else os.path.join(output_dir, file_name_raw + '_asv_table_old.txt')
+            log:
+                os.path.join(current_path, "results", "01-run", "logs", "mumu", file_name_raw + ".log")
+            benchmark:
+                os.path.join(current_path, "results", "benchmark", "run_mumu.txt")
+            singularity:
+                "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_mumu")
+            shell:
+                """
+                echo "Running the R Container - mumu: "
+                mumu --otu_table {input.table} --match_list {input.match_list} --log {output.mumu_log} --new_otu_table {output.mumu_table} > {log} 2>&1
+
+                sed -i -e 's/"X//g' {output.mumu_table}
+                sed -i -e 's/"//g' {output.mumu_table}
+
+                cp {input.table} {params.old_table}
+                cp {output.mumu_table} {input.table}
                 """
 
 if marker_gene == "16S-SILVA":
