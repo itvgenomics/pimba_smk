@@ -267,7 +267,7 @@ After configuring the "prepare" mode according to the type of read being used, c
 | `hits_per_subject` | If 1, choose the best hit. If > 1, choose by majority. The default is 1. |
 | `marker_gene` | <p align="justify">Marker gene and database for the analysis. Can be: 16S-SILVA, 16S-GREENGENES, 16S-RDP, 16S-NCBI, COI-NCBI, COI-BOLD, ITS-PLANTS-NCBI, ITS-FUNGI-UNITE, ITS-FUNGI-NCBI, or ALL-NCBI.</p> |
 | `e_value` | Expected value (e-value) used by BLAST. The default is 0.001. |
-| `lulu` | <p align="justify">If set to 'yes', PIMBA will discard erroneous OTUs or ASVs using LULU. The default is 'no' (not using LULU).</p> |
+| `curator` | <p align="justify">Select the post-clustering curation method to identify and remove likely erroneous OTUs/ASVs. Accepted values: "no", "lulu" or "mumu". The default is 'no'.</p> |
 | `ITS` | Set to 'yes' if the reads are ITS. |
 | `remote` | Define whether BLAST will be done in remote mode (without having to download the database) or in local mode. |
 | `db_type` | Define the NCBI BLAST database, for example, nt, core_nt and so on. |
