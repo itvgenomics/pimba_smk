@@ -260,16 +260,6 @@ marker_gene: '16S-RDP'
 # This filter is used together with sequence identity and coverage thresholds.
 e_value: 0.001
 
-# Enable or disable LULU curation.
-#
-# Accepted values:
-#   'yes' — apply LULU-based removal of likely erroneous OTUs/ASVs
-#   'no'  — do not apply LULU
-#
-# For database-comparison analyses, keeping this set to 'no' helps ensure that
-# the same OTU/ASV set is preserved across reassignment runs.
-lulu: 'no'
-
 # Indicate whether the marker is ITS.
 #
 # Accepted values:
