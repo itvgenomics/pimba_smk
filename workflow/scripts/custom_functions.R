@@ -95,6 +95,8 @@ combine_tax_otu <- function(otu_file, fasta_file,
                                           db_format,
                                           chunk_size = 50000) {
     
+
+
     ref_ids <- unique(ref_ids)
     ref_ids <- ref_ids[!is.na(ref_ids) & ref_ids != ""]
     
@@ -318,6 +320,7 @@ combine_tax_otu <- function(otu_file, fasta_file,
   #   OTU12345
   # -----------------------------
   hits[[1]] <- sub("^.*\\|(OTU[0-9]+)\\|?$", "\\1", hits[[1]])
+  hits[[1]] <- sub("^.*\\|(ASV[0-9]+)\\|?$", "\\1", hits[[1]])
   
   if (ncol(hits) >= 8) {
     

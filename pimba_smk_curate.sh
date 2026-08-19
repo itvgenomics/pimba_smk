@@ -92,6 +92,15 @@ fi
 CONFIG=$(realpath "$CONFIG")
 WORKDIR=$(realpath "$WORKDIR")
 
+cache_dir=$(grep '^cache_dir:' "$config_file" | awk '{print $2}' | tr -d "'")
+temp_dir=$(grep '^temp_dir:' "$config_file" | awk '{print $2}' | tr -d "'")
+
+mkdir -p "$cache_dir" "$temp_dir"
+
+export SINGULARITY_CACHEDIR="$cache_dir"
+export TMPDIR="$temp_dir"
+export SINGULARITY_TMPDIR="$temp_dir"
+
 # --------------------------------
 # Helper functions
 # --------------------------------
