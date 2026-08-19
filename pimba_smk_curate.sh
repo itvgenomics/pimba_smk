@@ -92,8 +92,8 @@ fi
 CONFIG=$(realpath "$CONFIG")
 WORKDIR=$(realpath "$WORKDIR")
 
-cache_dir=$(grep '^cache_dir:' "$config_file" | awk '{print $2}' | tr -d "'")
-temp_dir=$(grep '^temp_dir:' "$config_file" | awk '{print $2}' | tr -d "'")
+cache_dir=$(grep '^cache_dir:' "$CONFIG" | awk '{print $2}' | tr -d "'")
+temp_dir=$(grep '^temp_dir:' "$CONFIG" | awk '{print $2}' | tr -d "'")
 
 mkdir -p "$cache_dir" "$temp_dir"
 
