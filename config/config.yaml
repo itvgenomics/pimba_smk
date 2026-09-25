@@ -497,3 +497,7 @@ metadata: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/mapping_
 # Set this YAML value to false with quotes to disable grouping:
 #   group_by: 'False'
 group_by: 'Species'
+
+# Use mean relative abundance across samples for Krona plot instead of pooled raw read abundance.
+# Accepted values: 'True' or 'False'. Default: 'True'.
+krona_relative_abundance: 'True'

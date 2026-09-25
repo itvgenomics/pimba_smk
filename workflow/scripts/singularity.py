@@ -40,7 +40,8 @@ docker_images = [
     "itvdsbioinfo/pimba_phyloseq:v2",
     "itvdsbioinfo/pimba_prinseqpp:v1",
     "itvdsbioinfo/r_curation:v6",
-    "itvdsbioinfo/pimba_mumu:v1.1.4"
+    "itvdsbioinfo/pimba_mumu:v1.1.4",
+    "itvdsbioinfo/pimba_krona:v1"
 ]
 
 sif_dir = read_yaml(args.config)
