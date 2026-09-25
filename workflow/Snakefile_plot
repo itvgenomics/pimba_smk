@@ -122,7 +122,7 @@ rule plot_krona:
     benchmark:
         os.path.join(current_path, "results", "benchmark", "plot_krona.txt")
     singularity:
-        "/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/sif_files/pimba_krona.sif"
+        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_krona")
     params:
         relative_abundance = krona_relative_abundance
     shell:
