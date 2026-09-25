@@ -87,7 +87,9 @@
 
    5.6. [Workflow](#56-workflow)
 
-6. [References](#6-references)
+6. [HTML Report](#6-html-report)
+
+7. [References](#7-references)
 
 ---
 
@@ -304,6 +306,7 @@ This section refers to generating plots for the processed results. To run PIMBA 
 | --------- | ----------- |
 | `metadata` | Path to the sample metadata file. |
 | `group_by` | Metadata column used to group samples during plotting. Set to `False` to disable sample grouping. |
+| `krona_relative_abundance` | Use mean relative abundance across samples for Krona plot instead of pooled raw read abundance. Accepted values: 'True' or 'False'. |
 
 ### 3.1.6. Place Mode
 <p align="justify">This section is optional and refers to generating a tree with unclassified OTUs placed in this reference tree. To run PIMBA Place, configure the config_place.yaml with these parameters (the remaining parameters can be left as default):</p>
@@ -537,9 +540,38 @@ PIMBA Curate performs the following steps:
 11. Performs species validation using the local NCBI Taxonomy database through **taxizedb**.
 12. Exports curated Excel files for downstream manual inspection.
 
+# 6. HTML Report
+
+<p align="justify">PIMBA can generate a single interactive HTML report that integrates the main outputs produced by PIMBA Plot. The report provides a convenient way to explore the analysis results in a web browser without opening each output file separately.</p>
+
+By default, the report includes the main PIMBA Plot results, such as:
+- rarefaction curves;
+- alpha-diversity results;
+- ordination analyses, including NMDS and PCoA;
+- clustering analyses;
+- taxonomic composition plots and tables;
+- interactive Krona taxonomic visualization.
+
+The HTML report can be generated with:
+```text
+    python create_pimba_html_report.py --results-dir "results/03-plot"
+```
+
+By default, the report is written to:
+```text
+    results/03-plot/PIMBA_report.html
+```
+The report can also optionally include results from **PIMBA Curate**.
+```text
+    python create_pimba_html_report.py --results-dir "results/03-plot" --include-curate
+```
+The PIMBA Curate table is embedded directly in the HTML report and includes interactive filters for PID values and sample abundance.
+
+The generated HTML file is self-contained and can be opened directly in a standard web browser.
+
 ---
 
-# 6. References
+# 7. References
 
 <p align="justify">1. <a href="https://www.nature.com/articles/s41587-019-0209-9">Bolyen, Evan, Jai Ram Rideout, Matthew R. Dillon, Nicholas A. Bokulich, Christian C. Abnet, Gabriel A. Al-Ghalith, Harriet Alexander, et al. 2019. “Reproducible, Interactive, Scalable and Extensible Microbiome Data Science Using QIIME 2.” <i>Nature Biotechnology</i> 37 (8): 852–857.</a></p>
 
