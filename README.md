@@ -1,8 +1,8 @@
 <h1 align="center">PIMBA v3.0 in Snakemake - User Guide</h1>
 
 <p align="center">
-<strong>Version:</strong> 1.3 &nbsp;|&nbsp;
-<strong>Last updated:</strong> July 2026
+<strong>Version:</strong> 1.4 &nbsp;|&nbsp;
+<strong>Last updated:</strong> September 2026
 </p>
 
 <p align="center">
