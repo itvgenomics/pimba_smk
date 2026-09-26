@@ -359,6 +359,8 @@ Example of the taxonomy file:
 <img src="figures/tax_example.png" alt="Fasta example" width="100%">
 </p>
 
+The taxonomy file should contain seven taxonomy levels: Kingdom, Phylum, Class, Order, Family, Genus, and Species.
+
 Then, install BLAST+:
 
 ```bash
