@@ -57,48 +57,135 @@ rule prepare_directories:
         cp {input.full_path_raw}/*.R2* {current_path}/results/00-prepare/prepare_output/R2/ 2>/dev/null || true
         """
 
-rule run_adapter_removal:
-    input:
-        r1 = lambda wildcards: os.path.join(
-            current_path,
-            "results", "00-prepare", "prepare_output",
-            f"R1/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R1{sample_suffixes[wildcards.sample][1]}"
-        ),
-        r2 = lambda wildcards: os.path.join(
-            current_path,
-            "results", "00-prepare", "prepare_output",
-            f"R2/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R2{sample_suffixes[wildcards.sample][1]}"
-        )
-    output:
-        os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.discarded"),
-        os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
-        os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair2.truncated"),
-        os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.settings"),
-        os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.singleton.truncated")
-    params:
-        adapters = config["adapters"],
-        num_threads = config["num_threads"],
-        min_phred = config["minphred"],
-        min_length = config["minlength"]
-    threads:
-        int(config["num_threads"])
-    log:
-        os.path.join(current_path, "results", "00-prepare", "logs", "adapter_removal", "{sample}.log")
-    benchmark:
-        os.path.join(current_path, "results", "benchmark", "{sample}_prepare_adapter_removal.txt")
-    singularity:
-        "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_adapterremoval")
-    shell:
-        """
-        cd {current_path}/results/00-prepare/prepare_output/
-        AdapterRemoval --file1 {input.r1} --file2 {input.r2} --threads {params.num_threads} \
-        --mate-separator " " --adapter-list {params.adapters} \
-        --trimwindows 10 --minquality {params.min_phred} --minlength {params.min_length} \
-        --qualitymax 64 --basename {wildcards.sample}_good --mm 5 \
-        > {log} 2>&1
+if config["adapter_tool"] == "adapter_removal":
+    rule run_adapter_removal:
+        input:
+            r1 = lambda wildcards: os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                f"R1/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R1{sample_suffixes[wildcards.sample][1]}"
+            ),
+            r2 = lambda wildcards: os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                f"R2/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R2{sample_suffixes[wildcards.sample][1]}"
+            )
+        output:
+            os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.discarded"),
+            os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair1.truncated"),
+            os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.pair2.truncated"),
+            os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.settings"),
+            os.path.join(current_path, "results", "00-prepare", "prepare_output", "{sample}_good.singleton.truncated")
+        params:
+            adapters = config["adapters"],
+            num_threads = config["num_threads"],
+            min_phred = config["minphred"],
+            min_length = config["minlength"]
+        threads:
+            int(config["num_threads"])
+        log:
+            os.path.join(current_path, "results", "00-prepare", "logs", "adapter_removal", "{sample}.log")
+        benchmark:
+            os.path.join(current_path, "results", "benchmark", "{sample}_prepare_adapter_removal.txt")
+        singularity:
+            "{}/{}.sif".format(config['sif_dir'].rstrip("/"), "pimba_adapterremoval")
+        shell:
+            """
+            cd {current_path}/results/00-prepare/prepare_output/
+            AdapterRemoval --file1 {input.r1} --file2 {input.r2} --threads {params.num_threads} \
+            --mate-separator " " --adapter-list {params.adapters} \
+            --trimwindows 10 --minquality {params.min_phred} --minlength {params.min_length} \
+            --qualitymax 64 --basename {wildcards.sample}_good --mm 5 \
+            > {log} 2>&1
 
-        rm {input.r1} {input.r2}
-        """
+            rm {input.r1} {input.r2}
+            """
+elif config["adapter_tool"] == "cutadapt":
+    rule run_cutadapt:
+        input:
+            r1 = lambda wildcards: os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                f"R1/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R1{sample_suffixes[wildcards.sample][1]}"
+            ),
+            r2 = lambda wildcards: os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                f"R2/{wildcards.sample}{sample_suffixes[wildcards.sample][0]}R2{sample_suffixes[wildcards.sample][1]}"
+            )
+        output:
+            discarded = os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                "{sample}_good.discarded"
+            ),
+            pair1 = os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                "{sample}_good.pair1.truncated"
+            ),
+            pair2 = os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                "{sample}_good.pair2.truncated"
+            ),
+            settings = os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                "{sample}_good.settings"
+            ),
+            singleton = os.path.join(
+                current_path,
+                "results", "00-prepare", "prepare_output",
+                "{sample}_good.singleton.truncated"
+            )
+        params:
+            forward_primer = config["forward_primer"],
+            reverse_primer = config["reverse_primer"],
+            forward_primer_rc = config["forward_primer_rc"],
+            reverse_primer_rc = config["reverse_primer_rc"],
+            num_threads = config["num_threads"]
+        threads:
+            int(config["num_threads"])
+        log:
+            os.path.join(
+                current_path,
+                "results", "00-prepare", "logs",
+                "cutadapt", "{sample}.log"
+            )
+        benchmark:
+            os.path.join(
+                current_path,
+                "results", "benchmark",
+                "{sample}_prepare_cutadapt.txt"
+            )
+        singularity:
+            "{}/{}.sif".format(
+                config["sif_dir"].rstrip("/"),
+                "pimba_cutadapt"
+            )
+        shell:
+            """
+            cutadapt \
+                -j {threads} \
+                -a "^{params.forward_primer}...{params.reverse_primer_rc}" \
+                -A "^{params.reverse_primer}...{params.forward_primer_rc}" \
+                -o {output.pair1} \
+                -p {output.pair2} \
+                {input.r1} \
+                {input.r2} \
+                > {log} 2>&1
+
+            touch {output.discarded}
+            cp {log} {output.settings}
+            touch {output.singleton}
+
+            rm {input.r1} {input.r2}
+            """
+else:
+    raise ValueError(
+        "Invalid adapter_tool. Choose 'adapter_removal' or 'cutadapt'."
+    )
 
 if config["merger"] == "pear":
     rule run_pear:
