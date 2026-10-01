@@ -113,13 +113,10 @@ outputprepare: 'AllSamples'
 # This section is used when the launcher is called with:
 #   -p paired_end
 #
-# Raw paired-end filenames should follow the naming convention expected by the
-# workflow and contain distinguishable R1 and R2 tokens.
+# Raw paired-end filenames should contain distinguishable R1 and R2 tokens.
 # ------------------------------------------------------------------------------
 
 # Directory containing the raw paired-end FASTQ files.
-#
-# Use the directory path, not the path to an individual FASTQ file.
 rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/rawdata_COI/'
 
 
@@ -127,61 +124,62 @@ rawdatadir: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/test_data/rawdat
 # Adapter/primer trimming tool
 # ------------------------------------------------------------------------------
 
-# Program used to remove adapters and/or amplification primers from paired reads.
+# Program used to remove adapters and/or amplification primers.
 #
 # Accepted values:
 #   'adapter_removal' — use AdapterRemoval
 #   'cutadapt'        — use Cutadapt
-#
-# Tool-specific parameters are defined in the sections below. Parameters for the
-# tool that is not selected are ignored.
 adapter_tool: 'cutadapt'
+
+
+# ------------------------------------------------------------------------------
+# Shared filtering parameters
+# ------------------------------------------------------------------------------
+
+# Minimum read length, in nucleotides, retained after trimming/filtering.
+#
+# AdapterRemoval:
+#   passed with --minlength
+#
+# Cutadapt:
+#   passed with -m / --minimum-length
+#
+# Reads shorter than this threshold are discarded.
+minlength: 100
+
+# Minimum PHRED quality threshold used during quality trimming.
+#
+# AdapterRemoval:
+#   passed with --minquality together with --trimwindows 10
+#
+# Cutadapt:
+#   passed with -q / --quality-cutoff
+#
+# Note that AdapterRemoval and Cutadapt use different quality-trimming
+# algorithms, so the same numerical threshold does not imply identical trimming.
+minphred: 20
 
 
 # ------------------------------------------------------------------------------
 # AdapterRemoval settings
 # ------------------------------------------------------------------------------
 #
-# These parameters are used only when:
-#
+# Used only when:
 #   adapter_tool: 'adapter_removal'
-#
-# AdapterRemoval performs adapter trimming together with quality and minimum
-# length filtering before read merging.
 # ------------------------------------------------------------------------------
 
 # Path to the AdapterRemoval adapter-definition file.
-#
-# The file should contain the adapter sequences appropriate for the sequencing
-# library being processed.
 adapters: '/mnt/c/Users/c0519/Desktop/ITV/pimba_dev/pimba_smk/resources/adapters.txt'
-
-# Minimum read length, in nucleotides, retained by AdapterRemoval after trimming.
-#
-# Reads shorter than this value are discarded.
-minlength: 100
-
-# Minimum PHRED quality score used by AdapterRemoval during quality trimming.
-#
-# With the current Snakefile this value is passed to:
-#
-#   AdapterRemoval --minquality
-#
-# PHRED 20 corresponds approximately to a 1% base-call error probability.
-minphred: 20
 
 
 # ------------------------------------------------------------------------------
 # Cutadapt settings
 # ------------------------------------------------------------------------------
 #
-# These parameters are used only when:
-#
+# Used only when:
 #   adapter_tool: 'cutadapt'
 #
-# Cutadapt removes amplification primers using linked adapters.
-#
-# For paired-end amplicons, PIMBA expects the following orientation:
+# Linked adapters are defined as:
 #
 #   R1:
 #     forward primer ... reverse-complement of reverse primer
@@ -189,16 +187,14 @@ minphred: 20
 #   R2:
 #     reverse primer ... reverse-complement of forward primer
 #
-# In the current Snakefile, the 5' primer is anchored with '^'. The primer at the
-# opposite end is optional and is removed when read-through reaches it.
-#
-# Degenerate IUPAC nucleotide codes are supported.
+# The 5' primer is anchored with '^'. The opposite primer is removed when
+# read-through reaches it.
 # ------------------------------------------------------------------------------
 
-# Forward amplification primer, written 5' -> 3'.
+# Forward amplification primer, 5' -> 3'.
 forward_primer: 'GTGYCAGCMGCCGCGGTAA'
 
-# Reverse amplification primer, written 5' -> 3'.
+# Reverse amplification primer, 5' -> 3'.
 reverse_primer: 'GGACTACNVGGGTWTCTAAT'
 
 # Reverse complement of the forward primer.
@@ -213,28 +209,18 @@ reverse_primer_rc: 'ATTAGAWACCCBNGTAGTCC'
 # ------------------------------------------------------------------------------
 
 # Minimum number of overlapping nucleotides required to merge paired reads.
-#
-# This parameter is used by the downstream paired-read merging step, after
-# AdapterRemoval or Cutadapt has processed the reads.
-#
-# Larger values require stronger overlap evidence but may reject pairs when the
-# amplicon is long relative to the sequencing read length.
 minoverlap: 10
 
-# Minimum similarity across the paired-read overlap when OverlapPER is selected.
-#
+# Minimum overlap similarity when OverlapPER is selected.
 # Expressed as a fraction:
 #   0.9 = 90% identity
-#
-# This option applies specifically to OverlapPER and is ignored when 'merger'
-# is set to 'pear'.
 minsim: 0.9
 
-# Program used to merge paired-end reads after adapter/primer processing.
+# Program used to merge paired-end reads after trimming.
 #
 # Accepted values:
-#   'pear'       — use PEAR
-#   'overlapper' — use OverlapPER
+#   'pear'
+#   'overlapper'
 merger: 'pear'
 
 

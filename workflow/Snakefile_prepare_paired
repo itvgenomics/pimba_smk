@@ -144,6 +144,8 @@ elif config["adapter_tool"] == "cutadapt":
             reverse_primer = config["reverse_primer"],
             forward_primer_rc = config["forward_primer_rc"],
             reverse_primer_rc = config["reverse_primer_rc"],
+            min_phred = config["minphred"],
+            min_length = config["minlength"],
             num_threads = config["num_threads"]
         threads:
             int(config["num_threads"])
@@ -168,6 +170,8 @@ elif config["adapter_tool"] == "cutadapt":
             """
             cutadapt \
                 -j {threads} \
+                -q {params.min_phred} \
+                -m {params.min_length} \
                 -a "^{params.forward_primer}...{params.reverse_primer_rc}" \
                 -A "^{params.reverse_primer}...{params.forward_primer_rc}" \
                 -o {output.pair1} \
