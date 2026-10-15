@@ -224,14 +224,14 @@ If the user wishes to run PIMBA for paired-end reads, it is necessary to configu
 | Parameter | Description |
 | --------- | ----------- |
 | `rawdatadir` | The path to the directory where the reads are located. |
-| `adapter_tool` | Select the tool used for adapter/primer trimming. Accepted values are "adapter_removal" and "cutadapt", default is "cutadapt". |
+| `adapter_tool` | Select the tool used for adapter/primer trimming. Accepted values are `"adapter_removal"` and `"cutadapt"`, default is `"cutadapt"`. |
 | `minlength` | Minimum read length retained after trimming/filtering. This parameter is used by both AdapterRemoval and Cutadapt. |
 | `minphred` | Minimum PHRED quality threshold used during quality trimming. This parameter is used by both AdapterRemoval and Cutadapt. Note that the two tools use different quality-trimming algorithms. |
 | `adapters` | The path to the adapter file within the resources directory. |
-| `forward_primer` | Forward amplification primer sequence in the 5' → 3' orientation. This parameter is used only when adapter_tool is set to "cutadapt". |
-| `reverse_primer` | Reverse amplification primer sequence in the 5' → 3' orientation. This parameter is used only when adapter_tool is set to "cutadapt". |
-| `forward_primer_rc` | Reverse complement of the forward primer. This parameter is used only when adapter_tool is set to "cutadapt". |
-| `reverse_primer_rc` | Reverse complement of the reverse primer. This parameter is used only when adapter_tool is set to "cutadapt". |
+| `forward_primer` | Forward amplification primer sequence in the 5' → 3' orientation. This parameter is used only when adapter_tool is set to `"cutadapt"`. |
+| `reverse_primer` | Reverse amplification primer sequence in the 5' → 3' orientation. This parameter is used only when adapter_tool is set to `"cutadapt"`. |
+| `forward_primer_rc` | Reverse complement of the forward primer. This parameter is used only when adapter_tool is set to `"cutadapt"`. |
+| `reverse_primer_rc` | Reverse complement of the reverse primer. This parameter is used only when adapter_tool is set to `"cutadapt"`. |
 | `minoverlap` | Minimum overlap to merge paired reads. Default is 10 bases. |
 | `minsim` | Minimum similarity to merge paired reads (only for OverlapPER). Default is 0.9 (90%) similarity. |
 | `merger` | Select the paired read merger between `"pear"` (PEAR) and `"overlapper"` (OverlapPER). |
