@@ -54,6 +54,7 @@ metadata=$(grep '^metadata:' "$config_file" | awk '{print $2}' | tr -d "'")
 adapters=$(grep '^adapters:' "$config_file" | awk '{print $2}' | tr -d "'")
 cache_dir=$(grep '^cache_dir:' "$config_file" | awk '{print $2}' | tr -d "'")
 temp_dir=$(grep '^temp_dir:' "$config_file" | awk '{print $2}' | tr -d "'")
+adapter_tool=$(grep '^adapter_tool:' "$config_file" | awk '{print $2}' | tr -d "'")
 
 mkdir -p "$cache_dir" "$temp_dir"
 
@@ -68,9 +69,14 @@ if [ "$prepare_mode" != "no" ]; then
             echo "ERROR: rawdatadir is not defined or does not exist."
             exit 1
         fi
-        if [ -z "$adapters" ] || [ ! -e "$adapters" ]; then
-            echo "ERROR: adapters file is not defined or does not exist."
-            exit 1
+        if [ "$adapter_tool" == "adapter_removal" ]; then
+            if [ -z "$adapters" ] || [ ! -e "$adapters" ]; then
+                echo "ERROR: adapters file is not defined or does not exist."
+                exit 1
+            fi
+            singularity_binds="-B $rawdatadir -B $adapters"
+        else
+            singularity_binds="-B $rawdatadir"
         fi
         # ---- FASTQ precheck: ensure filenames and records are valid before running Snakemake ----
         echo 'Validating FASTQs under rawdatadir...'
@@ -82,7 +88,7 @@ if [ "$prepare_mode" != "no" ]; then
         echo "Running PIMBA in paired_end prepare mode"
         snakemake --snakefile workflow/Snakefile_prepare_paired --use-singularity \
             --configfile "$config_file" --cores "$threads" --directory "$workdir" \
-            --singularity-args "-B $rawdatadir -B $adapters" ${SETUNLOCK}
+            --singularity-args "$singularity_binds" ${SETUNLOCK}
     
     elif [ "$prepare_mode" == "single_index" ]; then
         if [ -z "$raw_fastq_single" ] || [ ! -e "$raw_fastq_single" ]; then
